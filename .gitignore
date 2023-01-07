@@ -1,0 +1,5 @@
+/target
+/output
+*.mp4
+*.osd
+.DS_Store
