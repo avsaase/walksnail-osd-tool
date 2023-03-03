@@ -1,4 +1,4 @@
-use std::{os::windows::process::CommandExt, process::Command};
+use std::process::Command;
 
 pub fn ffmpeg_available() -> bool {
     command_available("ffmpeg")
@@ -17,7 +17,7 @@ fn command_available(command: &str) -> bool {
         .stderr(std::process::Stdio::null());
 
     #[cfg(target_os = "windows")]
-    command.creation_flags(crate::CREATE_NO_WINDOW);
+    std::os::windows::process::CommandExt::creation_flags(&mut command, crate::CREATE_NO_WINDOW);
 
     command.status().is_ok()
 }

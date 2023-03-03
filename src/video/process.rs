@@ -1,5 +1,3 @@
-#[cfg(target_os = "windows")]
-use std::os::windows::process::CommandExt;
 use std::{
     io::Write,
     sync::mpsc::{self, Receiver, Sender},
@@ -25,13 +23,13 @@ pub fn process_video(
     // Spawn the decoder ffmpeg instance
     let mut decoder = FfmpegCommand::new();
     #[cfg(target_os = "windows")]
-    decoder.as_inner_mut().creation_flags(crate::CREATE_NO_WINDOW);
+    std::os::windows::process::CommandExt::creation_flags(decoder.as_inner_mut(), crate::CREATE_NO_WINDOW);
     let mut decoder = decoder.input(input_video).rawvideo().spawn()?;
 
     // Spawn the encoder ffmpeg instance
     let mut encoder = FfmpegCommand::new();
     #[cfg(target_os = "windows")]
-    encoder.as_inner_mut().creation_flags(crate::CREATE_NO_WINDOW);
+    std::os::windows::process::CommandExt::creation_flags(encoder.as_inner_mut(), crate::CREATE_NO_WINDOW);
     let mut encoder = encoder
         .args(["-f", "rawvideo"])
         .args(["-pix_fmt", "rgb24"])

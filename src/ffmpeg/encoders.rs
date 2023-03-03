@@ -1,6 +1,6 @@
 use rayon::prelude::*;
 
-use std::{fmt::Display, os::windows::process::CommandExt, process::Command, vec};
+use std::{fmt::Display, process::Command, vec};
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Codec {
@@ -93,7 +93,7 @@ impl Encoder {
             .stderr(std::process::Stdio::null());
 
         #[cfg(target_os = "windows")]
-        command.creation_flags(crate::CREATE_NO_WINDOW);
+        std::os::windows::process::CommandExt::creation_flags(&mut command, crate::CREATE_NO_WINDOW);
 
         let status = command
             .status()
