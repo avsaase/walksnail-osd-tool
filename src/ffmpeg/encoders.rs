@@ -2,8 +2,6 @@ use rayon::prelude::*;
 
 use std::{fmt::Display, os::windows::process::CommandExt, process::Command, vec};
 
-use crate::CREATE_NO_WINDOW;
-
 #[derive(Debug, PartialEq, Clone)]
 pub enum Codec {
     H264,
@@ -95,7 +93,7 @@ impl Encoder {
             .stderr(std::process::Stdio::null());
 
         #[cfg(target_os = "windows")]
-        command.creation_flags(CREATE_NO_WINDOW);
+        command.creation_flags(crate::CREATE_NO_WINDOW);
 
         let status = command
             .status()

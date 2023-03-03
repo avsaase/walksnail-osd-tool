@@ -8,7 +8,7 @@ use std::{
 
 use ffmpeg_sidecar::{command::FfmpegCommand, event::FfmpegEvent};
 
-use crate::{ffmpeg::VideoInfo, font, osd, CREATE_NO_WINDOW};
+use crate::{ffmpeg::VideoInfo, font, osd};
 
 use super::{error::FfmpegError, frame_overlay_iter::FrameOverlayIter, render_progress::StopRenderMessage, Settings};
 
@@ -25,13 +25,13 @@ pub fn process_video(
     // Spawn the decoder ffmpeg instance
     let mut decoder = FfmpegCommand::new();
     #[cfg(target_os = "windows")]
-    decoder.as_inner_mut().creation_flags(CREATE_NO_WINDOW);
+    decoder.as_inner_mut().creation_flags(crate::CREATE_NO_WINDOW);
     let mut decoder = decoder.input(input_video).rawvideo().spawn()?;
 
     // Spawn the encoder ffmpeg instance
     let mut encoder = FfmpegCommand::new();
     #[cfg(target_os = "windows")]
-    encoder.as_inner_mut().creation_flags(CREATE_NO_WINDOW);
+    encoder.as_inner_mut().creation_flags(crate::CREATE_NO_WINDOW);
     let mut encoder = encoder
         .args(["-f", "rawvideo"])
         .args(["-pix_fmt", "rgb24"])
