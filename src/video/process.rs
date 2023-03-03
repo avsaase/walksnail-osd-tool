@@ -47,7 +47,6 @@ pub fn process_video(
         font_file,
         horizontal_offset,
         vertical_offset,
-        video_info.frame_rate.into(),
         progress_tx,
         stop_render_rx,
     );

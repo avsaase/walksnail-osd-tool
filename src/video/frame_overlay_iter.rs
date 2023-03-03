@@ -21,9 +21,7 @@ pub struct FrameOverlayIter {
     font_file: font::FontFile,
     horizontal_offset: i32,
     vertical_offset: i32,
-    video_frame_rate: f64,
     current_osd_frame: osd::Frame,
-    current_video_frame_secs: f64,
     render_progress_sender: Sender<FfmpegEvent>,
     stop_render_receiver: Receiver<StopRenderMessage>,
 }
@@ -36,7 +34,6 @@ impl FrameOverlayIter {
         font_file: font::FontFile,
         horizontal_offset: i32,
         vertical_offset: i32,
-        video_frame_rate: f64,
         render_progress_sender: Sender<FfmpegEvent>,
         stop_render_receiver: Receiver<StopRenderMessage>,
     ) -> Self {
@@ -49,9 +46,7 @@ impl FrameOverlayIter {
             font_file,
             horizontal_offset,
             vertical_offset,
-            video_frame_rate,
             current_osd_frame: first_osd_frame,
-            current_video_frame_secs: 0.0,
             render_progress_sender,
             stop_render_receiver,
         }
@@ -69,19 +64,15 @@ impl Iterator for FrameOverlayIter {
 
         self.ffmpeg_iter.find_map(|e| match e {
             FfmpegEvent::OutputFrame(video_frame) => {
-                // For every video frame check if frame time is between the current and the next OSD frame time
+                // For every video frame check if frame time is later than the next OSD frame time.
+                // If so advance the iterator over the OSD frames so we use the correct OSD frame
+                // for this video frame
                 if let Some(next_osd_frame) = self.osd_frames_iter.peek() {
-                    // If not, advance the iterator and use the next OSD frame
-                    // let current_osd_frame_secs = Into::<f64>::into(self.current_osd_frame.time_millis) / 1000.0;
-                    let next_osd_frame_secs = Into::<f64>::into(next_osd_frame.time_millis) / 1000.0;
-                    // if !(current_osd_frame_secs..next_osd_frame_secs).contains(&self.current_video_frame_secs) {
-                    if self.current_video_frame_secs > next_osd_frame_secs {
+                    let next_osd_frame_secs = next_osd_frame.time_millis as f32 / 1000.0;
+                    if video_frame.timestamp > next_osd_frame_secs {
                         self.current_osd_frame = self.osd_frames_iter.next().unwrap();
                     }
                 }
-
-                // TODO(avsaase): use the real video frame time
-                self.current_video_frame_secs += 1.0 / self.video_frame_rate;
 
                 Some(overlay_osd_on_video(
                     video_frame,
