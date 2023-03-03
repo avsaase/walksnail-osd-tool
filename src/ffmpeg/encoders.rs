@@ -1,6 +1,8 @@
 use rayon::prelude::*;
 
-use std::{fmt::Display, process::Command, vec};
+use std::{fmt::Display, os::windows::process::CommandExt, process::Command, vec};
+
+use crate::CREATE_NO_WINDOW;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Codec {
@@ -72,7 +74,9 @@ impl Encoder {
     }
 
     fn ffmpeg_encoder_available(encoder: &Encoder) -> bool {
-        let status = Command::new("ffmpeg")
+        let mut command = Command::new("ffmpeg");
+
+        command
             .args([
                 "-hide_banner",
                 "-f",
@@ -88,7 +92,12 @@ impl Encoder {
                 "-",
             ])
             .stdout(std::process::Stdio::null())
-            .stderr(std::process::Stdio::null())
+            .stderr(std::process::Stdio::null());
+
+        #[cfg(target_os = "windows")]
+        command.creation_flags(CREATE_NO_WINDOW);
+
+        let status = command
             .status()
             .expect("Failed to execute ffmpeg command to check encoder compatibility");
         status.code().expect("Failed to get status code from ffmpeg command") == 0

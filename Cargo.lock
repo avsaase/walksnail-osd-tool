@@ -905,8 +905,7 @@ source = "git+https://github.com/nathanbabcock/ffmpeg-sidecar#0f1a19e16eca910431
 [[package]]
 name = "ffprobe"
 version = "0.3.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b5d603974ab029fc75cebf00bfa06c9c6f49a6fb657f4f5f6a9fd6cbd76910a4"
+source = "git+https://github.com/avsaase/ffprobe-rs/?branch=suppress-console-windows#3356c2e527c16544d310f5171dd7962511afd04f"
 dependencies = [
  "serde",
  "serde_json",
@@ -1338,9 +1337,9 @@ dependencies = [
 
 [[package]]
 name = "itoa"
-version = "1.0.5"
+version = "1.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fad582f4b9e86b6caa621cabeb0963332d92eea04729ab12892c2533951e6440"
+checksum = "453ad9f582a441959e5f0d088b02ce04cfe8d51a8eaf077f12ac6d3e94164ca6"
 
 [[package]]
 name = "jni"

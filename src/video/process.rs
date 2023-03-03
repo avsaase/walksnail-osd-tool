@@ -1,3 +1,5 @@
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
 use std::{
     io::Write,
     sync::mpsc::{self, Receiver, Sender},
@@ -6,7 +8,7 @@ use std::{
 
 use ffmpeg_sidecar::{command::FfmpegCommand, event::FfmpegEvent};
 
-use crate::{ffmpeg::VideoInfo, font, osd};
+use crate::{ffmpeg::VideoInfo, font, osd, CREATE_NO_WINDOW};
 
 use super::{error::FfmpegError, frame_overlay_iter::FrameOverlayIter, render_progress::StopRenderMessage, Settings};
 
@@ -21,10 +23,16 @@ pub fn process_video(
     vertical_offset: i32,
 ) -> Result<(Receiver<FfmpegEvent>, Sender<StopRenderMessage>), FfmpegError> {
     // Spawn the decoder ffmpeg instance
-    let mut decoder = FfmpegCommand::new().input(input_video).rawvideo().spawn()?;
+    let mut decoder = FfmpegCommand::new();
+    #[cfg(target_os = "windows")]
+    decoder.as_inner_mut().creation_flags(CREATE_NO_WINDOW);
+    let mut decoder = decoder.input(input_video).rawvideo().spawn()?;
 
     // Spawn the encoder ffmpeg instance
-    let mut encoder = FfmpegCommand::new()
+    let mut encoder = FfmpegCommand::new();
+    #[cfg(target_os = "windows")]
+    encoder.as_inner_mut().creation_flags(CREATE_NO_WINDOW);
+    let mut encoder = encoder
         .args(["-f", "rawvideo"])
         .args(["-pix_fmt", "rgb24"])
         .size(video_info.width, video_info.height)

@@ -1,3 +1,4 @@
+#![windows_subsystem = "windows"] // Hide console windows on Windows in release builds
 #![allow(clippy::too_many_arguments)]
 
 use ui::WalksnailOsdTool;
@@ -9,6 +10,9 @@ mod overlay;
 mod ui;
 mod util;
 mod video;
+
+#[cfg(target_os = "windows")]
+const CREATE_NO_WINDOW: u32 = 0x08000000;
 
 fn main() -> Result<(), eframe::Error> {
     let options = eframe::NativeOptions {
