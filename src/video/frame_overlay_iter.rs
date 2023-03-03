@@ -72,9 +72,10 @@ impl Iterator for FrameOverlayIter {
                 // For every video frame check if frame time is between the current and the next OSD frame time
                 if let Some(next_osd_frame) = self.osd_frames_iter.peek() {
                     // If not, advance the iterator and use the next OSD frame
-                    let current_osd_frame_secs = Into::<f64>::into(self.current_osd_frame.time_millis) / 1000.0;
+                    // let current_osd_frame_secs = Into::<f64>::into(self.current_osd_frame.time_millis) / 1000.0;
                     let next_osd_frame_secs = Into::<f64>::into(next_osd_frame.time_millis) / 1000.0;
-                    if !(current_osd_frame_secs..next_osd_frame_secs).contains(&self.current_video_frame_secs) {
+                    // if !(current_osd_frame_secs..next_osd_frame_secs).contains(&self.current_video_frame_secs) {
+                    if self.current_video_frame_secs > next_osd_frame_secs {
                         self.current_osd_frame = self.osd_frames_iter.next().unwrap();
                     }
                 }
