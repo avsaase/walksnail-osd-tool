@@ -91,7 +91,7 @@ impl Encoder {
             .stderr(std::process::Stdio::null())
             .status()
             .expect("Failed to execute ffmpeg command to check encoder compatibility");
-        status.code().unwrap() == 0
+        status.code().expect("Failed to get status code from ffmpeg command") == 0
     }
 }
 

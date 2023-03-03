@@ -53,7 +53,7 @@ pub fn process_video(
     );
 
     // On another thread run the iterator to completion and feed the output to the encoder's stdin
-    let mut encoder_stdin = encoder.take_stdin().expect("Failed to get stdin for encoder");
+    let mut encoder_stdin = encoder.take_stdin().expect("Failed to get `stdin` for encoder");
     thread::spawn(move || {
         frame_overlay_iter.for_each(|f| {
             encoder_stdin.write(&f.data).ok();

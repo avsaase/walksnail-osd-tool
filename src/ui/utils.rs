@@ -14,9 +14,15 @@ impl WalksnailOsdTool {
 }
 
 pub fn find_file_with_extention<'a>(files: &'a [PathBuf], extention: &'a str) -> Option<&'a PathBuf> {
-    files
-        .iter()
-        .find(|f| f.extension().unwrap().to_str().unwrap() == extention)
+    files.iter().find_map(|f| {
+        f.extension().and_then(|e| {
+            if e.to_string_lossy() == extention {
+                Some(f)
+            } else {
+                None
+            }
+        })
+    })
 }
 
 pub fn separator_with_space(ui: &mut Ui, space: f32) {

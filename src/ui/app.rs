@@ -161,16 +161,14 @@ impl WalksnailOsdTool {
             {
                 if let Some(video_file) = find_file_with_extention(&file_handles, "mp4") {
                     self.video_file = Some(video_file.clone());
-                    self.video_info = Some(VideoInfo::get(video_file).unwrap());
+                    self.video_info = VideoInfo::get(video_file).ok();
                 }
                 if let Some(osd_file_path) = find_file_with_extention(&file_handles, "osd") {
-                    let osd_file = OsdFile::open(osd_file_path.clone()).unwrap();
-                    self.osd_file = Some(osd_file);
+                    self.osd_file = OsdFile::open(osd_file_path.clone()).ok();
                     self.osd_preview.preview_frame = 1;
                 }
                 if let Some(font_file_path) = find_file_with_extention(&file_handles, "png") {
-                    let font_file = FontFile::open(font_file_path.clone()).unwrap();
-                    self.font_file = Some(font_file);
+                    self.font_file = FontFile::open(font_file_path.clone()).ok();
                 }
                 self.update_osd_preview(ctx);
             }
@@ -295,7 +293,13 @@ impl WalksnailOsdTool {
                                 });
                                 row.col(|ui| {
                                     if let Some(osd_file) = osd_file {
-                                        ui.label(osd_file.file_path.file_name().unwrap().to_string_lossy());
+                                        ui.label(
+                                            osd_file
+                                                .file_path
+                                                .file_name()
+                                                .map(|f| f.to_string_lossy())
+                                                .unwrap_or("-".into()),
+                                        );
                                     } else {
                                         ui.label("-");
                                     }
@@ -356,7 +360,13 @@ impl WalksnailOsdTool {
                                 });
                                 row.col(|ui| {
                                     if let Some(font_file) = font_file {
-                                        ui.label(font_file.file_path.file_name().unwrap().to_string_lossy());
+                                        ui.label(
+                                            font_file
+                                                .file_path
+                                                .file_name()
+                                                .map(|f| f.to_string_lossy())
+                                                .unwrap_or("-".into()),
+                                        );
                                     } else {
                                         ui.label("-");
                                     }
