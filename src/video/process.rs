@@ -31,7 +31,7 @@ pub fn process_video(
         .rate(video_info.frame_rate)
         .input("-")
         .codec_video(&render_settings.encoder.name)
-        .args(["-rc", "cbr", "-b:v", &format!("{}M", render_settings.bitrate_mbps)])
+        .args(["-b:v", &format!("{}M", render_settings.bitrate_mbps)])
         .args(["-y", output_video])
         .spawn()?;
 
