@@ -1,5 +1,5 @@
 # Walksnail OSD Overlay Tool
-Blazingly fast 🚀 tool for overlaying the Walksnail Avatar Goggle and VRX OSD recording on top of the video recording.
+Cross-platform tool for overlaying the Walksnail Avatar Goggle and VRX OSD recording on top of the video recording.
 
 ## Features
 - [x] Immediately start rendering the video. No intermediate PNG files!
