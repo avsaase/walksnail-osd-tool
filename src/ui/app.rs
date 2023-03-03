@@ -22,7 +22,9 @@ use crate::{
 };
 
 use super::{
-    utils::{clickable_if, find_file_with_extention, format_minutes_seconds, separator_with_space},
+    utils::{
+        clickable_if, find_file_with_extention, format_minutes_seconds, get_output_video_path, separator_with_space,
+    },
     RenderStatus,
 };
 
@@ -543,7 +545,7 @@ impl WalksnailOsdTool {
                     {
                         process_video(
                             video_path.to_str().unwrap(),
-                            "output_video.mp4",
+                            get_output_video_path(video_path).to_str().unwrap(),
                             osd_file.frames.clone(),
                             font_file.clone(),
                             video_info,
