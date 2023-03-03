@@ -415,7 +415,10 @@ impl WalksnailOsdTool {
                     {
                         self.osd_preview.horizontal_offset = calculate_horizontal_offset(
                             video_info.width,
-                            osd_file.frames.get(self.osd_preview.preview_frame as usize).unwrap(),
+                            osd_file
+                                .frames
+                                .get(self.osd_preview.preview_frame as usize - 1)
+                                .unwrap(),
                             &font_file.character_size,
                         );
                         self.update_osd_preview(ctx);
@@ -439,7 +442,10 @@ impl WalksnailOsdTool {
                     {
                         self.osd_preview.vertical_offset = calculate_vertical_offset(
                             video_info.height,
-                            osd_file.frames.get(self.osd_preview.preview_frame as usize).unwrap(),
+                            osd_file
+                                .frames
+                                .get(self.osd_preview.preview_frame as usize - 1)
+                                .unwrap(),
                             &font_file.character_size,
                         );
                         self.update_osd_preview(ctx);
