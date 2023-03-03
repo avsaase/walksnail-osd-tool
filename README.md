@@ -1,11 +1,14 @@
 # Walksnail OSD Overlay Tool
-Blazingly fast 🚀 tool for overlaying the Walksnail Avatar Google and VRX OSD recording on top of the video recording.
+Blazingly fast 🚀 tool for overlaying the Walksnail Avatar Goggle and VRX OSD recording on top of the video recording.
 
 ## Features
-- Immediately start rendering the video. No intermediate PNG files!
-- Hardware-accelerated encoding powered by ffmpeg.
-- Choose between h264 and h265 encoding (more can be added later).
-- View basic information about the video, osd and font files.
-- Preview OSD frames before rendering.
-- Automatically center the OSD or position it manually.
-- Selectable output video bitrate.
+- [x] Immediately start rendering the video. No intermediate PNG files!
+- [x] Hardware-accelerated encoding powered by ffmpeg.
+- [x] Choose between h264 and h265 encoding (more can be added later).
+- [x] View basic information about the video, OSD and font files.
+- [x] Preview OSD frames before rendering.
+- [x] Automatically center the OSD or position it manually.
+- [x] Selectable output video bitrate (more encoder settings will be added later).
+- [ ] Mask OSD items.
+- [ ] Display info from the `.srt` file on the video.
+- [ ] Anything else? Suggestions are welcome :).
