@@ -1,4 +1,7 @@
-use std::{path::PathBuf, time::Duration};
+use std::{
+    path::{Path, PathBuf},
+    time::Duration,
+};
 
 use egui::{Sense, Ui};
 
@@ -50,7 +53,7 @@ pub fn clickable_if(condition: bool) -> Sense {
     }
 }
 
-pub fn get_output_video_path(input_video_path: &PathBuf) -> PathBuf {
+pub fn get_output_video_path(input_video_path: &Path) -> PathBuf {
     let input_video_file_name = input_video_path.file_stem().unwrap().to_string_lossy();
     let output_video_file_name = format!("{}_with_osd.mp4", input_video_file_name);
     let mut output_video_path = input_video_path.parent().unwrap().to_path_buf();

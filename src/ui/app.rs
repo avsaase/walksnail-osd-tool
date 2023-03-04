@@ -5,17 +5,14 @@ use std::{
 };
 
 use egui::{
-    pos2, vec2, Align, Button, Color32, FontFamily, FontId, Image, Layout, ProgressBar, RichText, TextStyle,
-    TextureHandle, Ui, Visuals,
+    pos2, text::LayoutJob, vec2, Align, Button, Color32, FontFamily, FontId, Image, Layout, ProgressBar, RichText,
+    TextFormat, TextStyle, TextureHandle, Ui, Visuals,
 };
 use egui_extras::{Column, TableBuilder};
 use ffmpeg_sidecar::event::FfmpegEvent;
 
 use crate::{
-    ffmpeg::{
-        dependencies::{ffmpeg_available, ffprobe_available},
-        Encoder, VideoInfo,
-    },
+    ffmpeg::{Encoder, VideoInfo},
     font::{self, FontFile},
     osd::{self, calculate_horizontal_offset, calculate_vertical_offset, osd_preview, OsdFile},
     video::{process_video, Settings, StopRenderMessage},
@@ -40,9 +37,19 @@ pub struct WalksnailOsdTool {
     render_status: RenderStatus,
     available_encoders: Vec<Rc<Encoder>>,
     selected_encoder_idx: usize,
-    dependencies_statisfied: Option<bool>,
+    dependencies_statisfied: bool,
     render_settings: Settings,
     osd_preview: OsdPreview,
+}
+
+impl WalksnailOsdTool {
+    pub fn new(dependencies_statisfied: bool, available_encoders: Vec<Encoder>) -> Self {
+        Self {
+            dependencies_statisfied,
+            available_encoders: available_encoders.into_iter().map(Rc::new).collect(),
+            ..Default::default()
+        }
+    }
 }
 
 struct OsdPreview {
@@ -87,7 +94,7 @@ impl eframe::App for WalksnailOsdTool {
         ctx.set_visuals(Visuals::light());
 
         // On startup check if the runtime dependencies are available. Show a warning if not.
-        self.check_dependencies(ctx);
+        self.missing_dependencies_warning(ctx);
 
         // Keep updating the UI thread when rendering to make sure the indicated progress is up-to-date
         if self.render_status.is_in_progress() {
@@ -614,38 +621,31 @@ impl WalksnailOsdTool {
         }
     }
 
-    fn check_dependencies(&mut self, ctx: &egui::Context) {
-        match &self.dependencies_statisfied {
-            None => {
-                let ffmpeg_available = ffmpeg_available();
-                let ffprobe_available = ffprobe_available();
-                let available_encoders = if ffmpeg_available {
-                    Encoder::get_available_encoders()
-                } else {
-                    vec![]
-                };
-                self.dependencies_statisfied =
-                    Some(ffmpeg_available && ffprobe_available && !available_encoders.is_empty());
-                self.available_encoders = available_encoders.into_iter().map(Rc::new).collect();
-            }
-            Some(dependencies_statisfied) => {
-                if !dependencies_statisfied {
-                    egui::Window::new("Missing dependencies")
-                        .default_pos(pos2(175.0, 200.0))
-                        .fixed_size(vec2(350.0, 300.0))
-                        .collapsible(false)
-                        .show(ctx, |ui| {
-                            let text = indoc::indoc! {"
-                                ffmpeg and/or ffprobe could not be found on your system. Nothing will work.
-                                
-                                You have two options:
-                                  1. Make sure both ffmpeg and ffprobe are installed and in your path.
-                                  2. Download a version of this tool which includes the dependencies.
-                            "};
-                            ui.label(text);
-                        });
-                }
-            }
+    fn missing_dependencies_warning(&mut self, ctx: &egui::Context) {
+        if !self.dependencies_statisfied || self.available_encoders.is_empty() {
+            egui::Window::new("Missing dependencies")
+                .default_pos(pos2(175.0, 200.0))
+                .fixed_size(vec2(350.0, 300.0))
+                .collapsible(false)
+                .show(ctx, |ui| {
+                    let style = ctx.style();
+
+                    let (default_color, strong_color) = if ui.visuals().dark_mode {
+                        (Color32::LIGHT_GRAY, Color32::WHITE)
+                    } else {
+                        (Color32::DARK_GRAY, Color32::BLACK)
+                    };
+                    let default_font = TextFormat::simple(style.text_styles.get(&TextStyle::Body).unwrap().clone(), default_color);
+                    let mono_font = TextFormat::simple(style.text_styles.get(&TextStyle::Monospace).unwrap().clone(), strong_color);
+
+                    let mut job = LayoutJob::default();
+                    job.append("ffmpeg", 0.0, mono_font.clone());
+                    job.append(" and/or ", 0.0, default_font.clone());
+                    job.append("ffprobe", 0.0, mono_font);
+                    job.append(" could not be found. Nothing will work. They should have been installed together with this program. Please check your installation and report the problem on GitHub", 0.0, default_font);
+                    ui.label(job);
+                    // ui.label("ffmpeg and/or ffprobe could not be found on your system. These should have been installed together with this program.");
+                });
         }
     }
 

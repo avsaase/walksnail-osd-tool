@@ -8,6 +8,10 @@ pub fn ffprobe_available() -> bool {
     command_available("ffprobe")
 }
 
+pub fn dependencies_statisfied() -> bool {
+    ffmpeg_available() && ffprobe_available()
+}
+
 fn command_available(command: &str) -> bool {
     let mut command = Command::new(command);
 
