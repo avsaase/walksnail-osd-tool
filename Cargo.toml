@@ -7,8 +7,7 @@ edition = "2021"
 eframe = "0.21.3"
 egui = "0.21.0"
 egui_extras = { version = "0.21.0", features = ["image"] }
-# ffmpeg-sidecar = "0.2.0"
-ffmpeg-sidecar = { git = "https://github.com/nathanbabcock/ffmpeg-sidecar" }
+ffmpeg-sidecar = "0.2.1"
 ffprobe = { git = "https://github.com/avsaase/ffprobe-rs/", branch = "suppress-console-windows"}
 image = "0.24.5"
 indoc = "2.0.0"

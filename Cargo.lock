@@ -899,8 +899,9 @@ dependencies = [
 
 [[package]]
 name = "ffmpeg-sidecar"
-version = "0.2.0"
-source = "git+https://github.com/nathanbabcock/ffmpeg-sidecar#0f1a19e16eca91043177d38d2a6b2890d5455b48"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "aa4781456a8623183c9ad8bbf379b7b5c5b49023d52a586461d8704a7962c5eb"
 
 [[package]]
 name = "ffprobe"
