@@ -44,3 +44,19 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           args: --all-features
+
+  build:
+    name: Build
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [windows-latest, macos-lastes]
+    runs-on: ${{ matrix.target }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+      - run: cargo build --release --all-features
