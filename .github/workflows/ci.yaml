@@ -1,12 +1,7 @@
 name: Continuous integration
 
 on:
-  push:
-    paths:
-      - "**.rs"
-  pull_request:
-    paths:
-      - "**.rs"
+  [push, pull_request]
 
 jobs:
   check:
