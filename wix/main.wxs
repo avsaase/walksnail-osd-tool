@@ -178,10 +178,19 @@
 
             <ComponentRef Id='binary' />
 
-            <ComponentRef Id='ApplicationShortcut' />
+            <Feature
+                Id="StartMenu"
+                Title="Start menu shortcut"
+                Description="Add a shortcut to [ProductName] to the start menu"
+                Level="1" Absent='allow'>
+                <ComponentRef Id='ApplicationShortcut' />
+            </Feature>
+
+
         </Feature>
 
-        <Feature Id="Dependencies" Title="Dependencies" Level="1" Description="Installs ffmpeg dependencies. Can be disabled if ffmpeg and ffprobe are already in the $Path.">
+        <Feature Id="Dependencies" Title="Dependencies" Level="1"
+            Description="Installs ffmpeg dependencies. Can be disabled if ffmpeg and ffprobe are already in the $Path.">
             <ComponentRef Id="ffmpeg" />
             <ComponentRef Id="ffprobe" />
             <ComponentRef Id="ffmpeg_license" />
