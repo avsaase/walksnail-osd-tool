@@ -2,6 +2,7 @@ use std::rc::Rc;
 
 use crate::ffmpeg::{Codec, Encoder};
 
+#[derive(Debug)]
 pub struct Settings {
     pub encoder: Rc<Encoder>,
     pub bitrate_mbps: u32,

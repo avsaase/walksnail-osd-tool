@@ -1,20 +1,24 @@
 use std::path::PathBuf;
 
+use derivative::Derivative;
 use image::{io::Reader, DynamicImage, GenericImageView, ImageBuffer, Rgba, RgbaImage};
 
 use crate::util::Dimension;
 
 use super::{character_size::CharacterSize, error::FontFileError};
 
-#[derive(Debug, Clone)]
+#[derive(Derivative, Clone)]
+#[derivative(Debug)]
 pub struct FontFile {
     pub file_path: PathBuf,
     pub character_count: u32,
     pub character_size: CharacterSize,
+    #[derivative(Debug = "ignore")]
     pub characters: Vec<RgbaImage>,
 }
 
 impl FontFile {
+    #[tracing::instrument(ret, err)]
     pub fn open(path: PathBuf) -> Result<Self, FontFileError> {
         let font_image = Reader::open(&path)?.decode()?;
         let (width, height) = font_image.dimensions();

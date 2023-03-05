@@ -33,6 +33,7 @@ impl Encoder {
         }
     }
 
+    #[tracing::instrument(ret)]
     pub fn get_available_encoders() -> Vec<Self> {
         let all_encoders = vec![
             Encoder::new("libx264", Codec::H264, false),

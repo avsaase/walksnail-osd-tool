@@ -1,9 +1,13 @@
 use std::process::Command;
 
+use tracing::instrument;
+
+#[instrument(ret)]
 pub fn ffmpeg_available() -> bool {
     command_available("ffmpeg")
 }
 
+#[instrument(ret)]
 pub fn ffprobe_available() -> bool {
     command_available("ffprobe")
 }

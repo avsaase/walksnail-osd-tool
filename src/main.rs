@@ -1,4 +1,4 @@
-#![windows_subsystem = "windows"] // Hide console windows on Windows in release builds
+#![windows_subsystem = "windows"] // Hide console on Windows
 #![allow(clippy::too_many_arguments)]
 
 use ffmpeg::{dependencies::dependencies_statisfied, Encoder};
@@ -16,10 +16,13 @@ mod video;
 const CREATE_NO_WINDOW: u32 = 0x08000000;
 
 fn main() -> Result<(), eframe::Error> {
+    let _guard = util::init_tracing();
+
+    tracing::info!("App started");
     // On startup check if ffmpeg and ffprove are available on the user's system
     // Then check which encoders are available
     let dependencies_satisfied = dependencies_statisfied();
-    let available_ecoders = if dependencies_satisfied {
+    let detected_encoders = if dependencies_satisfied {
         Encoder::get_available_encoders()
     } else {
         vec![]
@@ -31,9 +34,10 @@ fn main() -> Result<(), eframe::Error> {
         resizable: false,
         ..Default::default()
     };
+    tracing::info!("Starting GUI");
     eframe::run_native(
         "Walksnail OSD Overlay Tool",
         options,
-        Box::new(move |_cc| Box::new(WalksnailOsdTool::new(dependencies_satisfied, available_ecoders))),
+        Box::new(move |_cc| Box::new(WalksnailOsdTool::new(dependencies_satisfied, detected_encoders))),
     )
 }

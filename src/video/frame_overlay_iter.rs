@@ -27,6 +27,7 @@ pub struct FrameOverlayIter {
 }
 
 impl FrameOverlayIter {
+    #[tracing::instrument(skip(ffmpeg_iter, ffmpeg_child, osd_frames, font_file), level = "debug")]
     pub fn new(
         ffmpeg_iter: FfmpegIterator,
         ffmpeg_child: FfmpegChild,

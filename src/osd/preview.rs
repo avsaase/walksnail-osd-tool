@@ -2,6 +2,7 @@ use image::RgbaImage;
 
 use crate::{font, osd, overlay::overlay_osd_on_image};
 
+#[tracing::instrument(skip(osd_frame, font))]
 pub fn osd_preview(
     width: u32,
     height: u32,
@@ -15,6 +16,7 @@ pub fn osd_preview(
     image
 }
 
+#[tracing::instrument(level = "debug")]
 pub fn calculate_horizontal_offset(width: u32, osd_frame: &osd::Frame, character_size: &font::CharacterSize) -> i32 {
     let min_x_grid = osd_frame.glyphs.iter().map(|g| g.grid_position.x).min().unwrap();
     let max_x_grid = osd_frame.glyphs.iter().map(|g| g.grid_position.x).max().unwrap();
@@ -23,6 +25,7 @@ pub fn calculate_horizontal_offset(width: u32, osd_frame: &osd::Frame, character
     offset as i32
 }
 
+#[tracing::instrument(level = "debug")]
 pub fn calculate_vertical_offset(height: u32, osd_frame: &osd::Frame, character_size: &font::CharacterSize) -> i32 {
     let min_y_grid = osd_frame.glyphs.iter().map(|g| g.grid_position.y).min().unwrap();
     let max_y_grid = osd_frame.glyphs.iter().map(|g| g.grid_position.y).max().unwrap();
