@@ -50,7 +50,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [windows-latest, macos-lastes]
+        target: [windows-latest, macos-latest]
     runs-on: ${{ matrix.target }}
     steps:
       - uses: actions/checkout@v2
