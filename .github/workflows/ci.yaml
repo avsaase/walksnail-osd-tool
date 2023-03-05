@@ -14,6 +14,7 @@ jobs:
           toolchain: stable
           profile: minimal
           override: true
+      - uses: Swatinem/rust-cache@v2
       - uses: actions-rs/cargo@v1
         with:
           command: check
@@ -29,6 +30,7 @@ jobs:
           profile: minimal
           override: true
       - run: rustup component add rustfmt
+      - uses: Swatinem/rust-cache@v2
       - uses: actions-rs/cargo@v1
         with:
           command: fmt
@@ -40,6 +42,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - run: rustup component add clippy
+      - uses: Swatinem/rust-cache@v2
       - uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -59,4 +62,5 @@ jobs:
           toolchain: stable
           profile: minimal
           override: true
+      - uses: Swatinem/rust-cache@v2
       - run: cargo build --release --all-features
