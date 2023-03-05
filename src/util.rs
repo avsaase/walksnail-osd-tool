@@ -27,15 +27,14 @@ impl From<Dimension<u32>> for String {
 }
 
 pub fn init_tracing() -> WorkerGuard {
-    use tracing_subscriber::fmt::format::FmtSpan;
-    let exe_path = std::env::current_exe().unwrap();
-    let log_dir = exe_path.parent().unwrap().clone();
+    let project_dir = directories::ProjectDirs::from("", "", "Walksnail OSD Overlay Tool").unwrap();
+    let log_dir = project_dir.data_dir();
     let file_appender = tracing_appender::rolling::never(log_dir, "walksnail-osd-overay-tool.log");
     let (non_blocking, guard) = tracing_appender::non_blocking(file_appender);
     tracing_subscriber::fmt()
         .with_ansi(false)
         .with_writer(non_blocking)
-        .with_span_events(FmtSpan::CLOSE)
+        .with_span_events(tracing_subscriber::fmt::format::FmtSpan::CLOSE)
         .init();
     guard
 }

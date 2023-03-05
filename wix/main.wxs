@@ -88,11 +88,11 @@
 
         <Directory Id='TARGETDIR' Name='SourceDir'>
             <Directory Id='$(var.PlatformProgramFilesFolder)' Name='PFiles'>
-                <Directory Id="APPLICATIONFOLDER" Name="Walksnail OSD OVerlay Tool" />
+                <Directory Id="APPLICATIONFOLDER" Name="Walksnail OSD Overlay Tool" />
             </Directory>
 
             <Directory Id="ProgramMenuFolder">
-                <Directory Id="ApplicationProgramsFolder" Name="Walksnail OSD OVerlay Tool" />
+                <Directory Id="ApplicationProgramsFolder" Name="Walksnail OSD Overlay Tool" />
             </Directory>
         </Directory>
 
