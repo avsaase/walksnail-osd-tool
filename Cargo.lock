@@ -2517,7 +2517,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "walksnail-osd-tool"
+name = "walksnail-osd-overlay-tool"
 version = "0.1.0"
 dependencies = [
  "eframe",
