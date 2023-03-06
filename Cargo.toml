@@ -3,13 +3,15 @@ name = "walksnail-osd-overlay-tool"
 version = "0.1.0"
 edition = "2021"
 description = "Cross-platform tool for overlaying the Walksnail Avatar Goggle and VRX OSD recording on top of the video recording."
-authors = ["Alexander van Saase <avsaase <at> gmail.com>"]
+authors = ["Alexander van Saase"]
 keywords = ["Walksnail Avatar", "FPV", "Video"]
 repository = "https://github.com/avsaase/walksnail-osd-tool"
 readme = "README.md"
 license = "GPL-3.0"
 
 [dependencies]
+derivative = "2.2.0"
+directories = "4.0.1"
 eframe = "0.21.3"
 egui = "0.21.0"
 egui_extras = { version = "0.21.0", features = ["image"] }
@@ -21,6 +23,9 @@ itertools = "0.10.5"
 rayon = "1.6.1"
 rfd = "0.11.1"
 thiserror = "1.0.38"
+tracing = "0.1.37"
+tracing-appender = { version = "0.2.2", default-features = false }
+tracing-subscriber = "0.3.16"
 
 # Use local version of eguis and friends
 # eframe = { path = "../egui/crates/eframe" }

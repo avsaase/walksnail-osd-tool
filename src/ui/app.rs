@@ -168,6 +168,7 @@ impl WalksnailOsdTool {
                 .add_filter("Goggle DVR & Font Files", &["mp4", "osd", "png"])
                 .pick_files()
             {
+                tracing::info!("Opened files {:?}", file_handles);
                 if let Some(video_file) = find_file_with_extention(&file_handles, "mp4") {
                     self.video_file = Some(video_file.clone());
                     self.video_info = VideoInfo::get(video_file).ok();
@@ -194,6 +195,7 @@ impl WalksnailOsdTool {
             self.osd_preview.texture_handle = None;
             self.osd_preview.preview_frame = 1;
             self.render_status = RenderStatus::Idle;
+            tracing::info!("Reset files");
         }
     }
 
@@ -547,6 +549,7 @@ impl WalksnailOsdTool {
                     )
                     .clicked()
                 {
+                    tracing::info!("Start render button clicked");
                     if let (Some(video_path), Some(osd_file), Some(font_file), Some(video_info)) =
                         (&self.video_file, &self.osd_file, &self.font_file, &self.video_info)
                     {
@@ -575,6 +578,7 @@ impl WalksnailOsdTool {
                 progress_pct: _,
             } => {
                 if ui.add(Button::new("Stop render").min_size(button_size)).clicked() {
+                    tracing::info!("Stop render button clicked");
                     if let Some(sender) = &self.stop_render_sender {
                         sender.send(StopRenderMessage).ok();
                     }
@@ -644,7 +648,6 @@ impl WalksnailOsdTool {
                     job.append("ffprobe", 0.0, mono_font);
                     job.append(" could not be found. Nothing will work. They should have been installed together with this program. Please check your installation and report the problem on GitHub", 0.0, default_font);
                     ui.label(job);
-                    // ui.label("ffmpeg and/or ffprobe could not be found on your system. These should have been installed together with this program.");
                 });
         }
     }

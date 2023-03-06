@@ -10,6 +10,7 @@ use crate::{ffmpeg::VideoInfo, font, osd};
 
 use super::{error::FfmpegError, frame_overlay_iter::FrameOverlayIter, render_progress::StopRenderMessage, Settings};
 
+#[tracing::instrument(skip(osd_frames, font_file))]
 pub fn process_video(
     input_video: &str,
     output_video: &str,
@@ -25,6 +26,7 @@ pub fn process_video(
     #[cfg(target_os = "windows")]
     std::os::windows::process::CommandExt::creation_flags(decoder.as_inner_mut(), crate::CREATE_NO_WINDOW);
     let mut decoder = decoder.input(input_video).rawvideo().spawn()?;
+    tracing::info!("Spawned ffmpeg decoder instance");
 
     // Spawn the encoder ffmpeg instance
     let mut encoder = FfmpegCommand::new();
@@ -40,6 +42,7 @@ pub fn process_video(
         .args(["-b:v", &format!("{}M", render_settings.bitrate_mbps)])
         .args(["-y", output_video])
         .spawn()?;
+    tracing::info!("Spawned ffmpeg encoder instance");
 
     // Create a channel to report progress back to the main (GUI) thread
     let (progress_tx, progress_rx) = mpsc::channel();

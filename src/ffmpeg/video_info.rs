@@ -4,6 +4,7 @@ use ffprobe::FfProbe;
 
 use super::error::VideoInfoError;
 
+#[derive(Debug)]
 pub struct VideoInfo {
     pub width: u32,
     pub height: u32,
@@ -14,6 +15,7 @@ pub struct VideoInfo {
 }
 
 impl VideoInfo {
+    #[tracing::instrument(ret)]
     pub fn get(path: &PathBuf) -> Result<Self, VideoInfoError> {
         let info = ffprobe::ffprobe(path)?;
         info.try_into()
