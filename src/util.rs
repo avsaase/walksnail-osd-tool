@@ -27,7 +27,7 @@ impl From<Dimension<u32>> for String {
 }
 
 pub fn init_tracing() -> WorkerGuard {
-    let project_dir = directories::ProjectDirs::from("", "", "Walksnail OSD Overlay Tool").unwrap();
+    let project_dir = directories::ProjectDirs::from("", "", "Walksnail OSD Tool").unwrap();
     let log_dir = project_dir.data_dir();
     let file_appender = tracing_appender::rolling::never(log_dir, "walksnail-osd-overay-tool.log");
     let (non_blocking, guard) = tracing_appender::non_blocking(file_appender);

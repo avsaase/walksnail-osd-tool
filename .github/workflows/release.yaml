@@ -50,14 +50,14 @@ jobs:
         run: cargo build --release
 
       - name: Download ffmpeg
-        if: ${{ matrix.targets.os == 'windows-latest' && steps.extcache.outputs.cache-hit != true }}
+        if: ${{ matrix.targets.os == 'windows-latest' && steps.extcache.outputs.cache-hit == false }}
         run: |
           mkdir ${{ github.workspace }}/target/release/ffmpeg
           cd ${{ github.workspace }}/target/release/ffmpeg
           curl -L ${{ matrix.targets.ffmpeg_url }} -o ffmpeg.zip
           7z e ffmpeg.zip
 
-      - name: Create installer
+      - name: Create Windows installer
         if: ${{ matrix.targets.os == 'windows-latest'}}
         continue-on-error: true
         run: |
@@ -67,4 +67,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.targets.name }}
-          path: ${{ github.workspace }}/target/wix/walksnail-osd-overlay-tool-*.msi
+          path: ${{ github.workspace }}/target/wix/walksnail-osd-tool-*.msi

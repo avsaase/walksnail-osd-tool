@@ -36,7 +36,7 @@ fn main() -> Result<(), eframe::Error> {
     };
     tracing::info!("Starting GUI");
     eframe::run_native(
-        "Walksnail OSD Overlay Tool",
+        "Walksnail OSD Tool",
         options,
         Box::new(move |_cc| Box::new(WalksnailOsdTool::new(dependencies_satisfied, detected_encoders))),
     )

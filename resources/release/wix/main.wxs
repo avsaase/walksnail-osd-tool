@@ -61,7 +61,7 @@
 
     <Product
         Id='*'
-        Name='Walksnail OSD Overlay Tool'
+        Name='Walksnail OSD Tool'
         UpgradeCode='E2503389-A853-4E8C-AF83-6FBEB1F9BA5A'
         Manufacturer='Alexander van Saase'
         Language='1033'
@@ -84,15 +84,15 @@
             DowngradeErrorMessage='A newer version of [ProductName] is already installed. Setup will now exit.' />
 
         <Media Id='1' Cabinet='media1.cab' EmbedCab='yes' DiskPrompt='CD-ROM #1' />
-        <Property Id='DiskPrompt' Value='walksnail-osd-overlay-tool Installation' />
+        <Property Id='DiskPrompt' Value='walksnail-osd-tool Installation' />
 
         <Directory Id='TARGETDIR' Name='SourceDir'>
             <Directory Id='$(var.PlatformProgramFilesFolder)' Name='PFiles'>
-                <Directory Id="APPLICATIONFOLDER" Name="Walksnail OSD Overlay Tool" />
+                <Directory Id="APPLICATIONFOLDER" Name="Walksnail OSD Tool" />
             </Directory>
 
             <Directory Id="ProgramMenuFolder">
-                <Directory Id="ApplicationProgramsFolder" Name="Walksnail OSD Overlay Tool" />
+                <Directory Id="ApplicationProgramsFolder" Name="Walksnail OSD Tool" />
             </Directory>
         </Directory>
 
@@ -109,9 +109,9 @@
                 <Component Id='binary' Guid='d6b111d3-aab0-4b83-882d-3f7cdfa7cb15'>
                     <File
                         Id='binary'
-                        Name='walksnail-osd-overlay-tool.exe'
+                        Name='walksnail-osd-tool.exe'
                         DiskId='1'
-                        Source='$(var.CargoTargetBinDir)\walksnail-osd-overlay-tool.exe'
+                        Source='$(var.CargoTargetBinDir)\walksnail-osd-tool.exe'
                         KeyPath='yes' />
                 </Component>
             </Directory>
@@ -154,7 +154,7 @@
         <DirectoryRef Id="ApplicationProgramsFolder">
             <Component Id="ApplicationShortcut" Guid="6f25e6b5-8a5e-424c-a57a-19bc7508eaab">
                 <Shortcut Id="ApplicationStartMenuShortcut"
-                    Name="Walksnail OSD Overlay Tool"
+                    Name="Walksnail OSD Tool"
                     Target="[#binary]"
                     WorkingDirectory="APPLICATIONFOLDER" />
                 <RemoveFolder Id="CleanUpShortCut" Directory="ApplicationProgramsFolder"
