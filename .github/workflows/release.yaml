@@ -49,7 +49,7 @@ jobs:
         run: cargo build --release
 
       - name: Download ffmpeg
-        if: ${{ matrix.targets.os == 'windows-latest' }}
+        if: ${{ matrix.targets.os == 'windows-latest' && steps.extcache.outputs.cache-hit != 'true' }}
         run: |
           mkdir ${{ github.workspace }}/target/release/ffmpeg
           cd ${{ github.workspace }}/target/release/ffmpeg
@@ -60,7 +60,7 @@ jobs:
         if: ${{ matrix.targets.os == 'windows-latest'}}
         continue-on-error: true
         run: |
-          cargo wix --include resources\release\wix\main.wxs --nocapture
+          cargo wix --include resources\release\wix\main.wxs --nocapture --no-build
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
