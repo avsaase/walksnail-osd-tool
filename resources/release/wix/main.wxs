@@ -119,22 +119,22 @@
             <Directory Id="ffmpeg" Name="ffmpeg">
                 <Component Id="ffmpeg" Guid="ed8f6fef-0129-4926-9250-9f15eb507fbc">
                     <File Id="ffmpeg" Name="ffmpeg.exe"
-                        Source="$(var.CargoTargetBinDir)\ffmpeg\ffmpeg.exe"
+                        Source="ext\ffmpeg\ffmpeg.exe"
                         KeyPath="yes" />
                 </Component>
                 <Component Id="ffprobe" Guid="88c5f8ed-ec1b-4a6c-8cf3-c649b42e0aa7">
                     <File Id="ffprobe" Name="ffprobe.exe"
-                        Source="$(var.CargoTargetBinDir)\ffmpeg\ffprobe.exe"
+                        Source="ext\ffmpeg\ffprobe.exe"
                         KeyPath="yes" />
                 </Component>
                 <Component Id="ffmpeg_license" Guid="45172027-9711-483b-991f-6c2d99819e40">
                     <File Id="ffmpeg_license" Name="LICENSE"
-                        Source="$(var.CargoTargetBinDir)\ffmpeg\LICENSE"
+                        Source="ext\ffmpeg\LICENSE"
                         KeyPath="yes" />
                 </Component>
                 <Component Id="ffmpeg_readme" Guid="a6f0d44e-7318-4108-a4a3-813da0504861">
                     <File Id="ffmpeg_readme" Name="README.txt"
-                        Source="$(var.CargoTargetBinDir)\ffmpeg\README.txt"
+                        Source="ext\ffmpeg\README.txt"
                         KeyPath="yes" />
                 </Component>
 
@@ -159,7 +159,7 @@
                     WorkingDirectory="APPLICATIONFOLDER" />
                 <RemoveFolder Id="CleanUpShortCut" Directory="ApplicationProgramsFolder"
                     On="uninstall" />
-                <RegistryValue Root="HKCU" Key="Software\MyCompany\MyApplicationName"
+                <RegistryValue Root="HKCU" Key="WalksnailOSDTool"
                     Name="installed" Type="integer" Value="1" KeyPath="yes" />
             </Component>
         </DirectoryRef>
