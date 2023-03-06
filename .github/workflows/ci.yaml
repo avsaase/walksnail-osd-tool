@@ -78,7 +78,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [windows-latest, macos-latest]
+        target: [windows-latest, macos-latest, ubuntu-latest]
     runs-on: ${{ matrix.target }}
     steps:
       - name: Checkout code
