@@ -35,12 +35,16 @@ jobs:
         id: extcache
         uses: Swatinem/rust-cache@v2
 
-      - name: Install cargo-wix
+      - name: Install cargo-binstall
         if: ${{ matrix.targets.os == 'windows-latest' }}
         uses: taiki-e/install-action@v2
         with:
           tool: cargo-binstall
-          run: cargo binstall cargo-wix --no-confirm
+
+      - name: Install cargo-wix
+        if: ${{ matrix.targets.os == 'windows-latest' }}
+        run: |
+          cargo binstall cargo-wix --no-confirm
 
       - name: Build
         run: cargo build --release
