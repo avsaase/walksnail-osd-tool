@@ -43,8 +43,7 @@ jobs:
 
       - name: Install cargo-wix
         if: ${{ matrix.targets.os == 'windows-latest' }}
-        run: |
-          cargo binstall cargo-wix --no-confirm
+        run: cargo binstall cargo-wix --no-confirm
 
       - name: Build
         run: cargo build --release
