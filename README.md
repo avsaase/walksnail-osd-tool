@@ -13,4 +13,4 @@ Cross-platform tool for overlaying the Walksnail Avatar Goggle and VRX OSD recor
 - [x] Selectable output video bitrate (more encoder settings will be added later).
 - [ ] Mask OSD items.
 - [ ] Display info from the `.srt` file on the video.
-- [ ] Anything else? Suggestions are welcome :).
+- [ ] Anything else? Open a feature request [here](https://github.com/avsaase/walksnail-osd-tool/issues/new?assignees=&labels=enhancement&template=feature_request.yaml).
