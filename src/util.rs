@@ -36,9 +36,34 @@ pub fn init_tracing() -> Option<WorkerGuard> {
         let (non_blocking, guard) = tracing_appender::non_blocking(file_appender);
         tracing_subscriber::fmt()
             .with_ansi(false)
+            .compact()
             .with_writer(non_blocking)
             .with_span_events(tracing_subscriber::fmt::format::FmtSpan::CLOSE)
             .init();
         guard
     })
+}
+
+pub mod build_info {
+    include!(concat!(env!("OUT_DIR"), "/built.rs"));
+
+    pub fn get_version() -> Option<String> {
+        let version = GIT_VERSION.map(|s| s.to_string());
+        let sha = GIT_COMMIT_HASH_SHORT.map(|s| s.to_string());
+
+        match (version, sha) {
+            (None, None) => None,
+            (None, Some(sha)) => Some(sha),
+            (Some(version), None) => Some(version),
+            (Some(version), Some(sha)) => Some(format!("{}-{}", version, sha)),
+        }
+    }
+
+    pub fn get_compiler() -> String {
+        RUSTC_VERSION.to_string()
+    }
+
+    pub fn get_target() -> String {
+        TARGET.to_string()
+    }
 }

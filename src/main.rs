@@ -1,4 +1,4 @@
-#![windows_subsystem = "windows"] // Hide console on Windows
+// #![windows_subsystem = "windows"] // Hide console on Windows
 #![allow(clippy::too_many_arguments)]
 
 use ffmpeg::{dependencies::dependencies_statisfied, Encoder};
@@ -18,7 +18,16 @@ const CREATE_NO_WINDOW: u32 = 0x08000000;
 fn main() -> Result<(), eframe::Error> {
     let _guard = util::init_tracing();
 
-    tracing::info!("App started");
+    use util::build_info;
+    tracing::info!(
+        "{}",
+        format!(
+            "App started (version: {}, compiled with: {}, target: {})",
+            build_info::get_version().unwrap_or("".into()),
+            build_info::get_compiler(),
+            build_info::get_target()
+        )
+    );
 
     // On startup check if ffmpeg and ffprove are available on the user's system
     // Then check which encoders are available
