@@ -26,15 +26,19 @@ impl From<Dimension<u32>> for String {
     }
 }
 
-pub fn init_tracing() -> WorkerGuard {
-    let project_dir = directories::ProjectDirs::from("", "", "Walksnail OSD Tool").unwrap();
-    let log_dir = project_dir.data_dir();
-    let file_appender = tracing_appender::rolling::never(log_dir, "walksnail-osd-overay-tool.log");
-    let (non_blocking, guard) = tracing_appender::non_blocking(file_appender);
-    tracing_subscriber::fmt()
-        .with_ansi(false)
-        .with_writer(non_blocking)
-        .with_span_events(tracing_subscriber::fmt::format::FmtSpan::CLOSE)
-        .init();
-    guard
+pub fn init_tracing() -> Option<WorkerGuard> {
+    directories::ProjectDirs::from("", "", "Walksnail OSD Tool").map(|dir| {
+        let log_dir = dir.data_dir();
+
+        std::fs::remove_file(log_dir.join("walksnail-osd-overay-tool.log")).ok();
+
+        let file_appender = tracing_appender::rolling::never(log_dir, "walksnail-osd-overay-tool.log");
+        let (non_blocking, guard) = tracing_appender::non_blocking(file_appender);
+        tracing_subscriber::fmt()
+            .with_ansi(false)
+            .with_writer(non_blocking)
+            .with_span_events(tracing_subscriber::fmt::format::FmtSpan::CLOSE)
+            .init();
+        guard
+    })
 }

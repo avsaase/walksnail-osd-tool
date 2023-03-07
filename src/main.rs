@@ -19,6 +19,7 @@ fn main() -> Result<(), eframe::Error> {
     let _guard = util::init_tracing();
 
     tracing::info!("App started");
+
     // On startup check if ffmpeg and ffprove are available on the user's system
     // Then check which encoders are available
     let dependencies_satisfied = dependencies_statisfied();
