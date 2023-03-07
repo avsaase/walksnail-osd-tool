@@ -62,7 +62,7 @@ jobs:
       - name: Create Windows installer
         if: ${{ matrix.targets.os == 'windows-latest'}}
         continue-on-error: true
-        run: cargo wix --include resources\release\wix\main.wxs --nocapture --no-build
+        run: cargo wix --include _deploy\windows\wix\main.wxs --nocapture --no-build
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
