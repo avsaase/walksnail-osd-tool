@@ -1,0 +1,69 @@
+name: Bug report
+description: File a bug report
+labels: ['bug']
+body:
+  - type: checkboxes
+    attributes:
+      label: Is there an existing issue for this?
+      description: Please search to see if an issue already exists for the bug you encountered. Also check for closed issues in case it has already been fixed.
+      options:
+        - label: I have searched the existing open and closed issues
+          required: true
+
+  - type: input
+    id: walksnail-osd-tool-version
+    attributes:
+      label: Software version
+      description: What version of the software are you running?
+      placeholder: Version number with commit id
+    validations:
+      required: false
+
+  - type: input
+    id: os
+    attributes:
+      label: What operating system are you using?
+      description: Please include the version number, for example "Windows 10" or "MacOS Ventura 13.1".
+      placeholder: OS and version number
+    validations:
+      required: true
+
+  - type: input
+    id: gpu
+    attributes:
+      label: What GPU are you using?
+      description: If you are using a GPU please tell us what model you have.
+      placeholder: Brand and model
+    validations:
+      required: false
+
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: What problem did you encounter?
+      description: Include as many details as possible such as what you were doing, steps to reproduce, what you expected to happen, etc.
+    validations:
+      required: true
+
+  - type: input
+    id: screenhot-url
+    attributes:
+      label: Link to screenshots
+      description: If relevant, share some screenshots of the problem.
+    validations:
+      required: false
+
+  - type: input
+    id: video-url
+    attributes:
+      label: Link to video, OSD and font files
+      description: If relevant, share the video, OSD and font files.
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log output
+      description: Logs are stored in `~\AppData\Roaming\Walksnail OSD Tool\data` on Windows. No need for backticks.
+      render: shell

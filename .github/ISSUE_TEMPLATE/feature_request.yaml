@@ -1,0 +1,17 @@
+name: Feature request
+description: Propose a new feature
+labels: ['enhancement']
+body:
+  - type: checkboxes
+    attributes:
+      label: Is there an existing feature request for this?
+      description: Please search to see this feature has already been requested. Also check for closed issues in case it has already been implemented or rejected.
+      options:
+        - label: I have searched the existing open and closed issues
+          required: true
+
+  - type: textarea
+    id: request
+    attributes:
+      label: Feature description
+      placeholder: Your awesome idea
