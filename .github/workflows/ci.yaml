@@ -80,5 +80,5 @@ jobs:
       - name: Cache dependencies
         uses: Swatinem/rust-cache@v2
 
-      - name: Build release
-        run: cargo build --release --all-features
+      - name: Build
+        run: cargo build
