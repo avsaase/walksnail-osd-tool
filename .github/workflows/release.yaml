@@ -54,10 +54,11 @@ jobs:
       - name: Download ffmpeg
         if: ${{ matrix.targets.os == 'windows-latest' && steps.extcache.outputs.cache-hit != 'true' }}
         run: |
-          mkdir ${{ github.workspace }}/ext/ffmpeg
+          mkdir -p ${{ github.workspace }}/ext/ffmpeg
           cd ${{ github.workspace }}/ext/ffmpeg
           curl -L ${{ matrix.targets.ffmpeg_url }} -o ffmpeg.zip
           7z e ffmpeg.zip
+        shell: bash
 
       - name: Create Windows installer
         if: ${{ matrix.targets.os == 'windows-latest'}}
