@@ -30,9 +30,9 @@ pub fn init_tracing() -> Option<WorkerGuard> {
     directories::ProjectDirs::from("", "", "Walksnail OSD Tool").map(|dir| {
         let log_dir = dir.data_dir();
 
-        std::fs::remove_file(log_dir.join("walksnail-osd-overay-tool.log")).ok();
+        std::fs::remove_file(log_dir.join("walksnail-osd-tool.log")).ok();
 
-        let file_appender = tracing_appender::rolling::never(log_dir, "walksnail-osd-overay-tool.log");
+        let file_appender = tracing_appender::rolling::never(log_dir, "walksnail-osd-tool.log");
         let (non_blocking, guard) = tracing_appender::non_blocking(file_appender);
         tracing_subscriber::fmt()
             .with_ansi(false)
