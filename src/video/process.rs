@@ -1,5 +1,6 @@
 use std::{
     io::Write,
+    path::PathBuf,
     sync::mpsc::{self, Receiver, Sender},
     thread,
 };
@@ -12,6 +13,7 @@ use super::{error::FfmpegError, frame_overlay_iter::FrameOverlayIter, render_pro
 
 #[tracing::instrument(skip(osd_frames, font_file))]
 pub fn process_video(
+    ffmpeg_path: &PathBuf,
     input_video: &str,
     output_video: &str,
     osd_frames: Vec<osd::Frame>,
@@ -22,14 +24,14 @@ pub fn process_video(
     vertical_offset: i32,
 ) -> Result<(Receiver<FfmpegEvent>, Sender<StopRenderMessage>), FfmpegError> {
     // Spawn the decoder ffmpeg instance
-    let mut decoder = FfmpegCommand::new();
+    let mut decoder = FfmpegCommand::new_with_exe(ffmpeg_path);
     #[cfg(target_os = "windows")]
     std::os::windows::process::CommandExt::creation_flags(decoder.as_inner_mut(), crate::CREATE_NO_WINDOW);
     let mut decoder = decoder.input(input_video).rawvideo().spawn()?;
     tracing::info!("Spawned ffmpeg decoder instance");
 
     // Spawn the encoder ffmpeg instance
-    let mut encoder = FfmpegCommand::new();
+    let mut encoder = FfmpegCommand::new_with_exe(ffmpeg_path);
     #[cfg(target_os = "windows")]
     std::os::windows::process::CommandExt::creation_flags(encoder.as_inner_mut(), crate::CREATE_NO_WINDOW);
     let mut encoder = encoder

@@ -37,19 +37,35 @@ pub struct WalksnailOsdTool {
     render_status: RenderStatus,
     available_encoders: Vec<Rc<Encoder>>,
     selected_encoder_idx: usize,
-    dependencies_statisfied: bool,
+    dependencies: Dependencies,
     render_settings: Settings,
     osd_preview: OsdPreview,
 }
 
 impl WalksnailOsdTool {
-    pub fn new(dependencies_statisfied: bool, available_encoders: Vec<Encoder>) -> Self {
+    pub fn new(
+        dependencies_statisfied: bool,
+        ffmpeg_path: PathBuf,
+        ffprobe_path: PathBuf,
+        available_encoders: Vec<Encoder>,
+    ) -> Self {
         Self {
-            dependencies_statisfied,
+            dependencies: Dependencies {
+                dependencies_statisfied,
+                ffmpeg_path,
+                ffprobe_path,
+            },
             available_encoders: available_encoders.into_iter().map(Rc::new).collect(),
             ..Default::default()
         }
     }
+}
+
+#[derive(Default)]
+struct Dependencies {
+    dependencies_statisfied: bool,
+    ffmpeg_path: PathBuf,
+    ffprobe_path: PathBuf,
 }
 
 struct OsdPreview {
@@ -171,7 +187,7 @@ impl WalksnailOsdTool {
                 tracing::info!("Opened files {:?}", file_handles);
                 if let Some(video_file) = find_file_with_extention(&file_handles, "mp4") {
                     self.video_file = Some(video_file.clone());
-                    self.video_info = VideoInfo::get(video_file).ok();
+                    self.video_info = VideoInfo::get(video_file, &self.dependencies.ffprobe_path).ok();
                 }
                 if let Some(osd_file_path) = find_file_with_extention(&file_handles, "osd") {
                     self.osd_file = OsdFile::open(osd_file_path.clone()).ok();
@@ -554,6 +570,7 @@ impl WalksnailOsdTool {
                         (&self.video_file, &self.osd_file, &self.font_file, &self.video_info)
                     {
                         process_video(
+                            &self.dependencies.ffmpeg_path,
                             video_path.to_str().unwrap(),
                             get_output_video_path(video_path).to_str().unwrap(),
                             osd_file.frames.clone(),
@@ -626,7 +643,7 @@ impl WalksnailOsdTool {
     }
 
     fn missing_dependencies_warning(&mut self, ctx: &egui::Context) {
-        if !self.dependencies_statisfied || self.available_encoders.is_empty() {
+        if !self.dependencies.dependencies_statisfied || self.available_encoders.is_empty() {
             egui::Window::new("Missing dependencies")
                 .default_pos(pos2(175.0, 200.0))
                 .fixed_size(vec2(350.0, 300.0))

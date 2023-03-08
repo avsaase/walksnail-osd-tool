@@ -26,10 +26,18 @@ tracing = "0.1.37"
 tracing-appender = { version = "0.2.2", default-features = false }
 tracing-subscriber = "0.3.16"
 
-[build-dependencies]
-built = { version = "0.6.0", features = ["git2"] }
-
 # Use local version of eguis and friends
 # eframe = { path = "../egui/crates/eframe" }
 # egui = { path = "../egui/crates/egui" }
 # egui_extras = { path = "../egui/crates/egui_extras", features = ["image"] }
+
+[build-dependencies]
+built = { version = "0.6.0", features = ["git2"] }
+
+[features]
+macos-app-bundle = []
+windows-installer = []
+
+[package.metadata.bundle]
+name = "Walksnail OSD Tool"
+identifier = "org.avsaase.walksnail-osd-tool"

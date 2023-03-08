@@ -1,22 +1,18 @@
-use std::process::Command;
+use std::{path::PathBuf, process::Command};
 
 use tracing::instrument;
 
 #[instrument(ret)]
-pub fn ffmpeg_available() -> bool {
-    command_available("ffmpeg")
+pub fn ffmpeg_available(ffmpeg_path: &PathBuf) -> bool {
+    command_available(ffmpeg_path)
 }
 
 #[instrument(ret)]
-pub fn ffprobe_available() -> bool {
-    command_available("ffprobe")
+pub fn ffprobe_available(ffprobe_path: &PathBuf) -> bool {
+    command_available(ffprobe_path)
 }
 
-pub fn dependencies_statisfied() -> bool {
-    ffmpeg_available() && ffprobe_available()
-}
-
-fn command_available(command: &str) -> bool {
+fn command_available(command: &PathBuf) -> bool {
     let mut command = Command::new(command);
 
     command
@@ -27,5 +23,8 @@ fn command_available(command: &str) -> bool {
     #[cfg(target_os = "windows")]
     std::os::windows::process::CommandExt::creation_flags(&mut command, crate::CREATE_NO_WINDOW);
 
-    command.status().is_ok()
+    match command.status() {
+        Ok(status) => status.success(),
+        Err(_) => false,
+    }
 }

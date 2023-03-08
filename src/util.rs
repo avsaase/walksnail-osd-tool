@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{env::current_exe, fmt::Display, path::PathBuf};
 
 use tracing_appender::non_blocking::WorkerGuard;
 
@@ -42,6 +42,32 @@ pub fn init_tracing() -> Option<WorkerGuard> {
             .init();
         guard
     })
+}
+
+pub fn ffmpeg_path() -> PathBuf {
+    let cur_exe = current_exe().unwrap();
+    let exe_dir = cur_exe.parent().unwrap();
+
+    if cfg!(all(target_os = "macos", feature = "macos-app-bundle")) {
+        exe_dir.join("ffmpeg")
+    } else if cfg!(all(target_os = "windows", feature = "windows-installer")) {
+        exe_dir.parent().unwrap().join("ffmpeg").join("ffmpeg")
+    } else {
+        "ffmpeg".into()
+    }
+}
+
+pub fn ffprobe_path() -> PathBuf {
+    let cur_exe = current_exe().unwrap();
+    let exe_dir = cur_exe.parent().unwrap();
+
+    if cfg!(all(target_os = "macos", feature = "macos-app-bundle")) {
+        exe_dir.join("ffprobe")
+    } else if cfg!(all(target_os = "windows", feature = "windows-installer")) {
+        exe_dir.parent().unwrap().join("ffmpeg").join("ffprobe")
+    } else {
+        "ffprobe".into()
+    }
 }
 
 pub mod build_info {

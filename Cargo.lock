@@ -937,7 +937,7 @@ checksum = "aa4781456a8623183c9ad8bbf379b7b5c5b49023d52a586461d8704a7962c5eb"
 [[package]]
 name = "ffprobe"
 version = "0.3.3"
-source = "git+https://github.com/avsaase/ffprobe-rs/?branch=suppress-console-windows#af95b9f5fb563d505cdf091c518a7a4bf5b812f8"
+source = "git+https://github.com/avsaase/ffprobe-rs/?branch=suppress-console-windows#8c863431ebf0df913e325ec490589023b193402f"
 dependencies = [
  "serde",
  "serde_json",

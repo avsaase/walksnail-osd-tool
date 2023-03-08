@@ -1,6 +1,6 @@
 use rayon::prelude::*;
 
-use std::{fmt::Display, process::Command, vec};
+use std::{fmt::Display, path::PathBuf, process::Command, vec};
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Codec {
@@ -34,7 +34,7 @@ impl Encoder {
     }
 
     #[tracing::instrument(ret)]
-    pub fn get_available_encoders() -> Vec<Self> {
+    pub fn get_available_encoders(ffmpeg_path: &PathBuf) -> Vec<Self> {
         let all_encoders = vec![
             Encoder::new("libx264", Codec::H264, false),
             Encoder::new("libx265", Codec::H265, false),
@@ -68,12 +68,12 @@ impl Encoder {
 
         all_encoders
             .into_par_iter()
-            .filter(Self::ffmpeg_encoder_available)
+            .filter(|x| Self::ffmpeg_encoder_available(x, ffmpeg_path))
             .collect::<Vec<_>>()
     }
 
-    fn ffmpeg_encoder_available(encoder: &Encoder) -> bool {
-        let mut command = Command::new("ffmpeg");
+    fn ffmpeg_encoder_available(encoder: &Encoder, ffmpeg_path: &PathBuf) -> bool {
+        let mut command = Command::new(ffmpeg_path);
 
         command
             .args([

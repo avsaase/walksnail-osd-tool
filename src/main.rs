@@ -1,8 +1,10 @@
-// #![windows_subsystem = "windows"] // Hide console on Windows
+#![windows_subsystem = "windows"] // Hide console on Windows
 #![allow(clippy::too_many_arguments)]
 
-use ffmpeg::{dependencies::dependencies_statisfied, Encoder};
+use ffmpeg::Encoder;
 use ui::WalksnailOsdTool;
+
+use crate::ffmpeg::dependencies::{ffmpeg_available, ffprobe_available};
 
 mod ffmpeg;
 mod font;
@@ -31,9 +33,11 @@ fn main() -> Result<(), eframe::Error> {
 
     // On startup check if ffmpeg and ffprove are available on the user's system
     // Then check which encoders are available
-    let dependencies_satisfied = dependencies_statisfied();
+    let ffmpeg_path = util::ffmpeg_path();
+    let ffprobe_path = util::ffprobe_path();
+    let dependencies_satisfied = ffmpeg_available(&ffmpeg_path) && ffprobe_available(&ffprobe_path);
     let detected_encoders = if dependencies_satisfied {
-        Encoder::get_available_encoders()
+        Encoder::get_available_encoders(&ffmpeg_path)
     } else {
         vec![]
     };
@@ -48,6 +52,13 @@ fn main() -> Result<(), eframe::Error> {
     eframe::run_native(
         "Walksnail OSD Tool",
         options,
-        Box::new(move |_cc| Box::new(WalksnailOsdTool::new(dependencies_satisfied, detected_encoders))),
+        Box::new(move |_cc| {
+            Box::new(WalksnailOsdTool::new(
+                dependencies_satisfied,
+                ffmpeg_path,
+                ffprobe_path,
+                detected_encoders,
+            ))
+        }),
     )
 }

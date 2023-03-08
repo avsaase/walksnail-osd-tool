@@ -16,8 +16,8 @@ pub struct VideoInfo {
 
 impl VideoInfo {
     #[tracing::instrument(ret)]
-    pub fn get(path: &PathBuf) -> Result<Self, VideoInfoError> {
-        let info = ffprobe::ffprobe(path)?;
+    pub fn get(file_path: &PathBuf, ffprobe_path: &PathBuf) -> Result<Self, VideoInfoError> {
+        let info = ffprobe::ffprobe(file_path, ffprobe_path.to_path_buf())?;
         info.try_into()
     }
 }
