@@ -72,7 +72,7 @@ jobs:
 
       - name: Build (Windows)
         if: ${{ matrix.targets.name == 'windows64'}}
-        run: cargo build --release
+        run: cargo build --release --features windows-installer
 
       - name: Build (MacOS)
         if: ${{ matrix.targets.name == 'macos-intel' || matrix.targets.name == 'macos-arm'}}
@@ -90,8 +90,8 @@ jobs:
       - name: Download ffmpeg (MacOS)
         if: ${{ (matrix.targets.name == 'macos-intel' || matrix.targets.name == 'macos-arm') && steps.extcache.outputs.cache-hit != 'true' }}
         run: |
-          mkdir -p ${{ github.workspace }}/ext/ffmpeg
-          cd ${{ github.workspace }}/ext/ffmpeg
+          mkdir -p ${{ github.workspace }}/ext/ffmpeg/${{ matrix.targets.name }}
+          cd ${{ github.workspace }}/ext/ffmpeg/${{ matrix.targets.name }}
           curl -L ${{ matrix.targets.ffmpeg_url }} -o ffmpeg.zip
           7z e ffmpeg.zip -aoa
           curl -L ${{ matrix.targets.ffprobe_url }} -o ffprobe.zip
@@ -111,8 +111,8 @@ jobs:
         if: ${{ matrix.targets.name == 'macos-intel' || matrix.targets.name == 'macos-arm'}}
         run: |
           cargo bundle --release --target ${{ matrix.targets.target }} --features macos-app-bundle
-          cp ${{ github.workspace }}/ext/ffmpeg/ffmpeg ${{ github.workspace }}/target/${{ matrix.targets.target }}/release/bundle/osx/Walksnail\ OSD\ Tool.app/Contents/MacOS/ffmpeg
-          cp ${{ github.workspace }}/ext/ffmpeg/ffprobe ${{ github.workspace }}/target/${{ matrix.targets.target }}/release/bundle/osx/Walksnail\ OSD\ Tool.app/Contents/MacOS/ffprobe
+          cp ${{ github.workspace }}/ext/ffmpeg/${{ matrix.targets.name }}/ffmpeg ${{ github.workspace }}/target/${{ matrix.targets.target }}/release/bundle/osx/Walksnail\ OSD\ Tool.app/Contents/MacOS/ffmpeg
+          cp ${{ github.workspace }}/ext/ffmpeg/${{ matrix.targets.name }}/ffprobe ${{ github.workspace }}/target/${{ matrix.targets.target }}/release/bundle/osx/Walksnail\ OSD\ Tool.app/Contents/MacOS/ffprobe
           cd ${{ github.workspace }}/target/${{ matrix.targets.target }}/release/bundle/osx/
           7z a temp.zip Walksnail\ OSD\ Tool.app
           mv temp.zip ${{ github.workspace }}/_deploy/Walksnail-OSD-Tool-${{ matrix.targets.fancy_name }}.zip

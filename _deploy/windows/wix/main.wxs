@@ -137,17 +137,6 @@
                         Source="ext\ffmpeg\README.txt"
                         KeyPath="yes" />
                 </Component>
-
-                <Component Id="Path" Guid="b99b1c0c-d0f9-4542-832e-111654e07000" KeyPath="yes">
-                    <Environment
-                        Id='PATH'
-                        Name='PATH'
-                        Value='[ffmpeg]'
-                        Permanent='no'
-                        Part='last'
-                        Action='set'
-                        System='yes' />
-                </Component>
             </Directory>
         </DirectoryRef>
 
@@ -167,7 +156,7 @@
         <Feature
             Id='Binaries'
             Title='Application'
-            Description='Installs all binaries and the license.'
+            Description='Installs the binary, the license and the dependencies.'
             Level='1'
             ConfigurableDirectory='APPLICATIONFOLDER'
             AllowAdvertise='no'
@@ -178,6 +167,11 @@
 
             <ComponentRef Id='binary' />
 
+            <ComponentRef Id="ffmpeg" />
+            <ComponentRef Id="ffprobe" />
+            <ComponentRef Id="ffmpeg_license" />
+            <ComponentRef Id="ffmpeg_readme" />
+
             <Feature
                 Id="StartMenu"
                 Title="Start menu shortcut"
@@ -187,24 +181,6 @@
             </Feature>
 
 
-        </Feature>
-
-        <Feature Id="Dependencies" Title="Dependencies" Level="1"
-            Description="Installs ffmpeg dependencies. Can be disabled if ffmpeg and ffprobe are already in the $Path.">
-            <ComponentRef Id="ffmpeg" />
-            <ComponentRef Id="ffprobe" />
-            <ComponentRef Id="ffmpeg_license" />
-            <ComponentRef Id="ffmpeg_readme" />
-
-            <Feature
-                Id='Environment'
-                Title='PATH Environment Variable'
-                Description='Add the install location of the ffmpeg dependencies to the PATH system environment variable. This allows the [ProductName] executable to find the dependencies.'
-                Level='1'
-                Absent='disallow'
-                AllowAdvertise='no'>
-                <ComponentRef Id='Path' />
-            </Feature>
         </Feature>
 
         <SetProperty Id='ARPINSTALLLOCATION' Value='[APPLICATIONFOLDER]' After='CostFinalize' />
