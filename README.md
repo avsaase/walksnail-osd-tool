@@ -18,15 +18,31 @@ Cross-platform tool for overlaying the Walksnail Avatar Goggle and VRX OSD recor
 ## Installation
 
 ### Windows
-1. Go to the [latest release](https://github.com/avsaase/walksnail-osd-tool/releases), download and run the installer.
-2. During installation you get the option to disable installing the `ffmpeg` dependencies. You can disable this if you already have `ffmpeg` and `ffprobe` installed and in your `$Path`. Otherwise leave it enabled.
+Download and run the installer from the [latest release](https://github.com/avsaase/walksnail-osd-tool/releases).
 
 ### MacOS
-1. Go to the [latest release](https://github.com/avsaase/walksnail-osd-tool/releases), download the app bundle and drag it to your Applications folder.
-2. The binary is not signed so the first time you try to run it you will get an error that it is software from an unidentified developer. Go into System Settings -> Privacy & Security -> Click "Open Anyway". The app uses the included `ffmpeg` and `ffprobe` binaries so when running it the first time you may get a similar warning two more times. Repeat the same steps to fix it. (If you think this is annoying you can give me some money [here](https://www.buymeacoffee.com/avsaase) so I can pay Apple for a developer account.)
+Download the app bundle for your processor architecture from the [latest release](https://github.com/avsaase/walksnail-osd-tool/releases) and drag it to your Applications folder.
+
+<details>
+<summary>About unsigned binaries</summary>
+    
+The MacOS binaries provided by this project are not signed so you have to jump through some hoops to run them.
+
+#### Intel processors
+When you open the app for the first time you will get a warning that it cannot be opened because the developer cannot be verified. Click "Cancel", go to System Settings -> Privacy & Security -> Click "Open Anyway". 
+
+#### ARM processors (M1, etc.)
+You need to sign the app yourself by running
+```
+codesign --force --deep -s - /Applications/Walksnail\ OSD\ Tool.app
+```
+When you try to open the app you may get a similar error as described above for Intel Macs. The same steps should fix it.
+
+If you think all this very annoying you can donate some [here](https://www.buymeacoffee.com/avsaase) so I can pay Apple for a developer account.
+</details>
 
 ### Linux
-The project builds on Ubuntu in CI but I haven't tried runnning it myself. For now you need to build from source.
+The project builds on Ubuntu in CI but I haven't tried runnning it myself. I don't know enough about packaging for Linux to make release binaries so for now you need to build from source.
 
 ### Building from source
 1. Install the [Rust toolchain](https://www.rust-lang.org/tools/install).
