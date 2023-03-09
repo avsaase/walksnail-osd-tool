@@ -1,5 +1,5 @@
 # Walksnail OSD Tool
-Cross-platform tool for overlaying the Walksnail Avatar Goggle and VRX OSD recording on top of the video recording.
+Cross-platform tool for overlaying the OSD from the Walksnail Avatar HD FPV system on top of the video recording.
 
 ![App Screenshot](https://user-images.githubusercontent.com/880421/222804317-2f5b8ef4-970d-4ae5-b249-c0d7d267b06d.png)
 
