@@ -38,7 +38,7 @@ codesign --force --deep -s - /Applications/Walksnail\ OSD\ Tool.app
 ```
 When you try to open the app you may get a similar error as described above for Intel Macs. The same steps should fix it.
 
-If you think all this very annoying you can donate some [here](https://www.buymeacoffee.com/avsaase) so I can pay Apple for a developer account.
+If you think all this very annoying you can donate some money [here](https://www.buymeacoffee.com/avsaase) so I can pay Apple for a developer account.
 </details>
 
 ### Linux
