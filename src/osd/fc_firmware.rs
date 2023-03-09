@@ -8,18 +8,22 @@ pub enum FcFirmware {
     Inav,
     ArduPilot,
     Kiss,
+    KissUltra,
+    Unknown,
 }
 
 impl TryFrom<&str> for FcFirmware {
     type Error = OsdFileError;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
+        use FcFirmware::*;
         match value {
-            "BTFL" => Ok(FcFirmware::Betaflight),
-            "INAV" => Ok(FcFirmware::Inav),
-            "ARDU" => Ok(FcFirmware::ArduPilot),
-            "KISS" => Ok(FcFirmware::Kiss),
-            _ => Err(OsdFileError::UnknownFcFirmware(value.to_string())),
+            "BTFL" => Ok(Betaflight),
+            "INAV" => Ok(Inav),
+            "ARDU" => Ok(ArduPilot),
+            "KISS" => Ok(Kiss),
+            "ULTR" => Ok(KissUltra),
+            _ => Ok(Unknown),
         }
     }
 }
@@ -43,6 +47,8 @@ impl Display for FcFirmware {
                 FcFirmware::Inav => "INAV",
                 FcFirmware::ArduPilot => "ArduPilot",
                 FcFirmware::Kiss => "KISS",
+                FcFirmware::KissUltra => "KISS ULTRA",
+                FcFirmware::Unknown => "Unknown",
             }
         )
     }

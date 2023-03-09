@@ -2,8 +2,8 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum OsdFileError {
-    #[error("Unknown FC firmware: {0}")]
-    UnknownFcFirmware(String),
+    // #[error("Unknown FC firmware: {0}")]
+    // UnknownFcFirmware(String),
 
     // #[error("Incomplete frame with index {index}")]
     // IncompleteFrame { index: u32 },
