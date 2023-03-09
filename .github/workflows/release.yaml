@@ -18,24 +18,24 @@ jobs:
               fancy_name: Windows,
               runner: windows-latest,
               target: x86_64-pc-windows-msvc,
-              ffmpeg_url: "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.7z",
-              ffprobe_url: "",
+              ffmpeg_filename: ffmpeg-6.0-essentials_build.7z,
+              ffprobe_filename: "",
             },
             {
               name: macos-intel,
               fancy_name: MacOS-Intel,
               runner: macos-latest,
               target: x86_64-apple-darwin,
-              ffmpeg_url: "https://www.osxexperts.net/ffmpeg6intel.zip",
-              ffprobe_url: "https://www.osxexperts.net/ffprobe6intel.zip",
+              ffmpeg_filename: ffmpeg6intel.zip,
+              ffprobe_filename: ffprobe6intel.zip,
             },
             {
               name: macos-arm,
               fancy_name: MacOS-AppleSilicon,
               runner: macos-latest,
               target: aarch64-apple-darwin,
-              ffmpeg_url: "https://www.osxexperts.net/ffmpeg6arm.zip",
-              ffprobe_url: "https://www.osxexperts.net/ffprobe6arm.zip",
+              ffmpeg_filename: ffmpeg6arm.zip,
+              ffprobe_filename: ffprobe6arm.zip,
             },
           ]
     runs-on: ${{ matrix.targets.runner }}
@@ -79,24 +79,18 @@ jobs:
         if: ${{ matrix.targets.name == 'macos-intel' || matrix.targets.name == 'macos-arm'}}
         run: cargo build --release --target ${{ matrix.targets.target }} --features macos-app-bundle
 
-      - name: Download ffmpeg (Windows)
-        if: ${{ matrix.targets.name == 'windows64' && steps.extcache.outputs.cache-hit != 'true' }}
+      - name: Extract ffmpeg
+        if: ${{ matrix.targets.name == 'windows64'}}
         run: |
-          mkdir -p ${{ github.workspace }}/ext/ffmpeg
-          cd ${{ github.workspace }}/ext/ffmpeg
-          curl -L ${{ matrix.targets.ffmpeg_url }} -o ffmpeg.7z
-          7z e ffmpeg.7z -aoa
-        shell: bash
-
-      - name: Download ffmpeg (MacOS)
-        if: ${{ (matrix.targets.name == 'macos-intel' || matrix.targets.name == 'macos-arm') && steps.extcache.outputs.cache-hit != 'true' }}
-        run: |
-          mkdir -p ${{ github.workspace }}/ext/ffmpeg/${{ matrix.targets.name }}
           cd ${{ github.workspace }}/ext/ffmpeg/${{ matrix.targets.name }}
-          curl -L ${{ matrix.targets.ffmpeg_url }} -o ffmpeg.zip
-          7z e ffmpeg.zip -aoa
-          curl -L ${{ matrix.targets.ffprobe_url }} -o ffprobe.zip
-          7z e ffprobe.zip -aoa
+          7z x ${{ matrix.targets.ffmpeg_filename }} -aoa
+
+      - name: Extract ffmpeg
+        if: ${{ matrix.targets.name == 'macos-intel' || matrix.targets.name == 'macos-arm' }}
+        run: |
+          cd ${{ github.workspace }}/ext/ffmpeg/${{ matrix.targets.name }}
+          7z x ${{ matrix.targets.ffmpeg_filename }} -aoa
+          7z x ${{ matrix.targets.ffprobe_filename }} -aoa
 
       - name: Create Windows installer
         if: ${{ matrix.targets.name == 'windows64'}}
