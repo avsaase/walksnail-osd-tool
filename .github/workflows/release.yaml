@@ -80,16 +80,14 @@ jobs:
         run: cargo build --release --target ${{ matrix.targets.target }} --features macos-app-bundle
 
       - name: Extract ffmpeg
-        if: ${{ matrix.targets.name == 'windows64'}}
         run: |
           cd ${{ github.workspace }}/ext/ffmpeg/${{ matrix.targets.name }}
           7z x ${{ matrix.targets.ffmpeg_filename }} -aoa
 
-      - name: Extract ffmpeg
+      - name: Extract ffprobe
         if: ${{ matrix.targets.name == 'macos-intel' || matrix.targets.name == 'macos-arm' }}
         run: |
           cd ${{ github.workspace }}/ext/ffmpeg/${{ matrix.targets.name }}
-          7z x ${{ matrix.targets.ffmpeg_filename }} -aoa
           7z x ${{ matrix.targets.ffprobe_filename }} -aoa
 
       - name: Create Windows installer
