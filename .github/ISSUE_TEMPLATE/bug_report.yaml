@@ -14,10 +14,10 @@ body:
     id: walksnail-osd-tool-version
     attributes:
       label: Software version
-      description: What version of the software are you running?
+      description: What version of the software are you running? You can copy the version from the "About" window (click the "i" in the top right corner).
       placeholder: Version number with commit id
     validations:
-      required: false
+      required: true
 
   - type: input
     id: os
