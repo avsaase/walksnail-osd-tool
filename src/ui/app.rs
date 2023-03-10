@@ -712,7 +712,7 @@ impl WalksnailOsdTool {
 
                         ui.label("License:");
                         ui.hyperlink_to(
-                            "General Public Licence v3.0",
+                            "General Public License v3.0",
                             "https://github.com/avsaase/walksnail-osd-tool/blob/master/LICENSE.md",
                         );
                         ui.end_row();
