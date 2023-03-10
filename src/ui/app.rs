@@ -5,7 +5,7 @@ use std::{
 };
 
 use egui::{
-    pos2, text::LayoutJob, vec2, Align, Button, Color32, FontFamily, FontId, Image, Label, Layout, ProgressBar,
+    pos2, text::LayoutJob, vec2, Align, Button, Color32, FontFamily, FontId, Frame, Image, Label, Layout, ProgressBar,
     RichText, Sense, TextFormat, TextStyle, TextureHandle, Ui, Visuals,
 };
 use egui_extras::{Column, TableBuilder};
@@ -676,20 +676,26 @@ impl WalksnailOsdTool {
         if ui.add(Button::new(RichText::new("ℹ")).frame(false)).clicked() {
             self.about_window_open = !self.about_window_open;
         }
+
+        let mut style = (*ui.style_mut()).clone();
+        style.spacing.window_margin = egui::Margin {
+            left: 25.0,
+            right: 25.0,
+            top: 6.0,
+            bottom: 25.0,
+        };
+        let frame = Frame::window(&style);
         if self.about_window_open {
             egui::Window::new("About")
+                .frame(frame)
                 .open(&mut self.about_window_open)
-                .default_pos(pos2(200.0, 250.0))
+                .fixed_pos(pos2(200.0, 250.0))
                 .auto_sized()
                 .collapsible(false)
                 .show(ctx, |ui| {
-                    ui.style_mut().spacing.window_margin = egui::Margin {
-                        left: 15.0,
-                        right: 15.0,
-                        top: 6.0,
-                        bottom: 15.0,
-                    };
-                    egui::Grid::new("about").show(ui, |ui| {
+                    ui.add_space(19.0);
+
+                    egui::Grid::new("about").spacing(vec2(10.0, 10.0)).show(ui, |ui| {
                         use crate::util::build_info::*;
                         ui.label("Author:");
                         ui.label("Alexander van Saase");
