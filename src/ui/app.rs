@@ -5,8 +5,8 @@ use std::{
 };
 
 use egui::{
-    pos2, text::LayoutJob, vec2, Align, Button, Color32, FontFamily, FontId, Image, Layout, ProgressBar, RichText,
-    TextFormat, TextStyle, TextureHandle, Ui, Visuals,
+    pos2, text::LayoutJob, vec2, Align, Button, Color32, FontFamily, FontId, Image, Label, Layout, ProgressBar,
+    RichText, Sense, TextFormat, TextStyle, TextureHandle, Ui, Visuals,
 };
 use egui_extras::{Column, TableBuilder};
 use ffmpeg_sidecar::event::FfmpegEvent;
@@ -40,6 +40,7 @@ pub struct WalksnailOsdTool {
     dependencies: Dependencies,
     render_settings: Settings,
     osd_preview: OsdPreview,
+    about_window_open: bool,
 }
 
 impl WalksnailOsdTool {
@@ -125,6 +126,8 @@ impl eframe::App for WalksnailOsdTool {
             ui.horizontal(|ui| {
                 self.import_files(ui, ctx);
                 self.reset_files(ui);
+                ui.add_space(ui.available_width() - 20.0);
+                self.about_window(ui, ctx);
             });
             ui.add_space(5.0);
         });
@@ -665,6 +668,59 @@ impl WalksnailOsdTool {
                     job.append("ffprobe", 0.0, mono_font);
                     job.append(" could not be found. Nothing will work. They should have been installed together with this program. Please check your installation and report the problem on GitHub", 0.0, default_font);
                     ui.label(job);
+                });
+        }
+    }
+
+    fn about_window(&mut self, ui: &mut Ui, ctx: &egui::Context) {
+        if ui.add(Button::new(RichText::new("ℹ")).frame(false)).clicked() {
+            self.about_window_open = !self.about_window_open;
+        }
+        if self.about_window_open {
+            egui::Window::new("About")
+                .open(&mut self.about_window_open)
+                .default_pos(pos2(200.0, 250.0))
+                .auto_sized()
+                .collapsible(false)
+                .show(ctx, |ui| {
+                    ui.style_mut().spacing.window_margin = egui::Margin {
+                        left: 15.0,
+                        right: 15.0,
+                        top: 6.0,
+                        bottom: 15.0,
+                    };
+                    egui::Grid::new("about").show(ui, |ui| {
+                        use crate::util::build_info::*;
+                        ui.label("Author:");
+                        ui.label("Alexander van Saase");
+                        ui.end_row();
+
+                        ui.label("Version:");
+                        let version = get_version().unwrap_or("Unknown".into());
+                        if ui
+                            .add(Label::new(&version).sense(Sense::click()))
+                            .on_hover_text("Double-click to copy to clipboard")
+                            .double_clicked()
+                        {
+                            ui.output_mut(|o| o.copied_text = version);
+                        }
+                        ui.end_row();
+
+                        ui.label("Target:");
+                        ui.label(get_target());
+                        ui.end_row();
+
+                        ui.label("License:");
+                        ui.hyperlink_to(
+                            "General Public Licence v3.0",
+                            "https://github.com/avsaase/walksnail-osd-tool/blob/master/LICENSE.md",
+                        );
+                        ui.end_row();
+                    });
+
+                    ui.add_space(10.0);
+
+                    ui.hyperlink_to("Buy me a coffee", "https://www.buymeacoffee.com/avsaase");
                 });
         }
     }

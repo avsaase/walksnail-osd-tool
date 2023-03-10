@@ -25,7 +25,7 @@ fn main() -> Result<(), eframe::Error> {
         "{}",
         format!(
             "App started (version: {}, compiled with: {}, target: {})",
-            build_info::get_version().unwrap_or("".into()),
+            build_info::get_version().unwrap_or("Unknwon".into()),
             build_info::get_compiler(),
             build_info::get_target()
         )

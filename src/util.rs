@@ -81,6 +81,7 @@ pub mod build_info {
             (None, None) => None,
             (None, Some(sha)) => Some(sha),
             (Some(version), None) => Some(version),
+            (Some(version), Some(sha)) if version == sha => Some(version),
             (Some(version), Some(sha)) => Some(format!("{}-{}", version, sha)),
         }
     }
