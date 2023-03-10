@@ -65,5 +65,5 @@ body:
     id: logs
     attributes:
       label: Log output
-      description: Logs for the last run of the program are stored in `~\AppData\Roaming\Walksnail OSD Tool\data\` on Windows. You can paste the output here without adding backticks.
+      description: Logs for the last run of the program are stored in `~\AppData\Roaming\Walksnail OSD Tool\data\` on Windows and `~/Library/Application Support` on MacOS. You can paste the output here without adding backticks.
       render: shell
