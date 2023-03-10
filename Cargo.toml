@@ -33,6 +33,7 @@ tracing-subscriber = "0.3.16"
 
 [build-dependencies]
 built = { version = "0.6.0", features = ["git2"] }
+image = "0.24.5"
 
 [features]
 macos-app-bundle = []
@@ -41,3 +42,15 @@ windows-installer = []
 [package.metadata.bundle]
 name = "Walksnail OSD Tool"
 identifier = "org.avsaase.walksnail-osd-tool"
+icon = [
+    "_deploy/icons/16x16.png",
+    "_deploy/icons/32x32.png",
+    "_deploy/icons/32x32@2x.png",
+    "_deploy/icons/64x64@2x.png",
+    "_deploy/icons/128x128.png",
+    "_deploy/icons/256x256.png",
+    "_deploy/icons/256x256@2x.png",
+    "_deploy/icons/512x512.png",
+    "_deploy/icons/512x512@2x.png",
+    "_deploy/icons/1024x1024@2x.png",
+]

@@ -1,6 +1,7 @@
 #![windows_subsystem = "windows"] // Hide console on Windows
 #![allow(clippy::too_many_arguments)]
 
+use eframe::IconData;
 use ffmpeg::Encoder;
 use ui::WalksnailOsdTool;
 
@@ -42,10 +43,17 @@ fn main() -> Result<(), eframe::Error> {
         vec![]
     };
 
+    let icon_data = IconData {
+        rgba: include_bytes!(concat!(env!("OUT_DIR"), "/icon_bytes")).to_vec(),
+        width: 256,
+        height: 256,
+    };
+
     let options = eframe::NativeOptions {
         drag_and_drop_support: true,
         initial_window_size: Some(egui::vec2(780.0, 900.0)),
         resizable: false,
+        icon_data: Some(icon_data),
         ..Default::default()
     };
     tracing::info!("Starting GUI");
