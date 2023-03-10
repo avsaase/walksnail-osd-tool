@@ -34,8 +34,8 @@ fn main() -> Result<(), eframe::Error> {
 
     // On startup check if ffmpeg and ffprove are available on the user's system
     // Then check which encoders are available
-    let ffmpeg_path = util::ffmpeg_path();
-    let ffprobe_path = util::ffprobe_path();
+    let ffmpeg_path = util::get_dependency_path("ffmpeg");
+    let ffprobe_path = util::get_dependency_path("ffprobe");
     let dependencies_satisfied = ffmpeg_available(&ffmpeg_path) && ffprobe_available(&ffprobe_path);
     let detected_encoders = if dependencies_satisfied {
         Encoder::get_available_encoders(&ffmpeg_path)

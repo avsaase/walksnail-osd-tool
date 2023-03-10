@@ -44,29 +44,16 @@ pub fn init_tracing() -> Option<WorkerGuard> {
     })
 }
 
-pub fn ffmpeg_path() -> PathBuf {
+pub fn get_dependency_path(dependency: &str) -> PathBuf {
     let cur_exe = current_exe().unwrap();
     let exe_dir = cur_exe.parent().unwrap();
 
     if cfg!(all(target_os = "macos", feature = "macos-app-bundle")) {
-        exe_dir.join("ffmpeg")
+        exe_dir.join(dependency)
     } else if cfg!(all(target_os = "windows", feature = "windows-installer")) {
-        exe_dir.parent().unwrap().join("ffmpeg").join("ffmpeg")
+        exe_dir.parent().unwrap().join("ffmpeg").join(dependency)
     } else {
         "ffmpeg".into()
-    }
-}
-
-pub fn ffprobe_path() -> PathBuf {
-    let cur_exe = current_exe().unwrap();
-    let exe_dir = cur_exe.parent().unwrap();
-
-    if cfg!(all(target_os = "macos", feature = "macos-app-bundle")) {
-        exe_dir.join("ffprobe")
-    } else if cfg!(all(target_os = "windows", feature = "windows-installer")) {
-        exe_dir.parent().unwrap().join("ffmpeg").join("ffprobe")
-    } else {
-        "ffprobe".into()
     }
 }
 
