@@ -24,21 +24,11 @@ Download and run the installer from the [latest release](https://github.com/avsa
 Download the app bundle for your processor architecture from the [latest release](https://github.com/avsaase/walksnail-osd-tool/releases) and drag it to your Applications folder.
 
 <details>
-<summary>About unsigned binaries</summary>
+<summary>Instructions for running the first time</summary>
     
-The MacOS binaries provided by this project are not signed so you have to jump through some hoops to run them.
+The MacOS binaries provided by this project are not signed with a "Developer ID Certificate". When you try to run the app for the first time you may get a warning from MacOS that it may be malicious software, the developer cannot be verified, it may be damaged, etc. Close the warning, go to System Settings -> Privacy & Security and click "Open Anyway". This should only be required the first time you open the app.
 
-#### Intel processors
-When you open the app for the first time you will get a warning that it cannot be opened because the developer cannot be verified. Click "Cancel", go to System Settings -> Privacy & Security -> Click "Open Anyway". 
-
-#### ARM processors (M1, etc.)
-You need to sign the app yourself by running
-```
-codesign --force --deep -s - /Applications/Walksnail\ OSD\ Tool.app
-```
-When you try to open the app you may get a similar error as described above for Intel Macs. The same steps should fix it.
-
-If you think all this very annoying you can donate some money [here](https://www.buymeacoffee.com/avsaase) so I can pay Apple for a developer account.
+If you think this is annoying you can donate some money [here](https://www.buymeacoffee.com/avsaase) so I can pay Apple for a developer account.
 </details>
 
 ### Linux
