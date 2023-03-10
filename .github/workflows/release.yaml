@@ -110,6 +110,7 @@ jobs:
           
           codesign --force -s - Walksnail\ OSD\ Tool.app/Contents/MacOS/ffmpeg
           codesign --force -s - Walksnail\ OSD\ Tool.app/Contents/MacOS/ffprobe
+          codesign --force -s - Walksnail\ OSD\ Tool.app/Contents/MacOS/walksnail-osd-tool
           codesign --force -s - Walksnail\ OSD\ Tool.app
 
           7z a temp.zip Walksnail\ OSD\ Tool.app
