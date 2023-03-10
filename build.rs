@@ -1,4 +1,6 @@
 fn main() {
+    println!("cargo:rerun-if-changed=/src");
+
     // Save details from build environment so they can be included in the binary
     built::write_built_file().expect("Failed to acquire build-time information");
 
