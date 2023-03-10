@@ -107,6 +107,11 @@ jobs:
           cp ${{ github.workspace }}/ext/ffmpeg/${{ matrix.targets.name }}/ffmpeg ${{ github.workspace }}/target/${{ matrix.targets.target }}/release/bundle/osx/Walksnail\ OSD\ Tool.app/Contents/MacOS/ffmpeg
           cp ${{ github.workspace }}/ext/ffmpeg/${{ matrix.targets.name }}/ffprobe ${{ github.workspace }}/target/${{ matrix.targets.target }}/release/bundle/osx/Walksnail\ OSD\ Tool.app/Contents/MacOS/ffprobe
           cd ${{ github.workspace }}/target/${{ matrix.targets.target }}/release/bundle/osx/
+          
+          codesign --force -s - Walksnail\ OSD\ Tool.app/Contents/MacOS/ffmpeg
+          codesign --force -s - Walksnail\ OSD\ Tool.app/Contents/MacOS/ffprobe
+          codesign --force -s - Walksnail\ OSD\ Tool.app/Contents/MacOS/walksnail-osd-tool
+
           7z a temp.zip Walksnail\ OSD\ Tool.app
           mv temp.zip ${{ github.workspace }}/_deploy/Walksnail-OSD-Tool-${{ matrix.targets.fancy_name }}.zip
 
