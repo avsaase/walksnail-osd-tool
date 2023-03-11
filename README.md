@@ -38,7 +38,7 @@ The project builds on Ubuntu in CI but I haven't tried runnning it myself. I don
 
 ### Building from source
 1. Install the [Rust toolchain](https://www.rust-lang.org/tools/install).
-2. Run `cargo build --release --git https://github.com/avsaase/walksnail-osd-tool.git`. The executable will be placed in `$HOME/.cargo/bin/`.
+2. Run `cargo install --release --git https://github.com/avsaase/walksnail-osd-tool.git`. The executable will be placed in `$HOME/.cargo/bin/`.
 3. To run the app you need the `ffmpeg` and `ffprobe` binaries in your `path` or placed next to the executable you just build.
 4. Run the app with `walksnail-osd-tool`.
 
