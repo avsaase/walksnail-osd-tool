@@ -65,11 +65,16 @@ jobs:
           profile: minimal
           override: true
 
-      - name: Run cargo-udeps
-        uses: aig787/cargo-udeps-action@v1
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install cargo-udeps
+        uses: taiki-e/install-action@v2
         with:
-          version: "latest"
-          args: "--all-targets"
+          tool: cargo-udeps
+
+      - name: Run cargo-udeps
+        run: cargo +nightly udeps --all-targets
 
   build:
     name: Build
@@ -91,7 +96,7 @@ jobs:
 
       - name: Install packages (Linux)
         if: ${{ matrix.target == 'ubuntu-latest' }}
-        uses: rerun-io/cache-apt-pkgs-action@59534850182063abf1b2c11bb3686722a12a8397
+        uses: rawalsh128/cache-apt-pkgs-action@latest
         with:
           packages: libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libssl-dev libgtk-3-dev # libgtk-3-dev is used by rfd
           version: 1.0
