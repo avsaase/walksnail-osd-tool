@@ -1,4 +1,4 @@
-#![windows_subsystem = "windows"] // Hide console on Windows
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // Hide console on Windows in release builds
 #![allow(clippy::too_many_arguments)]
 
 use eframe::IconData;
@@ -25,10 +25,10 @@ fn main() -> Result<(), eframe::Error> {
     tracing::info!(
         "{}",
         format!(
-            "App started (version: {}, compiled with: {}, target: {})",
+            "App started (version: {}, target: {}, compiled with: {})",
             build_info::get_version().unwrap_or("Unknwon".into()),
-            build_info::get_compiler(),
-            build_info::get_target()
+            build_info::get_target(),
+            build_info::get_compiler()
         )
     );
 

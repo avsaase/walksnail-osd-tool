@@ -1,6 +1,7 @@
 use std::{env::current_exe, fmt::Display, path::PathBuf};
 
 use tracing_appender::non_blocking::WorkerGuard;
+use tracing_subscriber::{filter, prelude::__tracing_subscriber_SubscriberExt, util::SubscriberInitExt, Layer};
 
 #[derive(Debug, Clone)]
 pub struct Coordinates<T> {
@@ -34,12 +35,19 @@ pub fn init_tracing() -> Option<WorkerGuard> {
 
         let file_appender = tracing_appender::rolling::never(log_dir, "walksnail-osd-tool.log");
         let (non_blocking, guard) = tracing_appender::non_blocking(file_appender);
-        tracing_subscriber::fmt()
+
+        let stdout_log = tracing_subscriber::fmt::layer()
+            .pretty()
+            .with_span_events(tracing_subscriber::fmt::format::FmtSpan::CLOSE)
+            .with_filter(filter::LevelFilter::INFO);
+        let file_log = tracing_subscriber::fmt::layer()
             .with_ansi(false)
             .compact()
-            .with_writer(non_blocking)
             .with_span_events(tracing_subscriber::fmt::format::FmtSpan::CLOSE)
-            .init();
+            .with_writer(non_blocking)
+            .with_filter(filter::LevelFilter::INFO);
+        tracing_subscriber::registry().with(stdout_log).with(file_log).init();
+
         guard
     })
 }
@@ -63,6 +71,8 @@ pub mod build_info {
     pub fn get_version() -> Option<String> {
         let version = GIT_VERSION.map(|s| s.to_string());
         let sha = GIT_COMMIT_HASH_SHORT.map(|s| s.to_string());
+        dbg!(&version);
+        dbg!(&sha);
 
         match (version, sha) {
             (None, None) => None,
