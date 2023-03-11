@@ -79,6 +79,7 @@
             SummaryCodepage='1252'
         />
 
+
         <MajorUpgrade
             Schedule='afterInstallInitialize'
             DowngradeErrorMessage='A newer version of [ProductName] is already installed. Setup will now exit.' />
@@ -140,12 +141,15 @@
             </Directory>
         </DirectoryRef>
 
+        <Icon Id="AppIcon" SourceFile="resources\icons\app-icon.ico" />
+
         <DirectoryRef Id="ApplicationProgramsFolder">
             <Component Id="ApplicationShortcut" Guid="6f25e6b5-8a5e-424c-a57a-19bc7508eaab">
                 <Shortcut Id="ApplicationStartMenuShortcut"
                     Name="Walksnail OSD Tool"
                     Target="[#binary]"
-                    WorkingDirectory="APPLICATIONFOLDER" />
+                    WorkingDirectory="APPLICATIONFOLDER"
+                    Icon="AppIcon" />
                 <RemoveFolder Id="CleanUpShortCut" Directory="ApplicationProgramsFolder"
                     On="uninstall" />
                 <RegistryValue Root="HKCU" Key="WalksnailOSDTool"
@@ -192,10 +196,8 @@
           The product icon is the graphic that appears in the Add/Remove
           Programs control panel for the application.
         -->
-        <!--<Icon
-        Id='ProductICO' SourceFile='wix\Product.ico'/>-->
-        <!--<Property
-        Id='ARPPRODUCTICON' Value='ProductICO' />-->
+        <Icon Id='ProductICO' SourceFile='resources\icons\app-icon.ico' />
+        <Property Id='ARPPRODUCTICON' Value='ProductICO' />
 
         <Property Id='ARPHELPLINK' Value='https://github.com/avsaase/walksnail-osd-tool' />
 
