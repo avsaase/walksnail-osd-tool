@@ -1,5 +1,8 @@
 name: Release
 
+permissions:
+  contents: write
+
 on:
   push:
     branches:
@@ -109,7 +112,7 @@ jobs:
           cp ${{ github.workspace }}/ext/ffmpeg/${{ matrix.targets.name }}/ffmpeg ${{ github.workspace }}/target/${{ matrix.targets.target }}/release/bundle/osx/Walksnail\ OSD\ Tool.app/Contents/MacOS/ffmpeg
           cp ${{ github.workspace }}/ext/ffmpeg/${{ matrix.targets.name }}/ffprobe ${{ github.workspace }}/target/${{ matrix.targets.target }}/release/bundle/osx/Walksnail\ OSD\ Tool.app/Contents/MacOS/ffprobe
           cd ${{ github.workspace }}/target/${{ matrix.targets.target }}/release/bundle/osx/
-          
+
           codesign --force -s - Walksnail\ OSD\ Tool.app/Contents/MacOS/ffmpeg
           codesign --force -s - Walksnail\ OSD\ Tool.app/Contents/MacOS/ffprobe
           codesign --force -s - Walksnail\ OSD\ Tool.app/Contents/MacOS/walksnail-osd-tool
@@ -135,10 +138,21 @@ jobs:
         with:
           name: walksnail-osd-tool-all-platforms
 
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install parse-changelog
+        uses: taiki-e/install-action@v2
+        with:
+          tool: parse-changelog
+
+      - name: Generate release notes
+        run: parse-changelog ${{ github.workspace }}/CHANGELOG.md > ${{ github.workspace }}-release_notes.md
+
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
             ./*
           draft: true
-          body: "Full changelog: https://github.com/avsaase/walksnail-osd-tool/blob/master/CHANGELOG.md"
+          body_path: ${{ github.workspace }}-release_notes.md
