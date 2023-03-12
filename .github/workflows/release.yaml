@@ -20,7 +20,7 @@ jobs:
           [
             {
               name: windows64,
-              fancy_name: Windows,
+              fancy_name: windows,
               runner: windows-latest,
               target: x86_64-pc-windows-msvc,
               ffmpeg_filename: ffmpeg-6.0-essentials_build.7z,
@@ -28,7 +28,7 @@ jobs:
             },
             {
               name: macos-intel,
-              fancy_name: MacOS-Intel,
+              fancy_name: macos-intel,
               runner: macos-latest,
               target: x86_64-apple-darwin,
               ffmpeg_filename: ffmpeg6intel.zip,
@@ -36,7 +36,7 @@ jobs:
             },
             {
               name: macos-arm,
-              fancy_name: MacOS-AppleSilicon,
+              fancy_name: macos-apple-silicon,
               runner: macos-latest,
               target: aarch64-apple-darwin,
               ffmpeg_filename: ffmpeg6arm.zip,
@@ -102,7 +102,7 @@ jobs:
           cargo wix --include _deploy\windows\wix\main.wxs --nocapture --no-build
           cd ${{ github.workspace }}/target/wix/
           7z a temp.zip *.msi
-          mv temp.zip ${{ github.workspace }}/_deploy/Walksnail-OSD-Tool-${{ matrix.targets.fancy_name }}.zip
+          mv temp.zip ${{ github.workspace }}/_deploy/walksnail-osd-tool-${{ matrix.targets.fancy_name }}.zip
         shell: cmd
 
       - name: Create Mac App bundle
@@ -119,7 +119,7 @@ jobs:
           codesign --force -s - Walksnail\ OSD\ Tool.app
 
           7z a temp.zip Walksnail\ OSD\ Tool.app
-          mv temp.zip ${{ github.workspace }}/_deploy/Walksnail-OSD-Tool-${{ matrix.targets.fancy_name }}.zip
+          mv temp.zip ${{ github.workspace }}/_deploy/walksnail-osd-tool-${{ matrix.targets.fancy_name }}.zip
 
       - name: Save binaries
         uses: actions/upload-artifact@v3
