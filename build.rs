@@ -12,5 +12,5 @@ fn main() {
         .decode()
         .expect("Failed to decode icon file");
     let icon_bytes = icon.as_bytes();
-    std::fs::write(&dest_path, icon_bytes).expect("Failed to write icon bytes");
+    std::fs::write(dest_path, icon_bytes).expect("Failed to write icon bytes");
 }
