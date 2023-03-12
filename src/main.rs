@@ -2,6 +2,7 @@
 #![allow(clippy::too_many_arguments)]
 
 use eframe::IconData;
+use egui::vec2;
 use ffmpeg::Encoder;
 use ui::WalksnailOsdTool;
 
@@ -51,8 +52,9 @@ fn main() -> Result<(), eframe::Error> {
 
     let options = eframe::NativeOptions {
         drag_and_drop_support: true,
-        initial_window_size: Some(egui::vec2(780.0, 900.0)),
-        resizable: false,
+        initial_window_size: Some(vec2(780.0, 600.0)),
+        min_window_size: Some(vec2(780.0, 300.0)),
+        max_window_size: Some(vec2(780.0, 900.0)),
         icon_data: Some(icon_data),
         ..Default::default()
     };
