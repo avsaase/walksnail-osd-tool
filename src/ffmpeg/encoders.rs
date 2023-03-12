@@ -113,11 +113,6 @@ impl Encoder {
         #[cfg(target_os = "windows")]
         std::os::windows::process::CommandExt::creation_flags(&mut command, crate::CREATE_NO_WINDOW);
 
-        // let status = command
-        //     .status()
-        //     .expect("Failed to execute ffmpeg command to check encoder compatibility");
-        // status.code().expect("Failed to get status code from ffmpeg command") == 0
-
         match command.status() {
             Ok(status) => status.success(),
             Err(_) => false,
