@@ -75,7 +75,7 @@ impl Encoder {
 
             #[cfg(target_os = "linux")]
             Encoder::new("hevc_vaapi", Codec::H265, true),
-            
+
             #[cfg(target_os = "linux")]
             Encoder::new("hevc_v4l2m2m", Codec::H265, true),
 
