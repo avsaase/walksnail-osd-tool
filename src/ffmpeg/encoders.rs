@@ -35,35 +35,52 @@ impl Encoder {
 
     #[tracing::instrument(ret)]
     pub fn get_available_encoders(ffmpeg_path: &PathBuf) -> Vec<Self> {
+        #[rustfmt::skip]
         let all_encoders = vec![
             Encoder::new("libx264", Codec::H264, false),
             Encoder::new("libx265", Codec::H265, false),
+
             #[cfg(target_os = "windows")]
             Encoder::new("h264_amf", Codec::H264, true),
+
             #[cfg(target_os = "windows")]
             Encoder::new("h264_mf", Codec::H264, true),
+
             #[cfg(any(target_os = "windows", target_os = "linux"))]
             Encoder::new("h264_nvenc", Codec::H264, true),
+
             #[cfg(any(target_os = "windows", target_os = "linux"))]
             Encoder::new("h264_qsv", Codec::H264, true),
+
             #[cfg(target_os = "linux")]
             Encoder::new("h264_vaapi", Codec::H264, true),
+
             #[cfg(target_os = "linux")]
             Encoder::new("h264_v4l2m2m", Codec::H264, true),
+
             #[cfg(target_os = "macos")]
             Encoder::new("h264_videotoolbox", Codec::H264, true),
+
             #[cfg(target_os = "windows")]
             Encoder::new("hevc_amf", Codec::H265, true),
+
             #[cfg(target_os = "windows")]
             Encoder::new("hevc_mf", Codec::H265, true),
+
             #[cfg(any(target_os = "windows", target_os = "linux"))]
             Encoder::new("hevc_nvenc", Codec::H265, true),
+
             #[cfg(any(target_os = "windows", target_os = "linux"))]
             Encoder::new("hevc_qsv", Codec::H265, true),
+
             #[cfg(target_os = "linux")]
             Encoder::new("hevc_vaapi", Codec::H265, true),
+            
             #[cfg(target_os = "linux")]
             Encoder::new("hevc_v4l2m2m", Codec::H265, true),
+
+            #[cfg(target_os = "macos")]
+            Encoder::new("hevc_videotoolbox", Codec::H265, true),
         ];
 
         all_encoders
@@ -96,10 +113,15 @@ impl Encoder {
         #[cfg(target_os = "windows")]
         std::os::windows::process::CommandExt::creation_flags(&mut command, crate::CREATE_NO_WINDOW);
 
-        let status = command
-            .status()
-            .expect("Failed to execute ffmpeg command to check encoder compatibility");
-        status.code().expect("Failed to get status code from ffmpeg command") == 0
+        // let status = command
+        //     .status()
+        //     .expect("Failed to execute ffmpeg command to check encoder compatibility");
+        // status.code().expect("Failed to get status code from ffmpeg command") == 0
+
+        match command.status() {
+            Ok(status) => status.success(),
+            Err(_) => false,
+        }
     }
 }
 
