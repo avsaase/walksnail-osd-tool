@@ -57,11 +57,24 @@ pub fn get_dependency_path(dependency: &str) -> PathBuf {
     let exe_dir = cur_exe.parent().unwrap();
 
     if cfg!(all(target_os = "macos", feature = "macos-app-bundle")) {
+        // Folder structure:
+        // |
+        // +-- MacOS
+        //     +-- walksnail-osd-tool
+        //     +-- ffmpeg
+        //     +-- ffprobe
         exe_dir.join(dependency)
     } else if cfg!(all(target_os = "windows", feature = "windows-installer")) {
+        // Folder structure:
+        // |
+        // +-- bin
+        // |   +-- walksnail-osd-tool.exe
+        // +-- ffmpeg
+        //     +-- ffmpeg.exe
+        //     +-- ffprobe.exe
         exe_dir.parent().unwrap().join("ffmpeg").join(dependency)
     } else {
-        "ffmpeg".into()
+        dependency.into()
     }
 }
 
