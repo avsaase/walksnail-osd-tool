@@ -9,9 +9,9 @@ use super::WalksnailOsdTool;
 
 impl WalksnailOsdTool {
     pub fn all_files_loaded(&self) -> bool {
-        match (&self.video_file, &self.osd_file, &self.font_file) {
-            (Some(_), Some(_), Some(_)) => true,
-            (_, _, _) => false,
+        match (&self.video_file, &self.video_info, &self.osd_file, &self.font_file) {
+            (Some(_), Some(_), Some(_), Some(_)) => true,
+            (_, _, _, _) => false,
         }
     }
 }
