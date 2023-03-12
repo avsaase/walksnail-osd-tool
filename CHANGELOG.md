@@ -6,16 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
-### Fixed
-- Check for `hevc_videotoolbox` encoder on MacOS.
-
-## [0.1.0-beta2] - 2023-03-12
+### Added
+- Make main window resizable in vertical direction to accomodate screens with lower resolutions and retina displays.
 
 ### Changed
 - Improve formatting of about window.
 
 ### Fixed
-- Make main window resizable in vertical direction to accomodate screens with lower resolutions and retina displays.
+- Check for `hevc_videotoolbox` encoder on MacOS.
+
+
+
+
 
 ## [0.1.0-beta1] - 2023-03-11
 
