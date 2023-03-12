@@ -133,11 +133,6 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: walksnail-osd-tool-all-platforms
-
       - name: Checkout code
         uses: actions/checkout@v3
 
@@ -149,10 +144,17 @@ jobs:
       - name: Generate release notes
         run: parse-changelog ${{ github.workspace }}/CHANGELOG.md > ${{ github.workspace }}-release_notes.md
 
+      - name: Download artifacts
+        id: download
+        uses: actions/download-artifact@v3
+        with:
+          name: walksnail-osd-tool-all-platforms
+          path: ${{ github.workspace }}/_deploy/artifacts
+
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            ./*
+            ${{ steps.download.outputs.download-path }}/*
           draft: true
           body_path: ${{ github.workspace }}-release_notes.md
