@@ -9,16 +9,15 @@ use egui::{
     RichText, Sense, TextFormat, TextStyle, TextureHandle, Ui, Visuals,
 };
 use egui_extras::{Column, TableBuilder};
-use ffmpeg_sidecar::event::FfmpegEvent;
 
 use crate::{
-    ffmpeg::{Encoder, VideoInfo},
+    ffmpeg::{render_video, Encoder, EncoderSettings, FfmpegMessage, StopRenderMessage, VideoInfo},
     font::{self, FontFile},
     osd::{self, calculate_horizontal_offset, calculate_vertical_offset, osd_preview, OsdFile},
-    video::{process_video, Settings, StopRenderMessage},
 };
 
 use super::{
+    render_status::Status,
     utils::{
         clickable_if, find_file_with_extention, format_minutes_seconds, get_output_video_path, separator_with_space,
     },
@@ -32,27 +31,27 @@ pub struct WalksnailOsdTool {
     pub osd_file: Option<osd::OsdFile>,
     pub font_file: Option<font::FontFile>,
     ui_dimensions: UiDimensions,
-    progress_receiver: Option<Receiver<FfmpegEvent>>,
+    ffmpeg_receiver: Option<Receiver<FfmpegMessage>>,
     stop_render_sender: Option<Sender<StopRenderMessage>>,
     render_status: RenderStatus,
     available_encoders: Vec<Rc<Encoder>>,
     selected_encoder_idx: usize,
     dependencies: Dependencies,
-    render_settings: Settings,
+    render_settings: EncoderSettings,
     osd_preview: OsdPreview,
     about_window_open: bool,
 }
 
 impl WalksnailOsdTool {
     pub fn new(
-        dependencies_statisfied: bool,
+        dependencies_satisfied: bool,
         ffmpeg_path: PathBuf,
         ffprobe_path: PathBuf,
         available_encoders: Vec<Encoder>,
     ) -> Self {
         Self {
             dependencies: Dependencies {
-                dependencies_statisfied,
+                dependencies_satisfied,
                 ffmpeg_path,
                 ffprobe_path,
             },
@@ -64,7 +63,7 @@ impl WalksnailOsdTool {
 
 #[derive(Default)]
 struct Dependencies {
-    dependencies_statisfied: bool,
+    dependencies_satisfied: bool,
     ffmpeg_path: PathBuf,
     ffprobe_path: PathBuf,
 }
@@ -118,8 +117,8 @@ impl eframe::App for WalksnailOsdTool {
             ctx.request_repaint();
         }
 
-        // Receive render progress from the ffmpeg thread (if it is running)
-        self.receive_render_progress();
+        // Receive ffmpeg messages
+        self.receive_ffmpeg_message();
 
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
             ui.add_space(5.0);
@@ -200,6 +199,7 @@ impl WalksnailOsdTool {
                     self.font_file = FontFile::open(font_file_path.clone()).ok();
                 }
                 self.update_osd_preview(ctx);
+                self.render_status.reset();
             }
         }
     }
@@ -213,7 +213,7 @@ impl WalksnailOsdTool {
             self.font_file = None;
             self.osd_preview.texture_handle = None;
             self.osd_preview.preview_frame = 1;
-            self.render_status = RenderStatus::Idle;
+            self.render_status.reset();
             tracing::info!("Reset files");
         }
     }
@@ -558,49 +558,53 @@ impl WalksnailOsdTool {
 
     fn start_stop_render_button(&mut self, ui: &mut Ui) {
         let button_size = vec2(110.0, 40.0);
-        match self.render_status {
-            RenderStatus::Idle | RenderStatus::Completed => {
+        match self.render_status.status {
+            Status::Idle | Status::Completed | Status::Cancelled { .. } | Status::Error { .. } => {
                 if ui
                     .add(
                         egui::Button::new("Start render")
                             .sense(clickable_if(self.all_files_loaded()))
                             .min_size(button_size),
                     )
+                    .on_disabled_hover_text("Load a video, osd and font file.")
                     .clicked()
                 {
                     tracing::info!("Start render button clicked");
+                    self.render_status.start_render();
                     if let (Some(video_path), Some(osd_file), Some(font_file), Some(video_info)) =
                         (&self.video_file, &self.osd_file, &self.font_file, &self.video_info)
                     {
-                        process_video(
+                        match render_video(
                             &self.dependencies.ffmpeg_path,
-                            video_path.to_str().unwrap(),
-                            get_output_video_path(video_path).to_str().unwrap(),
+                            video_path,
+                            &get_output_video_path(video_path),
                             osd_file.frames.clone(),
                             font_file.clone(),
                             video_info,
                             &self.render_settings,
                             self.osd_preview.horizontal_offset,
                             self.osd_preview.vertical_offset,
-                        )
-                        .map(|(progress_rx, stop_render_tx)| {
-                            self.progress_receiver = Some(progress_rx);
-                            self.stop_render_sender = Some(stop_render_tx);
-                        })
-                        .ok();
+                        ) {
+                            Ok((ffmpeg_rx, stop_render_tx)) => {
+                                self.ffmpeg_receiver = Some(ffmpeg_rx);
+                                self.stop_render_sender = Some(stop_render_tx);
+                            }
+                            Err(_) => {
+                                self.render_status.status = Status::Error {
+                                    progress_pct: 0.0,
+                                    error: "Failed to start video render".to_string(),
+                                }
+                            }
+                        };
                     }
                 }
             }
-            RenderStatus::InProgress {
-                time_remaining: _,
-                fps: _,
-                speed: _,
-                progress_pct: _,
-            } => {
+            Status::InProgress { .. } => {
                 if ui.add(Button::new("Stop render").min_size(button_size)).clicked() {
                     tracing::info!("Stop render button clicked");
                     if let Some(sender) = &self.stop_render_sender {
                         sender.send(StopRenderMessage).ok();
+                        self.render_status.stop_render();
                     }
                 }
             }
@@ -608,45 +612,61 @@ impl WalksnailOsdTool {
     }
 
     fn render_progress(&mut self, ui: &mut Ui) {
-        match self.render_status {
-            RenderStatus::Idle => {}
-            RenderStatus::InProgress {
+        match &self.render_status.status {
+            Status::Idle => {}
+            Status::InProgress {
                 time_remaining,
                 fps,
                 speed,
                 progress_pct,
             } => {
                 ui.vertical(|ui| {
-                    ui.add(ProgressBar::new(progress_pct).show_percentage());
+                    ui.add(ProgressBar::new(*progress_pct).show_percentage());
                     ui.with_layout(Layout::right_to_left(Align::Min), |ui| {
                         ui.add_space(3.0);
                         ui.label(format!(
                             "Time remaining: {}, fps: {:.1}, speed: {:.3}x",
-                            format_minutes_seconds(&time_remaining),
+                            format_minutes_seconds(time_remaining),
                             fps,
                             speed
                         ));
                     });
                 });
             }
-            RenderStatus::Completed => {
+            Status::Completed => {
                 ui.vertical(|ui| {
                     ui.add(ProgressBar::new(1.0).text("Done"));
+                });
+            }
+            Status::Cancelled { progress_pct } => {
+                ui.vertical(|ui| {
+                    ui.add(ProgressBar::new(*progress_pct).text("Cancelled"));
+                });
+            }
+            Status::Error { progress_pct, error } => {
+                ui.vertical(|ui| {
+                    ui.add(ProgressBar::new(*progress_pct));
+                    ui.label(RichText::new(error.clone()).color(Color32::RED));
                 });
             }
         }
     }
 
-    fn receive_render_progress(&mut self) {
-        if let (Some(rx), Some(video_info)) = (&self.progress_receiver, &self.video_info) {
-            rx.try_recv()
-                .map(|message| self.render_status = RenderStatus::from_ffmpeg_event(message, video_info))
-                .ok();
+    fn receive_ffmpeg_message(&mut self) {
+        if let (Some(rx), Some(video_info), Some(stop_render_sender)) =
+            (&self.ffmpeg_receiver, &self.video_info, &self.stop_render_sender)
+        {
+            if let Ok(message) = rx.try_recv() {
+                if matches!(message, FfmpegMessage::EncoderError(_)) {
+                    stop_render_sender.send(StopRenderMessage).unwrap();
+                }
+                self.render_status.update_from_ffmpeg_message(message, video_info)
+            }
         }
     }
 
     fn missing_dependencies_warning(&mut self, ctx: &egui::Context) {
-        if !self.dependencies.dependencies_statisfied || self.available_encoders.is_empty() {
+        if !self.dependencies.dependencies_satisfied || self.available_encoders.is_empty() {
             egui::Window::new("Missing dependencies")
                 .default_pos(pos2(175.0, 200.0))
                 .fixed_size(vec2(350.0, 300.0))

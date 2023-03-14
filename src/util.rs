@@ -84,8 +84,6 @@ pub mod build_info {
     pub fn get_version() -> Option<String> {
         let version = GIT_VERSION.map(|s| s.to_string());
         let sha = GIT_COMMIT_HASH_SHORT.map(|s| s.to_string());
-        dbg!(&version);
-        dbg!(&sha);
 
         match (version, sha) {
             (None, None) => None,

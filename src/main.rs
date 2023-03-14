@@ -6,15 +6,15 @@ use egui::vec2;
 use ffmpeg::Encoder;
 use ui::WalksnailOsdTool;
 
-use crate::ffmpeg::dependencies::{ffmpeg_available, ffprobe_available};
+use crate::dependencies::{ffmpeg_available, ffprobe_available};
 
+mod dependencies;
 mod ffmpeg;
 mod font;
 mod osd;
 mod overlay;
 mod ui;
 mod util;
-mod video;
 
 #[cfg(target_os = "windows")]
 const CREATE_NO_WINDOW: u32 = 0x08000000;

@@ -7,17 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased]
 
 ### Added
-- Make main window resizable in vertical direction to accomodate screens with lower resolutions and retina displays.
+- Make main window resizable in vertical direction to accomodate retina displays and screens with lower resolutions.
+- Display errors from ffmpeg
 
 ### Changed
-- Improve formatting of about window.
+- Improved formatting of "About" window.
+- Improved display of render status when rendering is finished or cancelled.
 
 ### Fixed
 - Check for `hevc_videotoolbox` encoder on MacOS.
-
-
-
-
+- Stop ffmpeg decoder when encoder returns error.
 
 ## [0.1.0-beta1] - 2023-03-11
 

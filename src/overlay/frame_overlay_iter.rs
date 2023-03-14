@@ -10,9 +10,11 @@ use ffmpeg_sidecar::{
     iter::FfmpegIterator,
 };
 
-use crate::{font, osd, overlay::overlay_osd_on_video};
-
-use super::StopRenderMessage;
+use crate::{
+    ffmpeg::{FfmpegMessage, StopRenderMessage},
+    font, osd,
+    overlay::overlay_osd_on_video,
+};
 
 pub struct FrameOverlayIter {
     ffmpeg_iter: FfmpegIterator,
@@ -22,7 +24,7 @@ pub struct FrameOverlayIter {
     horizontal_offset: i32,
     vertical_offset: i32,
     current_osd_frame: osd::Frame,
-    render_progress_sender: Sender<FfmpegEvent>,
+    ffmpeg_sender: Sender<FfmpegMessage>,
     stop_render_receiver: Receiver<StopRenderMessage>,
 }
 
@@ -35,7 +37,7 @@ impl FrameOverlayIter {
         font_file: font::FontFile,
         horizontal_offset: i32,
         vertical_offset: i32,
-        render_progress_sender: Sender<FfmpegEvent>,
+        ffmpeg_sender: Sender<FfmpegMessage>,
         stop_render_receiver: Receiver<StopRenderMessage>,
     ) -> Self {
         let mut osd_frames_iter = osd_frames.into_iter();
@@ -48,7 +50,7 @@ impl FrameOverlayIter {
             horizontal_offset,
             vertical_offset,
             current_osd_frame: first_osd_frame,
-            render_progress_sender,
+            ffmpeg_sender,
             stop_render_receiver,
         }
     }
@@ -84,15 +86,16 @@ impl Iterator for FrameOverlayIter {
                 ))
             }
             FfmpegEvent::Progress(p) => {
-                self.render_progress_sender.send(FfmpegEvent::Progress(p)).unwrap();
+                self.ffmpeg_sender.send(FfmpegMessage::Progress(p)).unwrap();
                 None
             }
-            FfmpegEvent::Done => {
-                self.render_progress_sender.send(FfmpegEvent::Done).unwrap();
+            FfmpegEvent::Done | FfmpegEvent::LogEOF => {
+                self.ffmpeg_sender.send(FfmpegMessage::DecoderFinished).unwrap();
                 None
             }
-            FfmpegEvent::LogEOF => {
-                self.render_progress_sender.send(FfmpegEvent::LogEOF).unwrap();
+            FfmpegEvent::LogError(e) => {
+                tracing::error!("Received error from decoder ffmpeg instance: {}", &e);
+                self.ffmpeg_sender.send(FfmpegMessage::DecoderError(e)).unwrap();
                 None
             }
             _ => None,
