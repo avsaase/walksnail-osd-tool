@@ -45,11 +45,11 @@ jobs:
       - name: Cache dependencies
         uses: Swatinem/rust-cache@v2
 
-      - name: Cargo clippy
-        uses: actions-rs/clippy-check@v1
+      - name: Clippy
+        uses: giraffate/clippy-action@v1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          args: --all-features
+          reporter: 'github-pr-review'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
   dependencies:
     name: Unused dependencies
