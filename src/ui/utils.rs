@@ -3,7 +3,7 @@ use std::{
     time::Duration,
 };
 
-use egui::{Sense, Ui};
+use egui::Ui;
 
 use super::WalksnailOsdTool;
 
@@ -42,14 +42,6 @@ pub fn format_minutes_seconds(mabe_duration: &Option<Duration>) -> String {
             format!("{}:{:0>2}", minutes, seconds)
         }
         None => "––:––".into(),
-    }
-}
-
-pub fn clickable_if(condition: bool) -> Sense {
-    if condition {
-        Sense::click()
-    } else {
-        Sense::focusable_noninteractive()
     }
 }
 

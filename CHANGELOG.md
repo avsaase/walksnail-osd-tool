@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Added
 - Make main window resizable in vertical direction to accomodate retina displays and screens with lower resolutions.
 - Display errors from ffmpeg
+- Display tooltip when hovering over start render button when it is disabled.
 
 ### Changed
 - Improved formatting of "About" window.
@@ -17,7 +18,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Fixed
 - Check for `hevc_videotoolbox` encoder on MacOS.
 - Stop ffmpeg decoder when encoder returns error.
-- Fixd version info display.
+- Fixed version info display.
+- Properly disable buttons that cannot be used.
 
 ## [0.1.0-beta1] - 2023-03-11
 

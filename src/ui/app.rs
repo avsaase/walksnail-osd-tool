@@ -18,9 +18,7 @@ use crate::{
 
 use super::{
     render_status::Status,
-    utils::{
-        clickable_if, find_file_with_extention, format_minutes_seconds, get_output_video_path, separator_with_space,
-    },
+    utils::{find_file_with_extention, format_minutes_seconds, get_output_video_path, separator_with_space},
     RenderStatus,
 };
 
@@ -180,8 +178,10 @@ impl WalksnailOsdTool {
     }
 
     fn import_files(&mut self, ui: &mut Ui, ctx: &egui::Context) {
-        let button = Button::new("Open files").sense(clickable_if(self.render_status.is_not_in_progress()));
-        if ui.add(button).clicked() {
+        if ui
+            .add_enabled(self.render_status.is_not_in_progress(), Button::new("Open files"))
+            .clicked()
+        {
             if let Some(file_handles) = rfd::FileDialog::new()
                 .add_filter("Goggle DVR & Font Files", &["mp4", "osd", "png"])
                 .pick_files()
@@ -205,8 +205,10 @@ impl WalksnailOsdTool {
     }
 
     fn reset_files(&mut self, ui: &mut Ui) {
-        let button = Button::new("Reset files").sense(clickable_if(self.render_status.is_not_in_progress()));
-        if ui.add(button).clicked() {
+        if ui
+            .add_enabled(self.render_status.is_not_in_progress(), Button::new("Reset files"))
+            .clicked()
+        {
             self.video_file = None;
             self.video_info = None;
             self.osd_file = None;
@@ -561,12 +563,11 @@ impl WalksnailOsdTool {
         match self.render_status.status {
             Status::Idle | Status::Completed | Status::Cancelled { .. } | Status::Error { .. } => {
                 if ui
-                    .add(
-                        egui::Button::new("Start render")
-                            .sense(clickable_if(self.all_files_loaded()))
-                            .min_size(button_size),
+                    .add_enabled(
+                        self.all_files_loaded(),
+                        Button::new("Start render").min_size(button_size),
                     )
-                    .on_disabled_hover_text("Load a video, osd and font file.")
+                    .on_disabled_hover_text("Load a video, OSD and font file")
                     .clicked()
                 {
                     tracing::info!("Start render button clicked");
