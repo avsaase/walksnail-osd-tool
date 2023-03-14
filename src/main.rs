@@ -26,7 +26,7 @@ fn main() -> Result<(), eframe::Error> {
     tracing::info!(
         "{}",
         format!(
-            "App started (version: {}, target: {}, compiled with: {})",
+            "App started (version: {}, target: {}, compiled with: rustc {})",
             build_info::get_version().unwrap_or("Unknwon".into()),
             build_info::get_target(),
             build_info::get_compiler()

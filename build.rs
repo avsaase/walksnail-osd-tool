@@ -1,8 +1,41 @@
+use std::process::Command;
+use vergen::{vergen, Config};
+
 fn main() {
     println!("cargo:rerun-if-changed=/src");
 
     // Save details from build environment so they can be included in the binary
-    built::write_built_file().expect("Failed to acquire build-time information");
+    vergen(Config::default()).unwrap();
+
+    if let Some(git_tag) = Command::new("git")
+        .args(["describe", "--exact-match", "--tags", "HEAD"])
+        .output()
+        .ok()
+        .and_then(|output| String::from_utf8(output.stdout).ok())
+    {
+        if !git_tag.is_empty() {
+            println!("cargo:rustc-env=GIT_VERSION={}", git_tag);
+        }
+    }
+
+    if let Some(short_commit) = Command::new("git")
+        .args(["rev-parse", "--short", "HEAD"])
+        .output()
+        .ok()
+        .and_then(|output| String::from_utf8(output.stdout).ok())
+    {
+        println!("cargo:rustc-env=GIT_COMMIT_HASH={}", short_commit);
+    }
+
+    Command::new("git").args(["update-index", "--refresh"]).spawn().unwrap();
+    if let Some(clean) = Command::new("git")
+        .args(["diff-index", "--quiet", "HEAD", "--"])
+        .status()
+        .ok()
+        .map(|status| status.success())
+    {
+        println!("cargo:rustc-env=GIT_DIRTY={}", !clean as u8);
+    }
 
     // Load icon data
     let out_dir = std::env::var_os("OUT_DIR").unwrap();

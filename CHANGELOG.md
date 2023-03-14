@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Fixed
 - Check for `hevc_videotoolbox` encoder on MacOS.
 - Stop ffmpeg decoder when encoder returns error.
+- Fixd version info display.
 
 ## [0.1.0-beta1] - 2023-03-11
 

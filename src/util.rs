@@ -79,26 +79,26 @@ pub fn get_dependency_path(dependency: &str) -> PathBuf {
 }
 
 pub mod build_info {
-    include!(concat!(env!("OUT_DIR"), "/built.rs"));
-
     pub fn get_version() -> Option<String> {
-        let version = GIT_VERSION.map(|s| s.to_string());
-        let sha = GIT_COMMIT_HASH_SHORT.map(|s| s.to_string());
+        let version: Option<&'static str> = option_env!("GIT_VERSION");
+        let short_hash: Option<&'static str> = option_env!("GIT_COMMIT_HASH");
+        let dirty: bool = option_env!("GIT_DIRTY").map(|s| s == "1").unwrap_or(false);
 
-        match (version, sha) {
+        match (version, short_hash) {
             (None, None) => None,
-            (None, Some(sha)) => Some(sha),
-            (Some(version), None) => Some(version),
-            (Some(version), Some(sha)) if version == sha => Some(version),
-            (Some(version), Some(sha)) => Some(format!("{}-{}", version, sha)),
+            (None, Some(commit)) if dirty => Some(format!("unreleased ({}-dirty)", commit)),
+            (None, Some(commit)) => Some(format!("dev ({})", commit)),
+            (Some(version), None) => Some(version.to_string()),
+            (Some(version), Some(commit)) if dirty => Some(format!("{} ({}-dirty)", version, commit)),
+            (Some(version), Some(commit)) => Some(format!("{} ({})", version, commit)),
         }
     }
 
-    pub fn get_compiler() -> String {
-        RUSTC_VERSION.to_string()
+    pub fn get_compiler() -> &'static str {
+        env!("VERGEN_RUSTC_SEMVER")
     }
 
-    pub fn get_target() -> String {
-        TARGET.to_string()
+    pub fn get_target() -> &'static str {
+        env!("VERGEN_CARGO_TARGET_TRIPLE")
     }
 }
