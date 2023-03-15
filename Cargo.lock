@@ -2833,7 +2833,7 @@ dependencies = [
 
 [[package]]
 name = "walksnail-osd-tool"
-version = "0.1.0-beta1"
+version = "0.1.0"
 dependencies = [
  "derivative",
  "directories",

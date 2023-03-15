@@ -6,9 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [0.1.0-beta2] - 2023-03-15
+
 ### Added
 - Make main window resizable in vertical direction to accomodate retina displays and screens with lower resolutions.
-- Display errors from ffmpeg
+- Display errors from ffmpeg.
 - Display tooltip when hovering over start render button when it is disabled.
 
 ### Changed

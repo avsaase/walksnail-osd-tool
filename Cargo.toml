@@ -1,6 +1,6 @@
 [package]
 name = "walksnail-osd-tool"
-version = "0.1.0-beta1"
+version = "0.1.0"
 edition = "2021"
 description = "Cross-platform tool for overlaying the Walksnail Avatar Goggle and VRX OSD recording on top of the video recording."
 authors = ["Alexander van Saase"]
