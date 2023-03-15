@@ -5,6 +5,8 @@ use std::{
 
 use egui::Ui;
 
+use crate::{ffmpeg::VideoInfo, font::FontFile, osd::OsdFile};
+
 use super::WalksnailOsdTool;
 
 impl WalksnailOsdTool {
@@ -12,6 +14,26 @@ impl WalksnailOsdTool {
         match (&self.video_file, &self.video_info, &self.osd_file, &self.font_file) {
             (Some(_), Some(_), Some(_), Some(_)) => true,
             (_, _, _, _) => false,
+        }
+    }
+
+    pub fn import_font_file(&mut self, file_handles: &[PathBuf]) {
+        if let Some(font_file_path) = find_file_with_extention(file_handles, "png") {
+            self.font_file = FontFile::open(font_file_path.clone()).ok();
+        }
+    }
+
+    pub fn import_osd_file(&mut self, file_handles: &[PathBuf]) {
+        if let Some(osd_file_path) = find_file_with_extention(file_handles, "osd") {
+            self.osd_file = OsdFile::open(osd_file_path.clone()).ok();
+            self.osd_preview.preview_frame = 1;
+        }
+    }
+
+    pub fn import_video_file(&mut self, file_handles: &[PathBuf]) {
+        if let Some(video_file) = find_file_with_extention(file_handles, "mp4") {
+            self.video_file = Some(video_file.clone());
+            self.video_info = VideoInfo::get(video_file, &self.dependencies.ffprobe_path).ok();
         }
     }
 }

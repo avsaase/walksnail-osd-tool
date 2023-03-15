@@ -12,13 +12,13 @@ use egui_extras::{Column, TableBuilder};
 
 use crate::{
     ffmpeg::{render_video, Encoder, EncoderSettings, FfmpegMessage, StopRenderMessage, VideoInfo},
-    font::{self, FontFile},
-    osd::{self, calculate_horizontal_offset, calculate_vertical_offset, osd_preview, OsdFile},
+    font,
+    osd::{self, calculate_horizontal_offset, calculate_vertical_offset, osd_preview},
 };
 
 use super::{
     render_status::Status,
-    utils::{find_file_with_extention, format_minutes_seconds, get_output_video_path, separator_with_space},
+    utils::{format_minutes_seconds, get_output_video_path, separator_with_space},
     RenderStatus,
 };
 
@@ -28,16 +28,16 @@ pub struct WalksnailOsdTool {
     pub video_info: Option<VideoInfo>,
     pub osd_file: Option<osd::OsdFile>,
     pub font_file: Option<font::FontFile>,
-    ui_dimensions: UiDimensions,
-    ffmpeg_receiver: Option<Receiver<FfmpegMessage>>,
-    stop_render_sender: Option<Sender<StopRenderMessage>>,
-    render_status: RenderStatus,
-    available_encoders: Vec<Rc<Encoder>>,
-    selected_encoder_idx: usize,
-    dependencies: Dependencies,
-    render_settings: EncoderSettings,
-    osd_preview: OsdPreview,
-    about_window_open: bool,
+    pub ui_dimensions: UiDimensions,
+    pub ffmpeg_receiver: Option<Receiver<FfmpegMessage>>,
+    pub stop_render_sender: Option<Sender<StopRenderMessage>>,
+    pub render_status: RenderStatus,
+    pub available_encoders: Vec<Rc<Encoder>>,
+    pub selected_encoder_idx: usize,
+    pub dependencies: Dependencies,
+    pub render_settings: EncoderSettings,
+    pub osd_preview: OsdPreview,
+    pub about_window_open: bool,
 }
 
 impl WalksnailOsdTool {
@@ -60,17 +60,17 @@ impl WalksnailOsdTool {
 }
 
 #[derive(Default)]
-struct Dependencies {
-    dependencies_satisfied: bool,
-    ffmpeg_path: PathBuf,
-    ffprobe_path: PathBuf,
+pub struct Dependencies {
+    pub dependencies_satisfied: bool,
+    pub ffmpeg_path: PathBuf,
+    pub ffprobe_path: PathBuf,
 }
 
-struct OsdPreview {
-    texture_handle: Option<TextureHandle>,
-    horizontal_offset: i32,
-    vertical_offset: i32,
-    preview_frame: u32,
+pub struct OsdPreview {
+    pub texture_handle: Option<TextureHandle>,
+    pub horizontal_offset: i32,
+    pub vertical_offset: i32,
+    pub preview_frame: u32,
 }
 
 impl Default for OsdPreview {
@@ -84,7 +84,7 @@ impl Default for OsdPreview {
     }
 }
 
-struct UiDimensions {
+pub struct UiDimensions {
     file_info_column1_width: f32,
     file_info_column2_width: f32,
     file_info_row_height: f32,
@@ -187,21 +187,33 @@ impl WalksnailOsdTool {
                 .pick_files()
             {
                 tracing::info!("Opened files {:?}", file_handles);
-                if let Some(video_file) = find_file_with_extention(&file_handles, "mp4") {
-                    self.video_file = Some(video_file.clone());
-                    self.video_info = VideoInfo::get(video_file, &self.dependencies.ffprobe_path).ok();
-                }
-                if let Some(osd_file_path) = find_file_with_extention(&file_handles, "osd") {
-                    self.osd_file = OsdFile::open(osd_file_path.clone()).ok();
-                    self.osd_preview.preview_frame = 1;
-                }
-                if let Some(font_file_path) = find_file_with_extention(&file_handles, "png") {
-                    self.font_file = FontFile::open(font_file_path.clone()).ok();
-                }
+                self.import_video_file(&file_handles);
+                self.import_osd_file(&file_handles);
+                self.import_font_file(&file_handles);
+
                 self.update_osd_preview(ctx);
                 self.render_status.reset();
             }
         }
+
+        // Collect dropped files
+        ctx.input(|i| {
+            if !i.raw.dropped_files.is_empty() {
+                let file_handles = i
+                    .raw
+                    .dropped_files
+                    .iter()
+                    .flat_map(|f| f.path.clone())
+                    .collect::<Vec<_>>();
+                tracing::info!("Dropped files {:?}", file_handles);
+                self.import_video_file(&file_handles);
+                self.import_osd_file(&file_handles);
+                self.import_font_file(&file_handles);
+
+                self.update_osd_preview(ctx);
+                self.render_status.reset();
+            }
+        });
     }
 
     fn reset_files(&mut self, ui: &mut Ui) {
