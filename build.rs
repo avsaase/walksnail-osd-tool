@@ -27,16 +27,6 @@ fn main() {
         println!("cargo:rustc-env=GIT_COMMIT_HASH={}", short_commit);
     }
 
-    Command::new("git").args(["update-index", "--refresh"]).spawn().unwrap();
-    if let Some(clean) = Command::new("git")
-        .args(["diff-index", "--quiet", "HEAD", "--"])
-        .status()
-        .ok()
-        .map(|status| status.success())
-    {
-        println!("cargo:rustc-env=GIT_DIRTY={}", !clean as u8);
-    }
-
     // Load icon data
     let out_dir = std::env::var_os("OUT_DIR").unwrap();
     let dest_path = std::path::Path::new(&out_dir).join("icon_bytes");

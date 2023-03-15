@@ -82,14 +82,12 @@ pub mod build_info {
     pub fn get_version() -> Option<String> {
         let version: Option<&'static str> = option_env!("GIT_VERSION");
         let short_hash: Option<&'static str> = option_env!("GIT_COMMIT_HASH");
-        let dirty: bool = option_env!("GIT_DIRTY").map(|s| s == "1").unwrap_or(false);
-        let dirty_or_empty = if dirty { "-dirty" } else { "" };
 
         match (version, short_hash) {
             (None, None) => None,
-            (None, Some(commit)) => Some(format!("dev ({}{})", commit, dirty_or_empty)),
+            (None, Some(commit)) => Some(format!("dev ({})", commit)),
             (Some(version), None) => Some(version.to_string()),
-            (Some(version), Some(commit)) => Some(format!("{} ({}{})", version, commit, dirty_or_empty)),
+            (Some(version), Some(commit)) => Some(format!("{} ({})", version, commit)),
         }
     }
 
