@@ -670,7 +670,7 @@ impl WalksnailOsdTool {
             (&self.ffmpeg_receiver, &self.video_info, &self.stop_render_sender)
         {
             if let Ok(message) = rx.try_recv() {
-                if matches!(message, FfmpegMessage::EncoderError(_)) {
+                if matches!(message, FfmpegMessage::EncoderFatalError(_)) {
                     stop_render_sender.send(StopRenderMessage).unwrap();
                 }
                 self.render_status.update_from_ffmpeg_message(message, video_info)

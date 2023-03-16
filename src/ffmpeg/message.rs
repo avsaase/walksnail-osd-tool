@@ -1,8 +1,8 @@
 use ffmpeg_sidecar::event::FfmpegProgress;
 
 pub enum FfmpegMessage {
-    DecoderError(String),
-    EncoderError(String),
+    DecoderFatalError(String),
+    EncoderFatalError(String),
     Progress(FfmpegProgress),
     DecoderFinished,
 }

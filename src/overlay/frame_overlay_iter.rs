@@ -6,7 +6,7 @@ use std::{
 
 use ffmpeg_sidecar::{
     child::FfmpegChild,
-    event::{FfmpegEvent, OutputVideoFrame},
+    event::{FfmpegEvent, LogLevel, OutputVideoFrame},
     iter::FfmpegIterator,
 };
 
@@ -93,9 +93,13 @@ impl Iterator for FrameOverlayIter {
                 self.ffmpeg_sender.send(FfmpegMessage::DecoderFinished).unwrap();
                 None
             }
-            FfmpegEvent::LogError(e) => {
-                tracing::error!("Received error from decoder ffmpeg instance: {}", &e);
-                self.ffmpeg_sender.send(FfmpegMessage::DecoderError(e)).unwrap();
+            FfmpegEvent::Log(LogLevel::Fatal, e) => {
+                tracing::error!("ffmpeg fatal error: {}", &e);
+                self.ffmpeg_sender.send(FfmpegMessage::DecoderFatalError(e)).unwrap();
+                None
+            }
+            FfmpegEvent::Log(LogLevel::Warning | LogLevel::Error, e) => {
+                tracing::warn!("ffmpeg log: {}", &e);
                 None
             }
             _ => None,

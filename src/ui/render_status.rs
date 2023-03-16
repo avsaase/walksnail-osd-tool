@@ -61,7 +61,7 @@ impl RenderStatus {
 
             (
                 Status::InProgress { progress_pct, .. },
-                FfmpegMessage::DecoderError(e) | FfmpegMessage::EncoderError(e),
+                FfmpegMessage::DecoderFatalError(e) | FfmpegMessage::EncoderFatalError(e),
             ) => {
                 self.status = Status::Error {
                     progress_pct: *progress_pct,

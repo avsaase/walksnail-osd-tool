@@ -15,7 +15,7 @@ directories = "4.0.1"
 eframe = "0.21.3"
 egui = "0.21.0"
 egui_extras = { version = "0.21.0", features = ["image"] }
-ffmpeg-sidecar = "0.2.1"
+ffmpeg-sidecar = { git = "https://github.com/avsaase/ffmpeg-sidecar/", branch = "log-fatal" }
 ffprobe = { git = "https://github.com/avsaase/ffprobe-rs/", branch = "suppress-console-windows" }
 image = "0.24.5"
 rayon = "1.6.1"
@@ -37,6 +37,9 @@ vergen = "7.5.1"
 [features]
 macos-app-bundle = []
 windows-installer = []
+
+[profile.dev]
+opt-level = 3
 
 [package.metadata.bundle]
 name = "Walksnail OSD Tool"

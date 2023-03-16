@@ -5,7 +5,11 @@ use std::{
     thread,
 };
 
-use ffmpeg_sidecar::{child::FfmpegChild, command::FfmpegCommand, event::FfmpegEvent};
+use ffmpeg_sidecar::{
+    child::FfmpegChild,
+    command::FfmpegCommand,
+    event::{FfmpegEvent, LogLevel},
+};
 
 use crate::{font, osd, overlay::FrameOverlayIter};
 
@@ -69,11 +73,14 @@ pub fn render_video(
             encoder.iter().map_or_else(
                 |e| tracing::error!("Failed to create encoder iterator with error {}", e),
                 |v| {
-                    v.for_each(|event| {
-                        if let FfmpegEvent::LogError(e) = event {
-                            tracing::error!("Received error from encoder ffmpeg instance: {}", &e);
-                            ffmpeg_sender.send(FfmpegMessage::EncoderError(e)).unwrap();
+                    v.for_each(|event| match event {
+                        FfmpegEvent::Log(level, e) => {
+                            if level == LogLevel::Fatal || e.contains("Error initializing output") {
+                                tracing::error!("Received fatal error from encoder ffmpeg instance: {}", &e);
+                                ffmpeg_sender.send(FfmpegMessage::EncoderFatalError(e)).unwrap();
+                            }
                         }
+                        _ => {}
                     })
                 },
             );
@@ -85,12 +92,15 @@ pub fn render_video(
 
 #[tracing::instrument(skip(ffmpeg_path))]
 pub fn spawn_decoder(ffmpeg_path: &PathBuf, input_video: &PathBuf) -> Result<FfmpegChild, io::Error> {
-    let mut decoder = FfmpegCommand::new_with_exe(ffmpeg_path);
+    let mut decoder = FfmpegCommand::new_with_path(ffmpeg_path);
 
     #[cfg(target_os = "windows")]
     std::os::windows::process::CommandExt::creation_flags(decoder.as_inner_mut(), crate::CREATE_NO_WINDOW);
 
-    let decoder = decoder.input(input_video.to_str().unwrap()).rawvideo().spawn()?;
+    let decoder = decoder
+        .input(input_video.to_str().unwrap())
+        .args(["-f", "rawvideo", "-pix_fmt", "rgba", "-"])
+        .spawn()?;
 
     tracing::info!("Spawned ffmpeg decoder instance");
     Ok(decoder)
@@ -106,14 +116,14 @@ pub fn spawn_encoder(
     video_encoder: &Encoder,
     output_video: &PathBuf,
 ) -> Result<FfmpegChild, io::Error> {
-    let mut encoder = FfmpegCommand::new_with_exe(ffmpeg_path);
+    let mut encoder = FfmpegCommand::new_with_path(ffmpeg_path);
 
     #[cfg(target_os = "windows")]
     std::os::windows::process::CommandExt::creation_flags(encoder.as_inner_mut(), crate::CREATE_NO_WINDOW);
 
     let encoder = encoder
         .args(["-f", "rawvideo"])
-        .args(["-pix_fmt", "rgb24"])
+        .args(["-pix_fmt", "rgba"])
         .size(width, height)
         .rate(frame_rate)
         .input("-")
