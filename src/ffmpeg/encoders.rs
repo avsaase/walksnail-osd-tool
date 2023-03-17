@@ -38,7 +38,7 @@ impl Encoder {
     #[tracing::instrument(ret)]
     pub fn get_available_encoders(ffmpeg_path: &PathBuf) -> Vec<Self> {
         #[rustfmt::skip]
-        let all_encoders = vec![
+        let mut all_encoders = vec![
             Encoder::new("libx264", Codec::H264, false),
             Encoder::new("libx265", Codec::H265, false),
 
@@ -80,11 +80,10 @@ impl Encoder {
         ];
 
         all_encoders
-            .par_iter()
-            .map(|x| {
-                let mut encoder = x.clone();
-                encoder.detected = Self::ffmpeg_encoder_available(x, ffmpeg_path);
-                encoder
+            .par_iter_mut()
+            .map(|encoder| {
+                encoder.detected = Self::ffmpeg_encoder_available(encoder, ffmpeg_path);
+                encoder.clone()
             })
             .collect()
     }

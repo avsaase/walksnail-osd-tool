@@ -10,5 +10,6 @@ pub use encoders::Codec;
 pub use encoders::Encoder;
 pub use message::FfmpegMessage;
 pub use message::StopRenderMessage;
+pub use render::handle_decoder_events;
 pub use render::render_video;
 pub use video_info::VideoInfo;
