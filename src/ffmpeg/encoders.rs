@@ -45,9 +45,6 @@ impl Encoder {
             #[cfg(target_os = "windows")]
             Encoder::new("h264_amf", Codec::H264, true),
 
-            #[cfg(target_os = "windows")]
-            Encoder::new("h264_mf", Codec::H264, true),
-
             #[cfg(any(target_os = "windows", target_os = "linux"))]
             Encoder::new("h264_nvenc", Codec::H264, true),
 
@@ -65,9 +62,6 @@ impl Encoder {
 
             #[cfg(target_os = "windows")]
             Encoder::new("hevc_amf", Codec::H265, true),
-
-            #[cfg(target_os = "windows")]
-            Encoder::new("hevc_mf", Codec::H265, true),
 
             #[cfg(any(target_os = "windows", target_os = "linux"))]
             Encoder::new("hevc_nvenc", Codec::H265, true),
