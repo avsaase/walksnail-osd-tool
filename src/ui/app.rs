@@ -51,6 +51,7 @@ impl WalksnailOsdTool {
         encoders: Vec<Encoder>,
     ) -> Self {
         set_font_styles(ctx);
+        ctx.set_visuals(Visuals::light());
 
         Self {
             dependencies: Dependencies {
@@ -59,7 +60,6 @@ impl WalksnailOsdTool {
                 ffprobe_path,
             },
             encoders: encoders.into_iter().map(Rc::new).collect(),
-            dark_mode: true,
             ..Default::default()
         }
     }
@@ -126,7 +126,7 @@ impl eframe::App for WalksnailOsdTool {
             ui.horizontal(|ui| {
                 self.import_files(ui, ctx);
                 self.reset_files(ui);
-                ui.add_space(ui.available_width() - 50.0);
+                ui.add_space(ui.available_width() - 55.0);
                 self.toggle_light_dark_theme(ui, ctx);
                 self.about_window(ui, ctx);
             });
