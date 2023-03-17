@@ -5,8 +5,8 @@ use std::{
 };
 
 use egui::{
-    pos2, text::LayoutJob, vec2, Align, Button, Color32, FontFamily, FontId, Frame, Image, Label, Layout, ProgressBar,
-    RichText, Sense, TextFormat, TextStyle, TextureHandle, Ui, Visuals,
+    pos2, text::LayoutJob, vec2, Align, Button, Color32, Frame, Image, Label, Layout, ProgressBar, RichText, Sense,
+    TextFormat, TextStyle, TextureHandle, Ui, Visuals,
 };
 use egui_extras::{Column, TableBuilder};
 
@@ -18,7 +18,7 @@ use crate::{
 
 use super::{
     render_status::Status,
-    utils::{format_minutes_seconds, get_output_video_path, separator_with_space},
+    utils::{format_minutes_seconds, get_output_video_path, separator_with_space, set_font_styles},
     RenderStatus,
 };
 
@@ -39,15 +39,19 @@ pub struct WalksnailOsdTool {
     pub render_settings: EncoderSettings,
     pub osd_preview: OsdPreview,
     pub about_window_open: bool,
+    pub dark_mode: bool,
 }
 
 impl WalksnailOsdTool {
     pub fn new(
+        ctx: &egui::Context,
         dependencies_satisfied: bool,
         ffmpeg_path: PathBuf,
         ffprobe_path: PathBuf,
         encoders: Vec<Encoder>,
     ) -> Self {
+        set_font_styles(ctx);
+
         Self {
             dependencies: Dependencies {
                 dependencies_satisfied,
@@ -55,6 +59,7 @@ impl WalksnailOsdTool {
                 ffprobe_path,
             },
             encoders: encoders.into_iter().map(Rc::new).collect(),
+            dark_mode: true,
             ..Default::default()
         }
     }
@@ -105,9 +110,6 @@ impl Default for UiDimensions {
 
 impl eframe::App for WalksnailOsdTool {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        self.change_text_style(ctx);
-        ctx.set_visuals(Visuals::light());
-
         // On startup check if the runtime dependencies are available. Show a warning if not.
         self.missing_dependencies_warning(ctx);
 
@@ -124,7 +126,8 @@ impl eframe::App for WalksnailOsdTool {
             ui.horizontal(|ui| {
                 self.import_files(ui, ctx);
                 self.reset_files(ui);
-                ui.add_space(ui.available_width() - 20.0);
+                ui.add_space(ui.available_width() - 50.0);
+                self.toggle_light_dark_theme(ui, ctx);
                 self.about_window(ui, ctx);
             });
             ui.add_space(5.0);
@@ -163,21 +166,6 @@ impl eframe::App for WalksnailOsdTool {
 }
 
 impl WalksnailOsdTool {
-    fn change_text_style(&self, ctx: &egui::Context) {
-        let mut style = (*ctx.style()).clone();
-        use FontFamily::{Monospace, Proportional};
-
-        style.text_styles = [
-            (TextStyle::Small, FontId::new(9.0, Proportional)),
-            (TextStyle::Body, FontId::new(15.0, Proportional)),
-            (TextStyle::Button, FontId::new(15.0, Proportional)),
-            (TextStyle::Heading, FontId::new(17.0, Proportional)),
-            (TextStyle::Monospace, FontId::new(14.0, Monospace)),
-        ]
-        .into();
-        ctx.set_style(style);
-    }
-
     fn import_files(&mut self, ui: &mut Ui, ctx: &egui::Context) {
         if ui
             .add_enabled(self.render_status.is_not_in_progress(), Button::new("Open files"))
@@ -230,6 +218,19 @@ impl WalksnailOsdTool {
             self.osd_preview.preview_frame = 1;
             self.render_status.reset();
             tracing::info!("Reset files");
+        }
+    }
+
+    fn toggle_light_dark_theme(&mut self, ui: &mut Ui, ctx: &egui::Context) {
+        let icon = if self.dark_mode { "☀" } else { "🌙" };
+        if ui.add(Button::new(icon).frame(false)).clicked() {
+            let visuals = if self.dark_mode {
+                Visuals::light()
+            } else {
+                Visuals::dark()
+            };
+            ctx.set_visuals(visuals);
+            self.dark_mode = !self.dark_mode;
         }
     }
 

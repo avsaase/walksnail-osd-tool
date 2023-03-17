@@ -62,8 +62,9 @@ fn main() -> Result<(), eframe::Error> {
     eframe::run_native(
         "Walksnail OSD Tool",
         options,
-        Box::new(move |_cc| {
+        Box::new(move |cc| {
             Box::new(WalksnailOsdTool::new(
+                &cc.egui_ctx,
                 dependencies_satisfied,
                 ffmpeg_path,
                 ffprobe_path,

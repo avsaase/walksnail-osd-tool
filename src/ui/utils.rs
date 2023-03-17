@@ -74,3 +74,20 @@ pub fn get_output_video_path(input_video_path: &Path) -> PathBuf {
     output_video_path.push(output_video_file_name);
     output_video_path
 }
+
+pub fn set_font_styles(ctx: &egui::Context) {
+    use egui::{
+        FontFamily::{Monospace, Proportional},
+        FontId, Style, TextStyle,
+    };
+    let mut style = Style::clone(&ctx.style());
+    style.text_styles = [
+        (TextStyle::Small, FontId::new(9.0, Proportional)),
+        (TextStyle::Body, FontId::new(15.0, Proportional)),
+        (TextStyle::Button, FontId::new(15.0, Proportional)),
+        (TextStyle::Heading, FontId::new(17.0, Proportional)),
+        (TextStyle::Monospace, FontId::new(14.0, Monospace)),
+    ]
+    .into();
+    ctx.set_style(style);
+}
