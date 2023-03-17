@@ -75,7 +75,10 @@ pub fn render_video(
                 |v| {
                     v.for_each(|event| match event {
                         FfmpegEvent::Log(level, e) => {
-                            if level == LogLevel::Fatal || e.contains("Error initializing output") {
+                            if level == LogLevel::Fatal
+                                || e.contains("Error initializing output")
+                                || e.contains("[error] Cannot load")
+                            {
                                 tracing::error!("Received fatal error from encoder ffmpeg instance: {}", &e);
                                 ffmpeg_sender.send(FfmpegMessage::EncoderFatalError(e)).unwrap();
                             }
