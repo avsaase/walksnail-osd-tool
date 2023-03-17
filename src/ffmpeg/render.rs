@@ -27,9 +27,9 @@ pub fn render_video(
     horizontal_offset: i32,
     vertical_offset: i32,
 ) -> Result<(Receiver<FfmpegMessage>, Sender<StopRenderMessage>), io::Error> {
-    let mut decoder = spawn_decoder(ffmpeg_path, input_video)?;
+    let mut decoder_process = spawn_decoder(ffmpeg_path, input_video)?;
 
-    let mut encoder = spawn_encoder(
+    let mut encoder_process = spawn_encoder(
         ffmpeg_path,
         video_info.width,
         video_info.height,
@@ -47,8 +47,10 @@ pub fn render_video(
 
     // Iterator over decoded video and OSD frames
     let frame_overlay_iter = FrameOverlayIter::new(
-        decoder.iter().expect("Failed to create `FfmpegIterator` for decoder"),
-        decoder,
+        decoder_process
+            .iter()
+            .expect("Failed to create `FfmpegIterator` for decoder"),
+        decoder_process,
         osd_frames,
         font_file,
         horizontal_offset,
@@ -58,7 +60,7 @@ pub fn render_video(
     );
 
     // On another thread run the iterator to completion and feed the output to the encoder's stdin
-    let mut encoder_stdin = encoder.take_stdin().expect("Failed to get `stdin` for encoder");
+    let mut encoder_stdin = encoder_process.take_stdin().expect("Failed to get `stdin` for encoder");
     thread::spawn(move || {
         tracing::info_span!("Decoder thread").in_scope(|| {
             frame_overlay_iter.for_each(|f| {
@@ -70,19 +72,9 @@ pub fn render_video(
     // On yet another thread run the encoder to completion
     thread::spawn(move || {
         tracing::info_span!("Encoder thread").in_scope(|| {
-            encoder.iter().map_or_else(
+            encoder_process.iter().map_or_else(
                 |e| tracing::error!("Failed to create encoder iterator with error {}", e),
-                |v| {
-                    v.for_each(|event| match event {
-                        FfmpegEvent::Log(level, e) => {
-                            if level == LogLevel::Fatal || e.contains("Error initializing output") {
-                                tracing::error!("Received fatal error from encoder ffmpeg instance: {}", &e);
-                                ffmpeg_sender.send(FfmpegMessage::EncoderFatalError(e)).unwrap();
-                            }
-                        }
-                        _ => {}
-                    })
-                },
+                |v| v.for_each(|event| handle_encoder_events(event, &ffmpeg_sender)),
             );
         });
     });
@@ -134,4 +126,39 @@ pub fn spawn_encoder(
 
     tracing::info!("Spawned ffmpeg encoder instance");
     Ok(encoder)
+}
+
+fn handle_encoder_events(ffmpeg_event: FfmpegEvent, ffmpeg_sender: &Sender<FfmpegMessage>) {
+    match ffmpeg_event {
+        FfmpegEvent::Log(level, e) => {
+            if level == LogLevel::Fatal
+            // there are some fatal errors that ffmpeg considers normal errors
+                || e.contains("Error initializing output")
+                || e.contains("[error] Cannot load")
+            {
+                tracing::error!("ffmpeg fatal error: {}", &e);
+                ffmpeg_sender.send(FfmpegMessage::EncoderFatalError(e)).unwrap();
+            }
+        }
+        _ => {}
+    }
+}
+
+pub fn handle_decoder_events(ffmpeg_event: FfmpegEvent, ffmpeg_sender: &Sender<FfmpegMessage>) {
+    match ffmpeg_event {
+        FfmpegEvent::Progress(p) => {
+            ffmpeg_sender.send(FfmpegMessage::Progress(p)).unwrap();
+        }
+        FfmpegEvent::Done | FfmpegEvent::LogEOF => {
+            ffmpeg_sender.send(FfmpegMessage::DecoderFinished).unwrap();
+        }
+        FfmpegEvent::Log(LogLevel::Fatal, e) => {
+            tracing::error!("ffmpeg fatal error: {}", &e);
+            ffmpeg_sender.send(FfmpegMessage::DecoderFatalError(e)).unwrap();
+        }
+        FfmpegEvent::Log(LogLevel::Warning | LogLevel::Error, e) => {
+            tracing::warn!("ffmpeg log: {}", &e);
+        }
+        _ => {}
+    }
 }

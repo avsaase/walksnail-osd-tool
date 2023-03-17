@@ -6,19 +6,19 @@ use std::{
 
 use ffmpeg_sidecar::{
     child::FfmpegChild,
-    event::{FfmpegEvent, LogLevel, OutputVideoFrame},
+    event::{FfmpegEvent, OutputVideoFrame},
     iter::FfmpegIterator,
 };
 
 use crate::{
-    ffmpeg::{FfmpegMessage, StopRenderMessage},
+    ffmpeg::{handle_decoder_events, FfmpegMessage, StopRenderMessage},
     font, osd,
     overlay::overlay_osd_on_video,
 };
 
 pub struct FrameOverlayIter {
-    ffmpeg_iter: FfmpegIterator,
-    ffmpeg_child: FfmpegChild,
+    decoder_iter: FfmpegIterator,
+    decoder_process: FfmpegChild,
     osd_frames_iter: Peekable<IntoIter<osd::Frame>>,
     font_file: font::FontFile,
     horizontal_offset: i32,
@@ -29,10 +29,10 @@ pub struct FrameOverlayIter {
 }
 
 impl FrameOverlayIter {
-    #[tracing::instrument(skip(ffmpeg_iter, ffmpeg_child, osd_frames, font_file), level = "debug")]
+    #[tracing::instrument(skip(decoder_iter, decoder_process, osd_frames, font_file), level = "debug")]
     pub fn new(
-        ffmpeg_iter: FfmpegIterator,
-        ffmpeg_child: FfmpegChild,
+        decoder_iter: FfmpegIterator,
+        decoder_process: FfmpegChild,
         osd_frames: Vec<osd::Frame>,
         font_file: font::FontFile,
         horizontal_offset: i32,
@@ -43,8 +43,8 @@ impl FrameOverlayIter {
         let mut osd_frames_iter = osd_frames.into_iter();
         let first_osd_frame = osd_frames_iter.next().unwrap();
         Self {
-            ffmpeg_iter,
-            ffmpeg_child,
+            decoder_iter,
+            decoder_process,
             osd_frames_iter: osd_frames_iter.peekable(),
             font_file,
             horizontal_offset,
@@ -62,10 +62,10 @@ impl Iterator for FrameOverlayIter {
     fn next(&mut self) -> Option<Self::Item> {
         //  On every iteration check if the render should be stopped
         if self.stop_render_receiver.try_recv().is_ok() {
-            self.ffmpeg_child.quit().unwrap();
+            self.decoder_process.quit().unwrap();
         }
 
-        self.ffmpeg_iter.find_map(|e| match e {
+        self.decoder_iter.find_map(|e| match e {
             FfmpegEvent::OutputFrame(video_frame) => {
                 // For every video frame check if frame time is later than the next OSD frame time.
                 // If so advance the iterator over the OSD frames so we use the correct OSD frame
@@ -85,24 +85,10 @@ impl Iterator for FrameOverlayIter {
                     self.vertical_offset,
                 ))
             }
-            FfmpegEvent::Progress(p) => {
-                self.ffmpeg_sender.send(FfmpegMessage::Progress(p)).unwrap();
+            other_event => {
+                handle_decoder_events(other_event, &self.ffmpeg_sender);
                 None
             }
-            FfmpegEvent::Done | FfmpegEvent::LogEOF => {
-                self.ffmpeg_sender.send(FfmpegMessage::DecoderFinished).unwrap();
-                None
-            }
-            FfmpegEvent::Log(LogLevel::Fatal, e) => {
-                tracing::error!("ffmpeg fatal error: {}", &e);
-                self.ffmpeg_sender.send(FfmpegMessage::DecoderFatalError(e)).unwrap();
-                None
-            }
-            FfmpegEvent::Log(LogLevel::Warning | LogLevel::Error, e) => {
-                tracing::warn!("ffmpeg log: {}", &e);
-                None
-            }
-            _ => None,
         })
     }
 }

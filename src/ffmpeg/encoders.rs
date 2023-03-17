@@ -38,15 +38,12 @@ impl Encoder {
     #[tracing::instrument(ret)]
     pub fn get_available_encoders(ffmpeg_path: &PathBuf) -> Vec<Self> {
         #[rustfmt::skip]
-        let all_encoders = vec![
+        let mut all_encoders = vec![
             Encoder::new("libx264", Codec::H264, false),
             Encoder::new("libx265", Codec::H265, false),
 
             #[cfg(target_os = "windows")]
             Encoder::new("h264_amf", Codec::H264, true),
-
-            #[cfg(target_os = "windows")]
-            Encoder::new("h264_mf", Codec::H264, true),
 
             #[cfg(any(target_os = "windows", target_os = "linux"))]
             Encoder::new("h264_nvenc", Codec::H264, true),
@@ -66,9 +63,6 @@ impl Encoder {
             #[cfg(target_os = "windows")]
             Encoder::new("hevc_amf", Codec::H265, true),
 
-            #[cfg(target_os = "windows")]
-            Encoder::new("hevc_mf", Codec::H265, true),
-
             #[cfg(any(target_os = "windows", target_os = "linux"))]
             Encoder::new("hevc_nvenc", Codec::H265, true),
 
@@ -86,11 +80,10 @@ impl Encoder {
         ];
 
         all_encoders
-            .par_iter()
-            .map(|x| {
-                let mut encoder = x.clone();
-                encoder.detected = Self::ffmpeg_encoder_available(x, ffmpeg_path);
-                encoder
+            .par_iter_mut()
+            .map(|encoder| {
+                encoder.detected = Self::ffmpeg_encoder_available(encoder, ffmpeg_path);
+                encoder.clone()
             })
             .collect()
     }
