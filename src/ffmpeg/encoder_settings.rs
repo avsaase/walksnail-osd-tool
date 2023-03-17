@@ -15,6 +15,7 @@ impl Default for EncoderSettings {
                 name: "libx264".to_string(),
                 codec: Codec::H264,
                 hardware: false,
+                detected: false,
             }),
             bitrate_mbps: 40,
         }

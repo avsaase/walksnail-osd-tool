@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Open files by dropping them on the window.
 - Improve render speed.
 - Logging of ffmpeg errors and warnings.
+- Option to select undetected encoders (use at your own risk).
 
 ### Fixed
 - Issue with non-critical ffmpeg errors stopping the render process.

@@ -22,6 +22,7 @@ pub struct Encoder {
     pub name: String,
     pub codec: Codec,
     pub hardware: bool,
+    pub detected: bool,
 }
 
 impl Encoder {
@@ -30,6 +31,7 @@ impl Encoder {
             name: name.to_string(),
             codec,
             hardware,
+            detected: false,
         }
     }
 
@@ -84,9 +86,13 @@ impl Encoder {
         ];
 
         all_encoders
-            .into_par_iter()
-            .filter(|x| Self::ffmpeg_encoder_available(x, ffmpeg_path))
-            .collect::<Vec<_>>()
+            .par_iter()
+            .map(|x| {
+                let mut encoder = x.clone();
+                encoder.detected = Self::ffmpeg_encoder_available(x, ffmpeg_path);
+                encoder
+            })
+            .collect()
     }
 
     fn ffmpeg_encoder_available(encoder: &Encoder, ffmpeg_path: &PathBuf) -> bool {

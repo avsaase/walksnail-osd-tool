@@ -32,7 +32,8 @@ pub struct WalksnailOsdTool {
     pub ffmpeg_receiver: Option<Receiver<FfmpegMessage>>,
     pub stop_render_sender: Option<Sender<StopRenderMessage>>,
     pub render_status: RenderStatus,
-    pub available_encoders: Vec<Rc<Encoder>>,
+    pub encoders: Vec<Rc<Encoder>>,
+    pub show_undetected_encoders: bool,
     pub selected_encoder_idx: usize,
     pub dependencies: Dependencies,
     pub render_settings: EncoderSettings,
@@ -45,7 +46,7 @@ impl WalksnailOsdTool {
         dependencies_satisfied: bool,
         ffmpeg_path: PathBuf,
         ffprobe_path: PathBuf,
-        available_encoders: Vec<Encoder>,
+        encoders: Vec<Encoder>,
     ) -> Self {
         Self {
             dependencies: Dependencies {
@@ -53,7 +54,7 @@ impl WalksnailOsdTool {
                 ffmpeg_path,
                 ffprobe_path,
             },
-            available_encoders: available_encoders.into_iter().map(Rc::new).collect(),
+            encoders: encoders.into_iter().map(Rc::new).collect(),
             ..Default::default()
         }
     }
@@ -542,26 +543,44 @@ impl WalksnailOsdTool {
     }
 
     fn rendering_options(&mut self, ui: &mut Ui) {
+        let selectable_encoders = self
+            .encoders
+            .iter()
+            .filter(|e| self.show_undetected_encoders || e.detected)
+            .collect::<Vec<_>>();
+
         egui::Grid::new("render_options")
             .spacing(vec2(15.0, 10.0))
             .show(ui, |ui| {
                 ui.label("Encoder");
-                let resp = egui::ComboBox::from_id_source("encoder").width(250.0).show_index(
-                    ui,
-                    &mut self.selected_encoder_idx,
-                    self.available_encoders.len(),
-                    |i| {
-                        self.available_encoders
-                            .get(i)
-                            .map(|e| e.to_string())
-                            .unwrap_or("None".to_string())
-                    },
-                );
-                if resp.changed() {
-                    // This is a little hacky but it's nice to have a single struct that keeps track of all render settings
-                    self.render_settings.encoder =
-                        self.available_encoders.get(self.selected_encoder_idx).unwrap().clone();
-                }
+                ui.horizontal(|ui| {
+                    let selection = egui::ComboBox::from_id_source("encoder").width(350.0).show_index(
+                        ui,
+                        &mut self.selected_encoder_idx,
+                        selectable_encoders.len(),
+                        |i| {
+                            selectable_encoders
+                                .get(i)
+                                .map(|e| e.to_string())
+                                .unwrap_or("None".to_string())
+                        },
+                    );
+                    if selection.changed() {
+                        // This is a little hacky but it's nice to have a single struct that keeps track of all render settings
+                        self.render_settings.encoder = selectable_encoders
+                            .get(self.selected_encoder_idx)
+                            .unwrap()
+                            .clone()
+                            .clone();
+                    }
+                    if ui
+                        .checkbox(&mut self.show_undetected_encoders, "Show undeteced encoders")
+                        .changed()
+                    {
+                        self.selected_encoder_idx = 0;
+                        tracing::info!("Toggled show undetected encoders: {}", self.show_undetected_encoders);
+                    };
+                });
                 ui.end_row();
 
                 ui.label("Encoding bitrate");
@@ -679,7 +698,7 @@ impl WalksnailOsdTool {
     }
 
     fn missing_dependencies_warning(&mut self, ctx: &egui::Context) {
-        if !self.dependencies.dependencies_satisfied || self.available_encoders.is_empty() {
+        if !self.dependencies.dependencies_satisfied || self.encoders.is_empty() {
             egui::Window::new("Missing dependencies")
                 .default_pos(pos2(175.0, 200.0))
                 .fixed_size(vec2(350.0, 300.0))

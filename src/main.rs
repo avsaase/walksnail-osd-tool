@@ -38,7 +38,7 @@ fn main() -> Result<(), eframe::Error> {
     let ffmpeg_path = util::get_dependency_path("ffmpeg");
     let ffprobe_path = util::get_dependency_path("ffprobe");
     let dependencies_satisfied = ffmpeg_available(&ffmpeg_path) && ffprobe_available(&ffprobe_path);
-    let detected_encoders = if dependencies_satisfied {
+    let encoders = if dependencies_satisfied {
         Encoder::get_available_encoders(&ffmpeg_path)
     } else {
         vec![]
@@ -67,7 +67,7 @@ fn main() -> Result<(), eframe::Error> {
                 dependencies_satisfied,
                 ffmpeg_path,
                 ffprobe_path,
-                detected_encoders,
+                encoders,
             ))
         }),
     )
