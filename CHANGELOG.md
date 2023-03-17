@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Improve render speed.
 - Logging of ffmpeg errors and warnings.
 - Option to select undetected encoders (use at your own risk).
+- Dark theme (toggle by clicking the sun/moon icon in the top right).
 
 ### Fixed
 - Issue with non-critical ffmpeg errors stopping the render process.
