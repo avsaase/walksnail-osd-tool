@@ -15,7 +15,7 @@ directories = "4.0.1"
 eframe = "0.21.3"
 egui = "0.21.0"
 egui_extras = { version = "0.21.0", features = ["image"] }
-ffmpeg-sidecar = { git = "https://github.com/avsaase/ffmpeg-sidecar/", branch = "log-fatal" }
+ffmpeg-sidecar = "0.3.2"
 ffprobe = { git = "https://github.com/avsaase/ffprobe-rs/", branch = "suppress-console-windows" }
 image = "0.24.5"
 rayon = "1.6.1"

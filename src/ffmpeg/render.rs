@@ -84,17 +84,11 @@ pub fn render_video(
 
 #[tracing::instrument(skip(ffmpeg_path))]
 pub fn spawn_decoder(ffmpeg_path: &PathBuf, input_video: &PathBuf) -> Result<FfmpegChild, io::Error> {
-    let mut decoder = FfmpegCommand::new_with_path(ffmpeg_path);
-
-    #[cfg(target_os = "windows")]
-    std::os::windows::process::CommandExt::creation_flags(decoder.as_inner_mut(), crate::CREATE_NO_WINDOW);
-
-    let decoder = decoder
+    let decoder = FfmpegCommand::new_with_path(ffmpeg_path)
+        .create_no_window()
         .input(input_video.to_str().unwrap())
         .args(["-f", "rawvideo", "-pix_fmt", "rgba", "-"])
         .spawn()?;
-
-    tracing::info!("Spawned ffmpeg decoder instance");
     Ok(decoder)
 }
 
@@ -108,12 +102,8 @@ pub fn spawn_encoder(
     video_encoder: &Encoder,
     output_video: &PathBuf,
 ) -> Result<FfmpegChild, io::Error> {
-    let mut encoder = FfmpegCommand::new_with_path(ffmpeg_path);
-
-    #[cfg(target_os = "windows")]
-    std::os::windows::process::CommandExt::creation_flags(encoder.as_inner_mut(), crate::CREATE_NO_WINDOW);
-
-    let encoder = encoder
+    let encoder = FfmpegCommand::new_with_path(ffmpeg_path)
+        .create_no_window()
         .args(["-f", "rawvideo"])
         .args(["-pix_fmt", "rgba"])
         .size(width, height)
@@ -123,8 +113,6 @@ pub fn spawn_encoder(
         .args(["-b:v", &format!("{}M", bitrate_mbps)])
         .args(["-y", output_video.to_str().unwrap()])
         .spawn()?;
-
-    tracing::info!("Spawned ffmpeg encoder instance");
     Ok(encoder)
 }
 
