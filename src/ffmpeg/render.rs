@@ -104,14 +104,16 @@ pub fn spawn_encoder(
 ) -> Result<FfmpegChild, io::Error> {
     let encoder = FfmpegCommand::new_with_path(ffmpeg_path)
         .create_no_window()
-        .args(["-f", "rawvideo"])
-        .args(["-pix_fmt", "rgba"])
+        .format("rawvideo")
+        .pix_fmt("rgba")
         .size(width, height)
         .rate(frame_rate)
         .input("-")
+        .pix_fmt("yuv420p")
         .codec_video(&video_encoder.name)
         .args(["-b:v", &format!("{}M", bitrate_mbps)])
-        .args(["-y", output_video.to_str().unwrap()])
+        .overwrite()
+        .output(output_video.to_str().unwrap())
         .spawn()?;
     Ok(encoder)
 }

@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Fixed
 - Issue with non-critical ffmpeg errors stopping the render process.
+- Output videos not playable in some video players.
 
 ## [0.1.0-beta2] - 2023-03-15
 
