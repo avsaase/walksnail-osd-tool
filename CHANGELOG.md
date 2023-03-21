@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [0.1.0-beta3] - 2023-03-32
+
 ### Added
 - Open files by dropping them on the window.
 - Improve render speed.
@@ -13,8 +15,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Option to select undetected encoders (use at your own risk).
 - Dark theme (default light, toggle by clicking the sun/moon icon in the top right).
 
-## Changed
-- Improve handling of ffmpeg events.
+### Changed
+- Improved handling of ffmpeg events.
 
 ### Fixed
 - Issue with non-critical ffmpeg errors stopping the render process.
