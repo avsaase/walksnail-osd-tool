@@ -2,7 +2,7 @@ use std::process::Command;
 use vergen::{vergen, Config};
 
 fn main() {
-    println!("cargo:rerun-if-changed=/src");
+    // println!("cargo:rerun-if-changed=/src");
 
     // Save details from build environment so they can be included in the binary
     vergen(Config::default()).unwrap();

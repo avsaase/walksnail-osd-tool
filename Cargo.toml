@@ -10,6 +10,7 @@ readme = "README.md"
 license = "GPL-3.0"
 
 [dependencies]
+crossbeam-channel = "0.5.7"
 derivative = "2.2.0"
 directories = "4.0.1"
 eframe = "0.21.3"

@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use crate::ffmpeg::{FfmpegMessage, VideoInfo};
+use crate::ffmpeg::{FromFfmpegMessage, VideoInfo};
 
 #[derive(Default)]
 pub struct RenderStatus {
@@ -38,12 +38,8 @@ impl RenderStatus {
     }
 
     pub fn stop_render(&mut self) {
-        match self.status {
-            Status::Idle => {}
-            Status::InProgress { progress_pct, .. } => self.status = Status::Cancelled { progress_pct },
-            Status::Completed => {}
-            Status::Cancelled { .. } => {}
-            Status::Error { .. } => {}
+        if let Status::InProgress { progress_pct, .. } = self.status {
+            self.status = Status::Cancelled { progress_pct }
         }
     }
 
@@ -55,13 +51,18 @@ impl RenderStatus {
         self.status = Status::Completed;
     }
 
-    pub fn update_from_ffmpeg_message(&mut self, message: FfmpegMessage, video_info: &VideoInfo) {
-        match (&self.status, &message) {
-            (Status::Idle, _) => {}
+    fn error(&mut self, error: &str) {
+        self.status = Status::Error {
+            progress_pct: 0.0,
+            error: error.into(),
+        }
+    }
 
+    pub fn update_from_ffmpeg_message(&mut self, message: FromFfmpegMessage, video_info: &VideoInfo) {
+        match (&self.status, &message) {
             (
                 Status::InProgress { progress_pct, .. },
-                FfmpegMessage::DecoderFatalError(e) | FfmpegMessage::EncoderFatalError(e),
+                FromFfmpegMessage::DecoderFatalError(e) | FromFfmpegMessage::EncoderFatalError(e),
             ) => {
                 self.status = Status::Error {
                     progress_pct: *progress_pct,
@@ -69,7 +70,7 @@ impl RenderStatus {
                 }
             }
 
-            (Status::InProgress { .. }, FfmpegMessage::Progress(p)) => {
+            (Status::InProgress { .. }, FromFfmpegMessage::Progress(p)) => {
                 let frame = p.frame as f32;
                 let total_frames = video_info.total_frames as f32;
                 let progress_pct = frame / total_frames;
@@ -87,13 +88,14 @@ impl RenderStatus {
                 };
             }
 
-            (Status::InProgress { .. }, FfmpegMessage::DecoderFinished) => self.finished(),
+            (Status::InProgress { .. }, FromFfmpegMessage::DecoderFinished) => self.finished(),
 
-            (Status::Completed, _) => {}
+            // The decoder should always finish first so if the encoder finished when the render is in progress it must be an error
+            (Status::InProgress { .. }, FromFfmpegMessage::EncoderFinished) => {
+                self.error("Encoder unexpectedly finished")
+            }
 
-            (Status::Cancelled { .. }, _) => {}
-
-            (Status::Error { .. }, _) => {}
+            _ => {}
         }
     }
 

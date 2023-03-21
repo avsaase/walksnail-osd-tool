@@ -1,10 +1,13 @@
 use ffmpeg_sidecar::event::FfmpegProgress;
 
-pub enum FfmpegMessage {
+pub enum FromFfmpegMessage {
     DecoderFatalError(String),
     EncoderFatalError(String),
     Progress(FfmpegProgress),
     DecoderFinished,
+    EncoderFinished,
 }
 
-pub struct StopRenderMessage;
+pub enum ToFfmpegMessage {
+    AbortRender,
+}

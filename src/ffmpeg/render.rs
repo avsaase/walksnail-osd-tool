@@ -1,10 +1,10 @@
 use std::{
     io::{self, Write},
     path::PathBuf,
-    sync::mpsc::{self, Receiver, Sender},
     thread,
 };
 
+use crossbeam_channel::{Receiver, Sender};
 use ffmpeg_sidecar::{
     child::FfmpegChild,
     command::FfmpegCommand,
@@ -13,10 +13,10 @@ use ffmpeg_sidecar::{
 
 use crate::{font, osd, overlay::FrameOverlayIter};
 
-use super::{encoder_settings::EncoderSettings, Encoder, FfmpegMessage, StopRenderMessage, VideoInfo};
+use super::{encoder_settings::EncoderSettings, Encoder, FromFfmpegMessage, ToFfmpegMessage, VideoInfo};
 
 #[tracing::instrument(skip(osd_frames, font_file), err)]
-pub fn render_video(
+pub fn start_video_render(
     ffmpeg_path: &PathBuf,
     input_video: &PathBuf,
     output_video: &PathBuf,
@@ -26,7 +26,7 @@ pub fn render_video(
     render_settings: &EncoderSettings,
     horizontal_offset: i32,
     vertical_offset: i32,
-) -> Result<(Receiver<FfmpegMessage>, Sender<StopRenderMessage>), io::Error> {
+) -> Result<(Sender<ToFfmpegMessage>, Receiver<FromFfmpegMessage>), io::Error> {
     let mut decoder_process = spawn_decoder(ffmpeg_path, input_video)?;
 
     let mut encoder_process = spawn_encoder(
@@ -39,11 +39,9 @@ pub fn render_video(
         output_video,
     )?;
 
-    // Channel to report ffmpeg status back to the main (GUI) thread
-    let (ffmpeg_sender, ffmpeg_receiver) = mpsc::channel();
-
-    // Channel to stop the render process
-    let (stop_render_sender, stop_render_receiver) = mpsc::channel();
+    // Channels to communicate with ffmpeg handler thread
+    let (from_ffmpeg_tx, from_ffmpeg_rx) = crossbeam_channel::unbounded();
+    let (to_ffmpeg_tx, to_ffmpeg_rx) = crossbeam_channel::unbounded();
 
     // Iterator over decoded video and OSD frames
     let frame_overlay_iter = FrameOverlayIter::new(
@@ -55,31 +53,37 @@ pub fn render_video(
         font_file,
         horizontal_offset,
         vertical_offset,
-        ffmpeg_sender.clone(),
-        stop_render_receiver,
+        from_ffmpeg_tx.clone(),
+        to_ffmpeg_rx,
     );
 
-    // On another thread run the iterator to completion and feed the output to the encoder's stdin
+    // On another thread run the decoder iterator to completion and feed the output to the encoder's stdin
     let mut encoder_stdin = encoder_process.take_stdin().expect("Failed to get `stdin` for encoder");
-    thread::spawn(move || {
-        tracing::info_span!("Decoder thread").in_scope(|| {
-            frame_overlay_iter.for_each(|f| {
-                encoder_stdin.write(&f.data).ok();
+    thread::Builder::new()
+        .name("Decoder handler".into())
+        .spawn(move || {
+            tracing::info_span!("Decoder handler thread").in_scope(|| {
+                frame_overlay_iter.for_each(|f| {
+                    encoder_stdin.write(&f.data).ok();
+                });
             });
-        });
-    });
+        })
+        .expect("Failed to spawn decoder handler thread");
 
     // On yet another thread run the encoder to completion
-    thread::spawn(move || {
-        tracing::info_span!("Encoder thread").in_scope(|| {
-            encoder_process.iter().map_or_else(
-                |e| tracing::error!("Failed to create encoder iterator with error {}", e),
-                |v| v.for_each(|event| handle_encoder_events(event, &ffmpeg_sender)),
-            );
-        });
-    });
+    thread::Builder::new()
+        .name("Encoder handler".into())
+        .spawn(move || {
+            tracing::info_span!("Encoder handler thread").in_scope(|| {
+                encoder_process
+                    .iter()
+                    .expect("Failed to create encoder iterator")
+                    .for_each(|event| handle_encoder_events(event, &from_ffmpeg_tx));
+            });
+        })
+        .expect("Failed to spawn encoder handler thread");
 
-    Ok((ffmpeg_receiver, stop_render_sender))
+    Ok((to_ffmpeg_tx, from_ffmpeg_rx))
 }
 
 #[tracing::instrument(skip(ffmpeg_path))]
@@ -118,36 +122,40 @@ pub fn spawn_encoder(
     Ok(encoder)
 }
 
-fn handle_encoder_events(ffmpeg_event: FfmpegEvent, ffmpeg_sender: &Sender<FfmpegMessage>) {
+fn handle_encoder_events(ffmpeg_event: FfmpegEvent, ffmpeg_sender: &Sender<FromFfmpegMessage>) {
     match ffmpeg_event {
         FfmpegEvent::Log(level, e) => {
             if level == LogLevel::Fatal
             // there are some fatal errors that ffmpeg considers normal errors
-                || e.contains("Error initializing output")
-                || e.contains("[error] Cannot load")
+            || e.contains("Error initializing output stream")
+            || e.contains("[error] Cannot load")
             {
                 tracing::error!("ffmpeg fatal error: {}", &e);
-                ffmpeg_sender.send(FfmpegMessage::EncoderFatalError(e)).unwrap();
+                ffmpeg_sender.send(FromFfmpegMessage::EncoderFatalError(e)).unwrap();
             }
+        }
+        FfmpegEvent::LogEOF => {
+            tracing::info!("ffmpeg encoder EOF reached");
+            ffmpeg_sender.send(FromFfmpegMessage::EncoderFinished).unwrap();
         }
         _ => {}
     }
 }
 
-pub fn handle_decoder_events(ffmpeg_event: FfmpegEvent, ffmpeg_sender: &Sender<FfmpegMessage>) {
+pub fn handle_decoder_events(ffmpeg_event: FfmpegEvent, ffmpeg_sender: &Sender<FromFfmpegMessage>) {
     match ffmpeg_event {
         FfmpegEvent::Progress(p) => {
-            ffmpeg_sender.send(FfmpegMessage::Progress(p)).unwrap();
+            ffmpeg_sender.send(FromFfmpegMessage::Progress(p)).unwrap();
         }
         FfmpegEvent::Done | FfmpegEvent::LogEOF => {
-            ffmpeg_sender.send(FfmpegMessage::DecoderFinished).unwrap();
+            ffmpeg_sender.send(FromFfmpegMessage::DecoderFinished).unwrap();
         }
         FfmpegEvent::Log(LogLevel::Fatal, e) => {
             tracing::error!("ffmpeg fatal error: {}", &e);
-            ffmpeg_sender.send(FfmpegMessage::DecoderFatalError(e)).unwrap();
+            ffmpeg_sender.send(FromFfmpegMessage::DecoderFatalError(e)).unwrap();
         }
         FfmpegEvent::Log(LogLevel::Warning | LogLevel::Error, e) => {
-            tracing::warn!("ffmpeg log: {}", &e);
+            tracing::warn!("ffmpeg log: {}", e);
         }
         _ => {}
     }

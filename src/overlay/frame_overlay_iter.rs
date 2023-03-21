@@ -1,9 +1,6 @@
-use std::{
-    iter::Peekable,
-    sync::mpsc::{Receiver, Sender},
-    vec::IntoIter,
-};
+use std::{iter::Peekable, vec::IntoIter};
 
+use crossbeam_channel::{Receiver, Sender};
 use ffmpeg_sidecar::{
     child::FfmpegChild,
     event::{FfmpegEvent, OutputVideoFrame},
@@ -11,7 +8,7 @@ use ffmpeg_sidecar::{
 };
 
 use crate::{
-    ffmpeg::{handle_decoder_events, FfmpegMessage, StopRenderMessage},
+    ffmpeg::{handle_decoder_events, FromFfmpegMessage, ToFfmpegMessage},
     font, osd,
     overlay::overlay_osd_on_video,
 };
@@ -24,8 +21,8 @@ pub struct FrameOverlayIter {
     horizontal_offset: i32,
     vertical_offset: i32,
     current_osd_frame: osd::Frame,
-    ffmpeg_sender: Sender<FfmpegMessage>,
-    stop_render_receiver: Receiver<StopRenderMessage>,
+    ffmpeg_sender: Sender<FromFfmpegMessage>,
+    ffmpeg_receiver: Receiver<ToFfmpegMessage>,
 }
 
 impl FrameOverlayIter {
@@ -37,8 +34,8 @@ impl FrameOverlayIter {
         font_file: font::FontFile,
         horizontal_offset: i32,
         vertical_offset: i32,
-        ffmpeg_sender: Sender<FfmpegMessage>,
-        stop_render_receiver: Receiver<StopRenderMessage>,
+        ffmpeg_sender: Sender<FromFfmpegMessage>,
+        ffmpeg_receiver: Receiver<ToFfmpegMessage>,
     ) -> Self {
         let mut osd_frames_iter = osd_frames.into_iter();
         let first_osd_frame = osd_frames_iter.next().unwrap();
@@ -51,7 +48,7 @@ impl FrameOverlayIter {
             vertical_offset,
             current_osd_frame: first_osd_frame,
             ffmpeg_sender,
-            stop_render_receiver,
+            ffmpeg_receiver,
         }
     }
 }
@@ -61,7 +58,7 @@ impl Iterator for FrameOverlayIter {
 
     fn next(&mut self) -> Option<Self::Item> {
         //  On every iteration check if the render should be stopped
-        if self.stop_render_receiver.try_recv().is_ok() {
+        if let Ok(ToFfmpegMessage::AbortRender) = self.ffmpeg_receiver.try_recv() {
             self.decoder_process.quit().unwrap();
         }
 

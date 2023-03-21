@@ -1,17 +1,14 @@
-use std::{
-    path::PathBuf,
-    rc::Rc,
-    sync::mpsc::{Receiver, Sender},
-};
+use std::{path::PathBuf, rc::Rc};
 
+use crossbeam_channel::{Receiver, Sender};
 use egui::{
     pos2, text::LayoutJob, vec2, Align, Button, Color32, Frame, Image, Label, Layout, ProgressBar, RichText, Sense,
-    TextFormat, TextStyle, TextureHandle, Ui, Visuals,
+    Slider, TextFormat, TextStyle, TextureHandle, Ui, Visuals,
 };
 use egui_extras::{Column, TableBuilder};
 
 use crate::{
-    ffmpeg::{render_video, Encoder, EncoderSettings, FfmpegMessage, StopRenderMessage, VideoInfo},
+    ffmpeg::{start_video_render, Encoder, EncoderSettings, FromFfmpegMessage, ToFfmpegMessage, VideoInfo},
     font,
     osd::{self, calculate_horizontal_offset, calculate_vertical_offset, osd_preview},
 };
@@ -29,8 +26,8 @@ pub struct WalksnailOsdTool {
     pub osd_file: Option<osd::OsdFile>,
     pub font_file: Option<font::FontFile>,
     pub ui_dimensions: UiDimensions,
-    pub ffmpeg_receiver: Option<Receiver<FfmpegMessage>>,
-    pub stop_render_sender: Option<Sender<StopRenderMessage>>,
+    pub to_ffmpeg_sender: Option<Sender<ToFfmpegMessage>>,
+    pub from_ffmpeg_receiver: Option<Receiver<FromFfmpegMessage>>,
     pub render_status: RenderStatus,
     pub encoders: Vec<Rc<Encoder>>,
     pub show_undetected_encoders: bool,
@@ -462,7 +459,7 @@ impl WalksnailOsdTool {
             .show(ui, |ui| {
                 ui.label("Horizontal offset");
                 let horizontal_offset_slider =
-                    ui.add(egui::Slider::new(&mut self.osd_preview.horizontal_offset, -200..=700).text("Pixels"));
+                    ui.add(Slider::new(&mut self.osd_preview.horizontal_offset, -200..=700).text("Pixels"));
                 ui.add_space(3.0);
 
                 if ui.button("Center").clicked() {
@@ -489,7 +486,7 @@ impl WalksnailOsdTool {
 
                 ui.label("Vertical offset");
                 let vertical_offset_slider =
-                    ui.add(egui::Slider::new(&mut self.osd_preview.vertical_offset, -200..=700).text("Pixels"));
+                    ui.add(Slider::new(&mut self.osd_preview.vertical_offset, -200..=700).text("Pixels"));
                 ui.add_space(3.0);
 
                 if ui.button("Center").clicked() {
@@ -585,7 +582,7 @@ impl WalksnailOsdTool {
                 ui.end_row();
 
                 ui.label("Encoding bitrate");
-                ui.add(egui::Slider::new(&mut self.render_settings.bitrate_mbps, 0..=100).text("Mbit/s"));
+                ui.add(Slider::new(&mut self.render_settings.bitrate_mbps, 0..=100).text("Mbit/s"));
                 ui.end_row();
             });
     }
@@ -607,7 +604,7 @@ impl WalksnailOsdTool {
                     if let (Some(video_path), Some(osd_file), Some(font_file), Some(video_info)) =
                         (&self.video_file, &self.osd_file, &self.font_file, &self.video_info)
                     {
-                        match render_video(
+                        match start_video_render(
                             &self.dependencies.ffmpeg_path,
                             video_path,
                             &get_output_video_path(video_path),
@@ -618,9 +615,9 @@ impl WalksnailOsdTool {
                             self.osd_preview.horizontal_offset,
                             self.osd_preview.vertical_offset,
                         ) {
-                            Ok((ffmpeg_rx, stop_render_tx)) => {
-                                self.ffmpeg_receiver = Some(ffmpeg_rx);
-                                self.stop_render_sender = Some(stop_render_tx);
+                            Ok((to_ffmpeg_sender, from_ffmpeg_receiver)) => {
+                                self.to_ffmpeg_sender = Some(to_ffmpeg_sender);
+                                self.from_ffmpeg_receiver = Some(from_ffmpeg_receiver);
                             }
                             Err(_) => {
                                 self.render_status.status = Status::Error {
@@ -635,8 +632,11 @@ impl WalksnailOsdTool {
             Status::InProgress { .. } => {
                 if ui.add(Button::new("Stop render").min_size(button_size)).clicked() {
                     tracing::info!("Stop render button clicked");
-                    if let Some(sender) = &self.stop_render_sender {
-                        sender.send(StopRenderMessage).ok();
+                    if let Some(sender) = &self.to_ffmpeg_sender {
+                        sender
+                            .send(ToFfmpegMessage::AbortRender)
+                            .map_err(|_| tracing::warn!("Failed to send abort render message"))
+                            .unwrap();
                         self.render_status.stop_render();
                     }
                 }
@@ -686,12 +686,14 @@ impl WalksnailOsdTool {
     }
 
     fn receive_ffmpeg_message(&mut self) {
-        if let (Some(rx), Some(video_info), Some(stop_render_sender)) =
-            (&self.ffmpeg_receiver, &self.video_info, &self.stop_render_sender)
+        if let (Some(tx), Some(rx), Some(video_info)) =
+            (&self.to_ffmpeg_sender, &self.from_ffmpeg_receiver, &self.video_info)
         {
             if let Ok(message) = rx.try_recv() {
-                if matches!(message, FfmpegMessage::EncoderFatalError(_)) {
-                    stop_render_sender.send(StopRenderMessage).ok();
+                if matches!(message, FromFfmpegMessage::EncoderFatalError(_))
+                    || matches!(message, FromFfmpegMessage::EncoderFinished)
+                {
+                    tx.send(ToFfmpegMessage::AbortRender).ok();
                 }
                 self.render_status.update_from_ffmpeg_message(message, video_info)
             }
