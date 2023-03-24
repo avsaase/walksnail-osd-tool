@@ -58,7 +58,7 @@ impl Iterator for FrameOverlayIter {
 
     fn next(&mut self) -> Option<Self::Item> {
         //  On every iteration check if the render should be stopped
-        if let Ok(ToFfmpegMessage::AbortRender) = self.ffmpeg_receiver.try_recv() {
+        while let Ok(ToFfmpegMessage::AbortRender) = self.ffmpeg_receiver.try_recv() {
             self.decoder_process.quit().unwrap();
         }
 

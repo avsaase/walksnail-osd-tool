@@ -689,7 +689,7 @@ impl WalksnailOsdTool {
         if let (Some(tx), Some(rx), Some(video_info)) =
             (&self.to_ffmpeg_sender, &self.from_ffmpeg_receiver, &self.video_info)
         {
-            if let Ok(message) = rx.try_recv() {
+            while let Ok(message) = rx.try_recv() {
                 if matches!(message, FromFfmpegMessage::EncoderFatalError(_))
                     || matches!(message, FromFfmpegMessage::EncoderFinished)
                 {
