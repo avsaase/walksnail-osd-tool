@@ -24,7 +24,7 @@ impl FontFile {
         let (width, height) = font_image.dimensions();
         verify_dimensions(width, height)?;
         let character_size = CharacterSize::from_width(width);
-        let character_count = height / width;
+        let character_count = height / character_size.height();
 
         let characters = split_characters(&font_image, &character_size, character_count);
 
