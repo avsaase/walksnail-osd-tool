@@ -90,7 +90,9 @@ impl RenderStatus {
 
             (Status::InProgress { .. }, FromFfmpegMessage::DecoderFinished) => self.finished(),
 
-            // The decoder should always finish first so if the encoder finished when the render is in progress it must be an error
+            // The decoder should always finish first so if the encoder finished when the render is in progress it must be an error.
+            // In practice the encoder sometimes reaches EOF early so we only report an error when the encoder finishes
+            // and progress, as reported by the decoder, is (near) zero.
             (Status::InProgress { progress_pct, .. }, FromFfmpegMessage::EncoderFinished) if *progress_pct < 0.001 => {
                 self.error("Encoder unexpectedly finished")
             }
