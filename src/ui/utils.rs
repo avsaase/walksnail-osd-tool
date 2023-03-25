@@ -92,3 +92,20 @@ pub fn set_font_styles(ctx: &egui::Context) {
     .into();
     ctx.set_style(style);
 }
+
+pub fn set_custom_fonts(ctx: &egui::Context) {
+    let mut fonts = egui::FontDefinitions::default();
+
+    fonts.font_data.insert(
+        "inter-regular".to_owned(),
+        egui::FontData::from_static(include_bytes!("../../resources/fonts/Inter-Regular.ttf")),
+    );
+
+    fonts
+        .families
+        .entry(egui::FontFamily::Proportional)
+        .or_default()
+        .insert(0, "inter-regular".to_owned());
+
+    ctx.set_fonts(fonts);
+}

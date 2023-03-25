@@ -114,7 +114,7 @@ impl WalksnailOsdTool {
     fn osd_info(&self, ui: &mut Ui) {
         let osd_file = self.osd_file.as_ref();
 
-        CollapsingHeader::new(RichText::new("🖹  OSD file").heading())
+        CollapsingHeader::new(RichText::new("🖵  OSD file").heading())
             .default_open(true)
             .show(ui, |ui| {
                 ui.push_id("osd_info", |ui| {

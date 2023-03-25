@@ -9,7 +9,10 @@ use crate::{
     osd::{self, osd_preview},
 };
 
-use super::{utils::set_font_styles, RenderStatus};
+use super::{
+    utils::{set_custom_fonts, set_font_styles},
+    RenderStatus,
+};
 
 #[derive(Default)]
 pub struct WalksnailOsdTool {
@@ -42,6 +45,7 @@ impl WalksnailOsdTool {
         set_font_styles(ctx);
         let mut visuals = Visuals::light();
         visuals.indent_has_left_vline = false;
+        set_custom_fonts(ctx);
         ctx.set_visuals(visuals);
 
         Self {
