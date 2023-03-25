@@ -1,23 +1,15 @@
 use std::{path::PathBuf, rc::Rc};
 
 use crossbeam_channel::{Receiver, Sender};
-use egui::{
-    pos2, text::LayoutJob, vec2, Align, Button, Color32, Frame, Image, Label, Layout, ProgressBar, RichText, Sense,
-    Slider, TextFormat, TextStyle, TextureHandle, Ui, Visuals,
-};
-use egui_extras::{Column, TableBuilder};
+use egui::{pos2, text::LayoutJob, vec2, Color32, TextFormat, TextStyle, TextureHandle, Visuals};
 
 use crate::{
-    ffmpeg::{start_video_render, Encoder, EncoderSettings, FromFfmpegMessage, ToFfmpegMessage, VideoInfo},
+    ffmpeg::{Encoder, EncoderSettings, FromFfmpegMessage, ToFfmpegMessage, VideoInfo},
     font,
-    osd::{self, calculate_horizontal_offset, calculate_vertical_offset, osd_preview},
+    osd::{self, osd_preview},
 };
 
-use super::{
-    render_status::Status,
-    utils::{format_minutes_seconds, get_output_video_path, separator_with_space, set_font_styles},
-    RenderStatus,
-};
+use super::{utils::set_font_styles, RenderStatus};
 
 #[derive(Default)]
 pub struct WalksnailOsdTool {
@@ -48,7 +40,9 @@ impl WalksnailOsdTool {
         encoders: Vec<Encoder>,
     ) -> Self {
         set_font_styles(ctx);
-        ctx.set_visuals(Visuals::light());
+        let mut visuals = Visuals::light();
+        visuals.indent_has_left_vline = false;
+        ctx.set_visuals(visuals);
 
         Self {
             dependencies: Dependencies {
@@ -88,16 +82,16 @@ impl Default for OsdPreview {
 }
 
 pub struct UiDimensions {
-    file_info_column1_width: f32,
-    file_info_column2_width: f32,
-    file_info_row_height: f32,
-    osd_position_sliders_length: f32,
+    pub file_info_column1_width: f32,
+    pub file_info_column2_width: f32,
+    pub file_info_row_height: f32,
+    pub osd_position_sliders_length: f32,
 }
 
 impl Default for UiDimensions {
     fn default() -> Self {
         Self {
-            file_info_row_height: 16.0,
+            file_info_row_height: 17.0,
             file_info_column1_width: 90.0,
             file_info_column2_width: 135.0,
             osd_position_sliders_length: 200.0,
@@ -107,7 +101,6 @@ impl Default for UiDimensions {
 
 impl eframe::App for WalksnailOsdTool {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        // On startup check if the runtime dependencies are available. Show a warning if not.
         self.missing_dependencies_warning(ctx);
 
         // Keep updating the UI thread when rendering to make sure the indicated progress is up-to-date
@@ -115,588 +108,19 @@ impl eframe::App for WalksnailOsdTool {
             ctx.request_repaint();
         }
 
-        // Receive ffmpeg messages
         self.receive_ffmpeg_message();
 
-        egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
-            ui.add_space(5.0);
-            ui.horizontal(|ui| {
-                self.import_files(ui, ctx);
-                self.reset_files(ui);
-                ui.add_space(ui.available_width() - 55.0);
-                self.toggle_light_dark_theme(ui, ctx);
-                self.about_window(ui, ctx);
-            });
-            ui.add_space(5.0);
-        });
+        self.render_top_panel(ctx);
 
-        egui::TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
-            ui.add_space(5.0);
-            ui.horizontal(|ui| {
-                self.start_stop_render_button(ui);
-                self.render_progress(ui);
-            });
-            ui.add_space(2.0);
-        });
+        self.render_bottom_panel(ctx);
 
-        egui::CentralPanel::default().show(ctx, |ui| {
-            egui::ScrollArea::vertical().show(ui, |ui| {
-                ui.heading("Input Files");
-                ui.horizontal(|ui| {
-                    self.video_info(ui);
-                    self.osd_info(ui);
-                    self.font_info(ui);
-                });
+        self.render_sidepanel(ctx);
 
-                separator_with_space(ui, 10.0);
-
-                ui.heading("OSD Position");
-                self.osd_position(ui, ctx);
-
-                separator_with_space(ui, 10.0);
-
-                ui.heading("Rendering Options");
-                self.rendering_options(ui);
-            });
-        });
+        self.render_central_panel(ctx);
     }
 }
 
 impl WalksnailOsdTool {
-    fn import_files(&mut self, ui: &mut Ui, ctx: &egui::Context) {
-        if ui
-            .add_enabled(self.render_status.is_not_in_progress(), Button::new("Open files"))
-            .clicked()
-        {
-            if let Some(file_handles) = rfd::FileDialog::new()
-                .add_filter("Goggle DVR & Font Files", &["mp4", "osd", "png"])
-                .pick_files()
-            {
-                tracing::info!("Opened files {:?}", file_handles);
-                self.import_video_file(&file_handles);
-                self.import_osd_file(&file_handles);
-                self.import_font_file(&file_handles);
-
-                self.update_osd_preview(ctx);
-                self.render_status.reset();
-            }
-        }
-
-        // Collect dropped files
-        ctx.input(|i| {
-            if !i.raw.dropped_files.is_empty() {
-                let file_handles = i
-                    .raw
-                    .dropped_files
-                    .iter()
-                    .flat_map(|f| f.path.clone())
-                    .collect::<Vec<_>>();
-                tracing::info!("Dropped files {:?}", file_handles);
-                self.import_video_file(&file_handles);
-                self.import_osd_file(&file_handles);
-                self.import_font_file(&file_handles);
-
-                self.update_osd_preview(ctx);
-                self.render_status.reset();
-            }
-        });
-    }
-
-    fn reset_files(&mut self, ui: &mut Ui) {
-        if ui
-            .add_enabled(self.render_status.is_not_in_progress(), Button::new("Reset files"))
-            .clicked()
-        {
-            self.video_file = None;
-            self.video_info = None;
-            self.osd_file = None;
-            self.font_file = None;
-            self.osd_preview.texture_handle = None;
-            self.osd_preview.preview_frame = 1;
-            self.render_status.reset();
-            tracing::info!("Reset files");
-        }
-    }
-
-    fn toggle_light_dark_theme(&mut self, ui: &mut Ui, ctx: &egui::Context) {
-        let icon = if self.dark_mode { "☀" } else { "🌙" };
-        if ui.add(Button::new(icon).frame(false)).clicked() {
-            let visuals = if self.dark_mode {
-                Visuals::light()
-            } else {
-                Visuals::dark()
-            };
-            ctx.set_visuals(visuals);
-            self.dark_mode = !self.dark_mode;
-        }
-    }
-
-    fn video_info(&self, ui: &mut Ui) {
-        let video_info = self.video_info.as_ref();
-
-        ui.group(|ui| {
-            ui.vertical(|ui| {
-                ui.label(RichText::new("Video file").strong());
-                ui.push_id("video_info", |ui| {
-                    TableBuilder::new(ui)
-                        .column(Column::exact(self.ui_dimensions.file_info_column1_width))
-                        .column(Column::exact(self.ui_dimensions.file_info_column2_width))
-                        .body(|mut body| {
-                            let row_height = self.ui_dimensions.file_info_row_height;
-                            body.row(row_height, |mut row| {
-                                row.col(|ui| {
-                                    ui.label("File name:");
-                                });
-                                row.col(|ui| {
-                                    if let Some(video_file) = &self.video_file {
-                                        ui.label(video_file.file_name().unwrap().to_string_lossy());
-                                    } else {
-                                        ui.label("-");
-                                    }
-                                });
-                            });
-
-                            body.row(row_height, |mut row| {
-                                row.col(|ui| {
-                                    ui.label("Resolution:");
-                                });
-                                row.col(|ui| {
-                                    if let (Some(width), Some(height)) =
-                                        (video_info.map(|i| i.width), video_info.map(|i| i.height))
-                                    {
-                                        ui.label(format!("{}x{}", width, height));
-                                    } else {
-                                        ui.label("-");
-                                    }
-                                });
-                            });
-
-                            body.row(row_height, |mut row| {
-                                row.col(|ui| {
-                                    ui.label("Frame rate:");
-                                });
-                                row.col(|ui| {
-                                    if let Some(frame_rate) = video_info.map(|i| i.frame_rate) {
-                                        ui.label(format!("{:.2} fps", frame_rate));
-                                    } else {
-                                        ui.label("-");
-                                    }
-                                });
-                            });
-
-                            body.row(row_height, |mut row| {
-                                row.col(|ui| {
-                                    ui.label("Bitrate:");
-                                });
-                                row.col(|ui| {
-                                    if let Some(bitrate) = video_info.map(|i| i.bitrate) {
-                                        let bitrate_mbps = bitrate as f32 / 1_000_000.0;
-                                        ui.label(format!("{:.2} Mbps", bitrate_mbps));
-                                    } else {
-                                        ui.label("-");
-                                    }
-                                });
-                            });
-
-                            body.row(row_height, |mut row| {
-                                row.col(|ui| {
-                                    ui.label("Duration:");
-                                });
-                                row.col(|ui| {
-                                    if let Some(duration_secs) = video_info.map(|i| i.duration_seconds) {
-                                        let minutes = duration_secs / 60;
-                                        let seconds = duration_secs % 60;
-                                        ui.label(format!("{}:{:0>2}", minutes, seconds));
-                                    } else {
-                                        ui.label("-");
-                                    }
-                                });
-                            });
-                        });
-                });
-            });
-        });
-    }
-
-    fn osd_info(&self, ui: &mut Ui) {
-        let osd_file = self.osd_file.as_ref();
-
-        ui.group(|ui| {
-            ui.vertical(|ui| {
-                ui.label(RichText::new("OSD file").strong());
-                ui.push_id("osd_info", |ui| {
-                    TableBuilder::new(ui)
-                        .column(Column::exact(self.ui_dimensions.file_info_column1_width))
-                        .column(Column::exact(self.ui_dimensions.file_info_column2_width))
-                        .body(|mut body| {
-                            let row_height = self.ui_dimensions.file_info_row_height;
-                            body.row(row_height, |mut row| {
-                                row.col(|ui| {
-                                    ui.label("File name:");
-                                });
-                                row.col(|ui| {
-                                    if let Some(osd_file) = osd_file {
-                                        ui.label(
-                                            osd_file
-                                                .file_path
-                                                .file_name()
-                                                .map(|f| f.to_string_lossy())
-                                                .unwrap_or("-".into()),
-                                        );
-                                    } else {
-                                        ui.label("-");
-                                    }
-                                });
-                            });
-
-                            body.row(row_height, |mut row| {
-                                row.col(|ui| {
-                                    ui.label("FC firmware:");
-                                });
-                                row.col(|ui| {
-                                    if let Some(osd_file) = osd_file {
-                                        ui.label(osd_file.fc_firmware.to_string());
-                                    } else {
-                                        ui.label("-");
-                                    }
-                                });
-                            });
-
-                            body.row(row_height, |mut row| {
-                                row.col(|ui| {
-                                    ui.label("Frames:");
-                                });
-                                row.col(|ui| {
-                                    if let Some(osd_file) = osd_file {
-                                        ui.label(osd_file.frame_count.to_string());
-                                    } else {
-                                        ui.label("-");
-                                    }
-                                });
-                            });
-
-                            // Add two empty rows so the `ui.group()`s are the same height
-                            body.rows(row_height, 2, |_, mut row| {
-                                row.col(|_| {});
-                            });
-                        });
-                });
-            });
-        });
-    }
-
-    fn font_info(&self, ui: &mut Ui) {
-        let font_file = self.font_file.as_ref();
-
-        ui.group(|ui| {
-            ui.vertical(|ui| {
-                ui.label(RichText::new("Font file").strong());
-                ui.push_id("font_info", |ui| {
-                    TableBuilder::new(ui)
-                        .column(Column::exact(self.ui_dimensions.file_info_column1_width))
-                        .column(Column::exact(self.ui_dimensions.file_info_column2_width))
-                        .body(|mut body| {
-                            let row_height = self.ui_dimensions.file_info_row_height;
-                            body.row(row_height, |mut row| {
-                                row.col(|ui| {
-                                    ui.label("File name:");
-                                });
-                                row.col(|ui| {
-                                    if let Some(font_file) = font_file {
-                                        ui.label(
-                                            font_file
-                                                .file_path
-                                                .file_name()
-                                                .map(|f| f.to_string_lossy())
-                                                .unwrap_or("-".into()),
-                                        );
-                                    } else {
-                                        ui.label("-");
-                                    }
-                                });
-                            });
-
-                            body.row(row_height, |mut row| {
-                                row.col(|ui| {
-                                    ui.label("Font size:");
-                                });
-                                row.col(|ui| {
-                                    if let Some(font_file) = font_file {
-                                        ui.label(font_file.character_size.to_string());
-                                    } else {
-                                        ui.label("-");
-                                    }
-                                });
-                            });
-
-                            body.row(row_height, |mut row| {
-                                row.col(|ui| {
-                                    ui.label("Characters:");
-                                });
-                                row.col(|ui| {
-                                    if let Some(font_file) = font_file {
-                                        ui.label(font_file.character_count.to_string());
-                                    } else {
-                                        ui.label("-");
-                                    }
-                                });
-                            });
-
-                            // Add two empty rows so the `ui.group()`s are the same height
-                            body.rows(row_height, 2, |_, mut row| {
-                                row.col(|_| {});
-                            });
-                        });
-                });
-            });
-        });
-    }
-
-    fn osd_position(&mut self, ui: &mut Ui, ctx: &egui::Context) {
-        ui.style_mut().spacing.slider_width = self.ui_dimensions.osd_position_sliders_length;
-        egui::Grid::new("position_sliders")
-            .spacing(vec2(15.0, 10.0))
-            .show(ui, |ui| {
-                ui.label("Horizontal offset");
-                let horizontal_offset_slider =
-                    ui.add(Slider::new(&mut self.osd_preview.horizontal_offset, -200..=700).text("Pixels"));
-                ui.add_space(3.0);
-
-                if ui.button("Center").clicked() {
-                    if let (Some(video_info), Some(osd_file), Some(font_file)) =
-                        (&self.video_info, &self.osd_file, &self.font_file)
-                    {
-                        self.osd_preview.horizontal_offset = calculate_horizontal_offset(
-                            video_info.width,
-                            osd_file
-                                .frames
-                                .get(self.osd_preview.preview_frame as usize - 1)
-                                .unwrap(),
-                            &font_file.character_size,
-                        );
-                        self.update_osd_preview(ctx);
-                    }
-                }
-
-                if ui.button("Reset").clicked() {
-                    self.osd_preview.horizontal_offset = 0;
-                    self.update_osd_preview(ctx);
-                }
-                ui.end_row();
-
-                ui.label("Vertical offset");
-                let vertical_offset_slider =
-                    ui.add(Slider::new(&mut self.osd_preview.vertical_offset, -200..=700).text("Pixels"));
-                ui.add_space(3.0);
-
-                if ui.button("Center").clicked() {
-                    if let (Some(video_info), Some(osd_file), Some(font_file)) =
-                        (&self.video_info, &self.osd_file, &self.font_file)
-                    {
-                        self.osd_preview.vertical_offset = calculate_vertical_offset(
-                            video_info.height,
-                            osd_file
-                                .frames
-                                .get(self.osd_preview.preview_frame as usize - 1)
-                                .unwrap(),
-                            &font_file.character_size,
-                        );
-                        self.update_osd_preview(ctx);
-                    }
-                }
-
-                if ui.button("Reset").clicked() {
-                    self.osd_preview.vertical_offset = 0;
-                    self.update_osd_preview(ctx);
-                }
-                ui.end_row();
-
-                if horizontal_offset_slider.changed() || vertical_offset_slider.changed() {
-                    self.update_osd_preview(ctx);
-                }
-            });
-
-        ui.collapsing("Preview", |ui| {
-            ui.horizontal(|ui| {
-                ui.label("Preview frame");
-                let preview_frame_slider = ui.add(
-                    egui::Slider::new(
-                        &mut self.osd_preview.preview_frame,
-                        1..=self.osd_file.as_ref().map(|f| f.frame_count).unwrap_or(1),
-                    )
-                    .smart_aim(false),
-                );
-                if preview_frame_slider.changed() {
-                    self.update_osd_preview(ctx);
-                }
-            });
-
-            if let Some(handle) = &self.osd_preview.texture_handle {
-                let width = 725.0;
-                let widescreen_height = width * 9.0 / 16.0;
-                let image = Image::new(handle, vec2(width, widescreen_height));
-                ui.add(image.bg_fill(Color32::LIGHT_GRAY));
-            }
-        });
-    }
-
-    fn rendering_options(&mut self, ui: &mut Ui) {
-        let selectable_encoders = self
-            .encoders
-            .iter()
-            .filter(|e| self.show_undetected_encoders || e.detected)
-            .collect::<Vec<_>>();
-
-        egui::Grid::new("render_options")
-            .spacing(vec2(15.0, 10.0))
-            .show(ui, |ui| {
-                ui.label("Encoder");
-                ui.horizontal(|ui| {
-                    let selection = egui::ComboBox::from_id_source("encoder").width(350.0).show_index(
-                        ui,
-                        &mut self.selected_encoder_idx,
-                        selectable_encoders.len(),
-                        |i| {
-                            selectable_encoders
-                                .get(i)
-                                .map(|e| e.to_string())
-                                .unwrap_or("None".to_string())
-                        },
-                    );
-                    if selection.changed() {
-                        // This is a little hacky but it's nice to have a single struct that keeps track of all render settings
-                        self.render_settings.encoder = selectable_encoders
-                            .get(self.selected_encoder_idx)
-                            .unwrap()
-                            .clone()
-                            .clone();
-                    }
-                    if ui
-                        .checkbox(&mut self.show_undetected_encoders, "Show undeteced encoders")
-                        .changed()
-                    {
-                        self.selected_encoder_idx = 0;
-                        tracing::info!("Toggled show undetected encoders: {}", self.show_undetected_encoders);
-                    };
-                });
-                ui.end_row();
-
-                ui.label("Encoding bitrate");
-                ui.add(Slider::new(&mut self.render_settings.bitrate_mbps, 0..=100).text("Mbit/s"));
-                ui.end_row();
-            });
-    }
-
-    fn start_stop_render_button(&mut self, ui: &mut Ui) {
-        let button_size = vec2(110.0, 40.0);
-        if self.render_status.is_not_in_progress() {
-            if ui
-                .add_enabled(
-                    self.all_files_loaded(),
-                    Button::new("Start render").min_size(button_size),
-                )
-                .on_disabled_hover_text("Load a video, OSD and font file")
-                .clicked()
-            {
-                tracing::info!("Start render button clicked");
-                self.render_status.start_render();
-                if let (Some(video_path), Some(osd_file), Some(font_file), Some(video_info)) =
-                    (&self.video_file, &self.osd_file, &self.font_file, &self.video_info)
-                {
-                    match start_video_render(
-                        &self.dependencies.ffmpeg_path,
-                        video_path,
-                        &get_output_video_path(video_path),
-                        osd_file.frames.clone(),
-                        font_file.clone(),
-                        video_info,
-                        &self.render_settings,
-                        self.osd_preview.horizontal_offset,
-                        self.osd_preview.vertical_offset,
-                    ) {
-                        Ok((to_ffmpeg_sender, from_ffmpeg_receiver)) => {
-                            self.to_ffmpeg_sender = Some(to_ffmpeg_sender);
-                            self.from_ffmpeg_receiver = Some(from_ffmpeg_receiver);
-                        }
-                        Err(_) => {
-                            self.render_status.status = Status::Error {
-                                progress_pct: 0.0,
-                                error: "Failed to start video render".to_string(),
-                            }
-                        }
-                    };
-                }
-            }
-        } else {
-            if ui.add(Button::new("Stop render").min_size(button_size)).clicked() {
-                tracing::info!("Stop render button clicked");
-                if let Some(sender) = &self.to_ffmpeg_sender {
-                    sender
-                        .send(ToFfmpegMessage::AbortRender)
-                        .map_err(|_| tracing::warn!("Failed to send abort render message"))
-                        .unwrap();
-                    self.render_status.stop_render();
-                }
-            }
-        }
-    }
-
-    fn render_progress(&mut self, ui: &mut Ui) {
-        match &self.render_status.status {
-            Status::Idle => {}
-            Status::InProgress {
-                time_remaining,
-                fps,
-                speed,
-                progress_pct,
-            } => {
-                ui.vertical(|ui| {
-                    ui.add(ProgressBar::new(*progress_pct).show_percentage());
-                    ui.with_layout(Layout::right_to_left(Align::Min), |ui| {
-                        ui.add_space(3.0);
-                        ui.label(format!(
-                            "Time remaining: {}, fps: {:.1}, speed: {:.3}x",
-                            format_minutes_seconds(time_remaining),
-                            fps,
-                            speed
-                        ));
-                    });
-                });
-            }
-            Status::Completed => {
-                ui.vertical(|ui| {
-                    ui.add(ProgressBar::new(1.0).text("Done"));
-                });
-            }
-            Status::Cancelled { progress_pct } => {
-                ui.vertical(|ui| {
-                    ui.add(ProgressBar::new(*progress_pct).text("Cancelled"));
-                });
-            }
-            Status::Error { progress_pct, error } => {
-                ui.vertical(|ui| {
-                    ui.add(ProgressBar::new(*progress_pct));
-                    ui.label(RichText::new(error.clone()).color(Color32::RED));
-                });
-            }
-        }
-    }
-
-    fn receive_ffmpeg_message(&mut self) {
-        if let (Some(tx), Some(rx), Some(video_info)) =
-            (&self.to_ffmpeg_sender, &self.from_ffmpeg_receiver, &self.video_info)
-        {
-            while let Ok(message) = rx.try_recv() {
-                if matches!(message, FromFfmpegMessage::EncoderFatalError(_))
-                    || matches!(message, FromFfmpegMessage::EncoderFinished)
-                {
-                    tx.send(ToFfmpegMessage::AbortRender).ok();
-                }
-                self.render_status.update_from_ffmpeg_message(message, video_info)
-            }
-        }
-    }
-
     fn missing_dependencies_warning(&mut self, ctx: &egui::Context) {
         if !self.dependencies.dependencies_satisfied || self.encoders.is_empty() {
             egui::Window::new("Missing dependencies")
@@ -724,66 +148,7 @@ impl WalksnailOsdTool {
         }
     }
 
-    fn about_window(&mut self, ui: &mut Ui, ctx: &egui::Context) {
-        if ui.add(Button::new(RichText::new("ℹ")).frame(false)).clicked() {
-            self.about_window_open = !self.about_window_open;
-        }
-
-        let mut style = (*ui.style_mut()).clone();
-        style.spacing.window_margin = egui::Margin {
-            left: 25.0,
-            right: 25.0,
-            top: 6.0,
-            bottom: 25.0,
-        };
-        let frame = Frame::window(&style);
-        if self.about_window_open {
-            egui::Window::new("About")
-                .frame(frame)
-                .open(&mut self.about_window_open)
-                .fixed_pos(pos2(200.0, 250.0))
-                .auto_sized()
-                .collapsible(false)
-                .show(ctx, |ui| {
-                    ui.add_space(19.0);
-
-                    egui::Grid::new("about").spacing(vec2(10.0, 10.0)).show(ui, |ui| {
-                        use crate::util::build_info::*;
-                        ui.label("Author:");
-                        ui.label("Alexander van Saase");
-                        ui.end_row();
-
-                        ui.label("Version:");
-                        let version = get_version().unwrap_or("Unknown".into());
-                        if ui
-                            .add(Label::new(&version).sense(Sense::click()))
-                            .on_hover_text("Double-click to copy to clipboard")
-                            .double_clicked()
-                        {
-                            ui.output_mut(|o| o.copied_text = version);
-                        }
-                        ui.end_row();
-
-                        ui.label("Target:");
-                        ui.label(get_target());
-                        ui.end_row();
-
-                        ui.label("License:");
-                        ui.hyperlink_to(
-                            "General Public License v3.0",
-                            "https://github.com/avsaase/walksnail-osd-tool/blob/master/LICENSE.md",
-                        );
-                        ui.end_row();
-                    });
-
-                    ui.add_space(10.0);
-
-                    ui.hyperlink_to("Buy me a coffee", "https://www.buymeacoffee.com/avsaase");
-                });
-        }
-    }
-
-    fn update_osd_preview(&mut self, ctx: &egui::Context) {
+    pub fn update_osd_preview(&mut self, ctx: &egui::Context) {
         if let (Some(video_info), Some(osd_file), Some(font_file)) = (&self.video_info, &self.osd_file, &self.font_file)
         {
             let image = egui::ColorImage::from_rgba_unmultiplied(
@@ -802,6 +167,21 @@ impl WalksnailOsdTool {
             );
             let handle = ctx.load_texture("OSD preview", image, egui::TextureOptions::default());
             self.osd_preview.texture_handle = Some(handle);
+        }
+    }
+
+    pub fn receive_ffmpeg_message(&mut self) {
+        if let (Some(tx), Some(rx), Some(video_info)) =
+            (&self.to_ffmpeg_sender, &self.from_ffmpeg_receiver, &self.video_info)
+        {
+            while let Ok(message) = rx.try_recv() {
+                if matches!(message, FromFfmpegMessage::EncoderFatalError(_))
+                    || matches!(message, FromFfmpegMessage::EncoderFinished)
+                {
+                    tx.send(ToFfmpegMessage::AbortRender).ok();
+                }
+                self.render_status.update_from_ffmpeg_message(message, video_info)
+            }
         }
     }
 }

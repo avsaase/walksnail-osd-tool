@@ -3,7 +3,7 @@ use std::{
     time::Duration,
 };
 
-use egui::Ui;
+use egui::{Separator, Ui};
 
 use crate::{ffmpeg::VideoInfo, font::FontFile, osd::OsdFile};
 
@@ -51,9 +51,10 @@ pub fn find_file_with_extention<'a>(files: &'a [PathBuf], extention: &'a str) ->
 }
 
 pub fn separator_with_space(ui: &mut Ui, space: f32) {
-    ui.add_space(space);
-    ui.separator();
-    ui.add_space(space);
+    ui.scope(|ui| {
+        ui.visuals_mut().widgets.noninteractive.bg_stroke.width = 0.5;
+        ui.add(Separator::default().spacing(space));
+    });
 }
 
 pub fn format_minutes_seconds(mabe_duration: &Option<Duration>) -> String {
