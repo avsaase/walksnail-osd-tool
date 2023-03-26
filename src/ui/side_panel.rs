@@ -22,8 +22,10 @@ impl WalksnailOsdTool {
 
     fn video_info(&self, ui: &mut Ui) {
         let video_info = self.video_info.as_ref();
+        let file_loaded = video_info.is_some();
 
         CollapsingHeader::new(RichText::new("Video file").heading())
+            .icon(move |ui, opennes, response| circle_icon(ui, opennes, response, file_loaded))
             .default_open(true)
             .show(ui, |ui| {
                 ui.push_id("video_info", |ui| {
@@ -113,8 +115,10 @@ impl WalksnailOsdTool {
 
     fn osd_info(&self, ui: &mut Ui) {
         let osd_file = self.osd_file.as_ref();
+        let file_loaded = osd_file.is_some();
 
         CollapsingHeader::new(RichText::new("OSD file").heading())
+            .icon(move |ui, opennes, response| circle_icon(ui, opennes, response, file_loaded))
             .default_open(true)
             .show(ui, |ui| {
                 ui.push_id("osd_info", |ui| {
@@ -178,8 +182,10 @@ impl WalksnailOsdTool {
 
     fn font_info(&self, ui: &mut Ui) {
         let font_file = self.font_file.as_ref();
+        let file_loaded = font_file.is_some();
 
         CollapsingHeader::new(RichText::new("Font file").heading())
+            .icon(move |ui, opennes, response| circle_icon(ui, opennes, response, file_loaded))
             .default_open(true)
             .show(ui, |ui| {
                 ui.push_id("font_info", |ui| {
@@ -239,5 +245,15 @@ impl WalksnailOsdTool {
                         });
                 });
             });
+    }
+}
+
+fn circle_icon(ui: &mut egui::Ui, _openness: f32, response: &egui::Response, loaded: bool) {
+    let stroke = ui.style().interact(&response).fg_stroke;
+    let radius = 3.0;
+    if loaded {
+        ui.painter().circle_filled(response.rect.center(), radius, stroke.color);
+    } else {
+        ui.painter().circle_stroke(response.rect.center(), radius - 0.5, stroke)
     }
 }

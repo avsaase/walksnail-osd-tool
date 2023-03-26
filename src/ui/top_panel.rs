@@ -75,11 +75,12 @@ impl WalksnailOsdTool {
     fn toggle_light_dark_theme(&mut self, ui: &mut Ui, ctx: &egui::Context) {
         let icon = if self.dark_mode { "☀" } else { "🌙" };
         if ui.add(Button::new(icon).frame(false)).clicked() {
-            let visuals = if self.dark_mode {
+            let mut visuals = if self.dark_mode {
                 Visuals::light()
             } else {
                 Visuals::dark()
             };
+            visuals.indent_has_left_vline = false;
             ctx.set_visuals(visuals);
             self.dark_mode = !self.dark_mode;
         }
