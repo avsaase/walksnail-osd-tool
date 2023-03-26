@@ -152,7 +152,7 @@ impl WalksnailOsdTool {
                 ui.end_row();
 
                 ui.label("Encoding bitrate");
-                ui.add(Slider::new(&mut self.render_settings.bitrate_mbps, 0..=100).text("Mbit/s"));
+                ui.add(Slider::new(&mut self.render_settings.bitrate_mbps, 0..=100).text("Mbps"));
                 ui.end_row();
             });
     }

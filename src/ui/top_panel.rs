@@ -1,4 +1,4 @@
-use egui::{pos2, vec2, Button, Frame, Label, RichText, Sense, Ui, Visuals};
+use egui::{vec2, Align2, Button, Frame, Label, RichText, Sense, Ui, Visuals};
 
 use super::WalksnailOsdTool;
 
@@ -101,15 +101,15 @@ impl WalksnailOsdTool {
         let frame = Frame::window(&style);
         if self.about_window_open {
             egui::Window::new("About")
+                .anchor(Align2::CENTER_CENTER, vec2(0.0, 0.0))
                 .frame(frame)
                 .open(&mut self.about_window_open)
-                .fixed_pos(pos2(200.0, 250.0))
                 .auto_sized()
                 .collapsible(false)
                 .show(ctx, |ui| {
                     ui.add_space(19.0);
 
-                    egui::Grid::new("about").spacing(vec2(10.0, 10.0)).show(ui, |ui| {
+                    egui::Grid::new("about").spacing(vec2(10.0, 7.0)).show(ui, |ui| {
                         use crate::util::build_info::*;
                         ui.label("Author:");
                         ui.label("Alexander van Saase");

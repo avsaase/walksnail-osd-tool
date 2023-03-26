@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 - New UI layout with better support for different screen sizes.
+- Many small UI tweaks.
 
 ### Fixed
 - Show correct number of characters in font file.

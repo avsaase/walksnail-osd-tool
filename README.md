@@ -10,6 +10,7 @@
 Cross-platform tool for overlaying the OSD from the Walksnail Avatar HD FPV system on top of the video recording.
 
 ## Features
+- [x] Easy to use graphic user interface.
 - [x] Immediately start rendering the video. No intermediate PNG files!
 - [x] Hardware-accelerated encoding powered by ffmpeg.
 - [x] Choose between h264 and h265 codecs (more can be added later).
