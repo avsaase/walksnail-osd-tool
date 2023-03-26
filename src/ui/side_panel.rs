@@ -7,6 +7,7 @@ impl WalksnailOsdTool {
     pub fn render_sidepanel(&mut self, ctx: &egui::Context) {
         egui::SidePanel::left("side_panel")
             .default_width(270.0)
+            .max_width(400.0)
             .show(ctx, |ui| {
                 egui::ScrollArea::vertical().show(ui, |ui| {
                     ui.add_space(10.0);

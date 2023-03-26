@@ -96,7 +96,7 @@ impl Default for UiDimensions {
     fn default() -> Self {
         Self {
             file_info_row_height: 17.0,
-            file_info_column1_width: 90.0,
+            file_info_column1_width: 100.0,
             file_info_column2_width: 135.0,
             osd_position_sliders_length: 200.0,
         }

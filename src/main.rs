@@ -53,9 +53,8 @@ fn main() -> Result<(), eframe::Error> {
 
     let options = eframe::NativeOptions {
         drag_and_drop_support: true,
-        initial_window_size: Some(vec2(1000.0, 800.0)),
+        initial_window_size: Some(vec2(1000.0, 700.0)),
         min_window_size: Some(vec2(600.0, 300.0)),
-        // max_window_size: Some(vec2(780.0, 900.0)),
         icon_data: Some(icon_data),
         ..Default::default()
     };
