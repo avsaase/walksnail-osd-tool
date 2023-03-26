@@ -138,11 +138,8 @@ impl WalksnailOsdTool {
                     );
                     if selection.changed() {
                         // This is a little hacky but it's nice to have a single struct that keeps track of all render settings
-                        self.render_settings.encoder = selectable_encoders
-                            .get(self.selected_encoder_idx)
-                            .unwrap()
-                            .clone()
-                            .clone();
+                        self.render_settings.encoder =
+                            (*selectable_encoders.get(self.selected_encoder_idx).unwrap()).clone()
                     }
                     if ui
                         .checkbox(&mut self.show_undetected_encoders, "Show undeteced encoders")

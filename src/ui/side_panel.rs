@@ -249,7 +249,7 @@ impl WalksnailOsdTool {
 }
 
 fn circle_icon(ui: &mut egui::Ui, _openness: f32, response: &egui::Response, loaded: bool) {
-    let stroke = ui.style().interact(&response).fg_stroke;
+    let stroke = ui.style().interact(response).fg_stroke;
     let radius = 3.0;
     if loaded {
         ui.painter().circle_filled(response.rect.center(), radius, stroke.color);
