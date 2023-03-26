@@ -23,7 +23,7 @@ impl WalksnailOsdTool {
     fn video_info(&self, ui: &mut Ui) {
         let video_info = self.video_info.as_ref();
 
-        CollapsingHeader::new(RichText::new("🎞  Video file").heading())
+        CollapsingHeader::new(RichText::new("Video file").heading())
             .default_open(true)
             .show(ui, |ui| {
                 ui.push_id("video_info", |ui| {
@@ -114,7 +114,7 @@ impl WalksnailOsdTool {
     fn osd_info(&self, ui: &mut Ui) {
         let osd_file = self.osd_file.as_ref();
 
-        CollapsingHeader::new(RichText::new("🖵  OSD file").heading())
+        CollapsingHeader::new(RichText::new("OSD file").heading())
             .default_open(true)
             .show(ui, |ui| {
                 ui.push_id("osd_info", |ui| {
@@ -179,7 +179,7 @@ impl WalksnailOsdTool {
     fn font_info(&self, ui: &mut Ui) {
         let font_file = self.font_file.as_ref();
 
-        CollapsingHeader::new(RichText::new("🗛  Font file").heading())
+        CollapsingHeader::new(RichText::new("Font file").heading())
             .default_open(true)
             .show(ui, |ui| {
                 ui.push_id("font_info", |ui| {
