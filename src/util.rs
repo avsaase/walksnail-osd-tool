@@ -3,7 +3,7 @@ use std::{env::current_exe, fmt::Display, path::PathBuf};
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::{filter, prelude::__tracing_subscriber_SubscriberExt, util::SubscriberInitExt, Layer};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default, Copy)]
 pub struct Coordinates<T> {
     pub x: T,
     pub y: T,

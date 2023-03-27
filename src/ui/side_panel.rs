@@ -15,8 +15,9 @@ impl WalksnailOsdTool {
                     separator_with_space(ui, 15.0);
                     self.osd_info(ui);
                     separator_with_space(ui, 15.0);
-                    self.font_info(ui);
+                    self.srt_info(ui);
                     separator_with_space(ui, 15.0);
+                    self.font_info(ui);
                 });
             });
     }
@@ -171,6 +172,47 @@ impl WalksnailOsdTool {
                                 row.col(|ui| {
                                     if let Some(osd_file) = osd_file {
                                         ui.label(osd_file.frame_count.to_string());
+                                    } else {
+                                        ui.label("-");
+                                    }
+                                });
+                            });
+                        });
+                });
+            });
+    }
+
+    pub fn srt_info(&self, ui: &mut Ui) {
+        let srt_file = self.srt_file.as_ref();
+        let file_loaded = srt_file.is_some();
+
+        CollapsingHeader::new(RichText::new("SRT file").heading())
+            .icon(move |ui, opennes, response| circle_icon(ui, opennes, response, file_loaded))
+            .default_open(true)
+            .show(ui, |ui| {
+                ui.push_id("srt_info", |ui| {
+                    TableBuilder::new(ui)
+                        .column(Column::exact(self.ui_dimensions.file_info_column1_width))
+                        .column(
+                            Column::remainder()
+                                .at_least(self.ui_dimensions.file_info_column2_width)
+                                .clip(true),
+                        )
+                        .body(|mut body| {
+                            let row_height = self.ui_dimensions.file_info_row_height;
+                            body.row(row_height, |mut row| {
+                                row.col(|ui| {
+                                    ui.label("File name:");
+                                });
+                                row.col(|ui| {
+                                    if let Some(srt_file) = srt_file {
+                                        ui.label(
+                                            srt_file
+                                                .file_path
+                                                .file_name()
+                                                .map(|f| f.to_string_lossy())
+                                                .unwrap_or("-".into()),
+                                        );
                                     } else {
                                         ui.label("-");
                                     }

@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Added
+- Render data from the SRT file on the video. Select which values are rendered.
+- Automatically load the matching OSD and SRT files when importing a video.
+
 ### Changed
 - New UI layout with better support for different screen sizes.
 - Many small UI tweaks.

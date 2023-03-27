@@ -11,49 +11,58 @@ use crate::{
     ffmpeg::{handle_decoder_events, FromFfmpegMessage, ToFfmpegMessage},
     font, osd,
     overlay::overlay_osd_on_video,
+    srt,
+    ui::OsdOptions,
 };
 
-pub struct FrameOverlayIter {
+pub struct FrameOverlayIter<'a> {
     decoder_iter: FfmpegIterator,
     decoder_process: FfmpegChild,
     osd_frames_iter: Peekable<IntoIter<osd::Frame>>,
+    srt_frames_iter: Peekable<IntoIter<srt::SrtFrame>>,
     font_file: font::FontFile,
-    horizontal_offset: i32,
-    vertical_offset: i32,
+    osd_options: OsdOptions,
+    srt_font: rusttype::Font<'a>,
     current_osd_frame: osd::Frame,
+    current_srt_frame: srt::SrtFrame,
     ffmpeg_sender: Sender<FromFfmpegMessage>,
     ffmpeg_receiver: Receiver<ToFfmpegMessage>,
 }
 
-impl FrameOverlayIter {
+impl<'a> FrameOverlayIter<'a> {
     #[tracing::instrument(skip(decoder_iter, decoder_process, osd_frames, font_file), level = "debug")]
     pub fn new(
         decoder_iter: FfmpegIterator,
         decoder_process: FfmpegChild,
         osd_frames: Vec<osd::Frame>,
+        srt_frames: Vec<srt::SrtFrame>,
         font_file: font::FontFile,
-        horizontal_offset: i32,
-        vertical_offset: i32,
+        srt_font: rusttype::Font<'a>,
+        osd_options: &OsdOptions,
         ffmpeg_sender: Sender<FromFfmpegMessage>,
         ffmpeg_receiver: Receiver<ToFfmpegMessage>,
     ) -> Self {
         let mut osd_frames_iter = osd_frames.into_iter();
+        let mut srt_frames_iter = srt_frames.into_iter();
         let first_osd_frame = osd_frames_iter.next().unwrap();
+        let first_srt_frame = srt_frames_iter.next().unwrap();
         Self {
             decoder_iter,
             decoder_process,
             osd_frames_iter: osd_frames_iter.peekable(),
+            srt_frames_iter: srt_frames_iter.peekable(),
             font_file,
-            horizontal_offset,
-            vertical_offset,
+            osd_options: osd_options.clone(),
+            srt_font: srt_font.clone(),
             current_osd_frame: first_osd_frame,
+            current_srt_frame: first_srt_frame,
             ffmpeg_sender,
             ffmpeg_receiver,
         }
     }
 }
 
-impl Iterator for FrameOverlayIter {
+impl Iterator for FrameOverlayIter<'_> {
     type Item = OutputVideoFrame;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -74,12 +83,20 @@ impl Iterator for FrameOverlayIter {
                     }
                 }
 
+                if let Some(next_srt_frame) = self.srt_frames_iter.peek() {
+                    let next_srt_start_time_secs = next_srt_frame.start_time_secs;
+                    if video_frame.timestamp > next_srt_start_time_secs {
+                        self.current_srt_frame = self.srt_frames_iter.next().unwrap();
+                    }
+                }
+
                 Some(overlay_osd_on_video(
                     video_frame,
                     &self.current_osd_frame,
+                    &self.current_srt_frame,
                     &self.font_file,
-                    self.horizontal_offset,
-                    self.vertical_offset,
+                    &self.srt_font,
+                    &self.osd_options,
                 ))
             }
             other_event => {

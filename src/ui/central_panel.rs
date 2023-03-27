@@ -1,14 +1,16 @@
-use egui::{vec2, Color32, Image, Slider, Ui};
+use egui::{vec2, Checkbox, Color32, Image, Slider, Ui};
 
-use crate::osd::{calculate_horizontal_offset, calculate_vertical_offset};
-
-use super::{utils::separator_with_space, WalksnailOsdTool};
+use super::{
+    osd_preview::{calculate_horizontal_offset, calculate_vertical_offset},
+    utils::separator_with_space,
+    WalksnailOsdTool,
+};
 
 impl WalksnailOsdTool {
     pub fn render_central_panel(&mut self, ctx: &egui::Context) {
         egui::CentralPanel::default().show(ctx, |ui| {
             egui::ScrollArea::vertical().show(ui, |ui| {
-                self.osd_position(ui, ctx);
+                self.osd_options(ui, ctx);
 
                 separator_with_space(ui, 10.0);
 
@@ -21,69 +23,102 @@ impl WalksnailOsdTool {
         });
     }
 
-    fn osd_position(&mut self, ui: &mut Ui, ctx: &egui::Context) {
+    fn osd_options(&mut self, ui: &mut Ui, ctx: &egui::Context) {
         ui.heading("OSD Options");
         ui.style_mut().spacing.slider_width = self.ui_dimensions.osd_position_sliders_length;
         egui::Grid::new("position_sliders")
             .spacing(vec2(15.0, 10.0))
             .show(ui, |ui| {
                 ui.label("Horizontal offset");
-                let horizontal_offset_slider =
-                    ui.add(Slider::new(&mut self.osd_preview.horizontal_offset, -200..=700).text("Pixels"));
-                ui.add_space(3.0);
-
-                if ui.button("Center").clicked() {
-                    if let (Some(video_info), Some(osd_file), Some(font_file)) =
-                        (&self.video_info, &self.osd_file, &self.font_file)
+                ui.horizontal(|ui| {
+                    if ui
+                        .add(Slider::new(&mut self.osd_options.horizontal_offset, -200..=700).text("Pixels"))
+                        .changed()
                     {
-                        self.osd_preview.horizontal_offset = calculate_horizontal_offset(
-                            video_info.width,
-                            osd_file
-                                .frames
-                                .get(self.osd_preview.preview_frame as usize - 1)
-                                .unwrap(),
-                            &font_file.character_size,
-                        );
                         self.update_osd_preview(ctx);
                     }
-                }
 
-                if ui.button("Reset").clicked() {
-                    self.osd_preview.horizontal_offset = 0;
-                    self.update_osd_preview(ctx);
-                }
+                    if ui.button("Center").clicked() {
+                        if let (Some(video_info), Some(osd_file), Some(font_file)) =
+                            (&self.video_info, &self.osd_file, &self.font_file)
+                        {
+                            self.osd_options.horizontal_offset = calculate_horizontal_offset(
+                                video_info.width,
+                                osd_file
+                                    .frames
+                                    .get(self.osd_preview.preview_frame as usize - 1)
+                                    .unwrap(),
+                                &font_file.character_size,
+                            );
+                            self.update_osd_preview(ctx);
+                        }
+                    }
+
+                    if ui.button("Reset").clicked() {
+                        self.osd_options.horizontal_offset = 0;
+                        self.update_osd_preview(ctx);
+                    }
+                });
                 ui.end_row();
+
+                //
 
                 ui.label("Vertical offset");
-                let vertical_offset_slider =
-                    ui.add(Slider::new(&mut self.osd_preview.vertical_offset, -200..=700).text("Pixels"));
-                ui.add_space(3.0);
-
-                if ui.button("Center").clicked() {
-                    if let (Some(video_info), Some(osd_file), Some(font_file)) =
-                        (&self.video_info, &self.osd_file, &self.font_file)
+                ui.horizontal(|ui| {
+                    if ui
+                        .add(Slider::new(&mut self.osd_options.vertical_offset, -200..=700).text("Pixels"))
+                        .changed()
                     {
-                        self.osd_preview.vertical_offset = calculate_vertical_offset(
-                            video_info.height,
-                            osd_file
-                                .frames
-                                .get(self.osd_preview.preview_frame as usize - 1)
-                                .unwrap(),
-                            &font_file.character_size,
-                        );
                         self.update_osd_preview(ctx);
                     }
-                }
 
-                if ui.button("Reset").clicked() {
-                    self.osd_preview.vertical_offset = 0;
-                    self.update_osd_preview(ctx);
-                }
+                    if ui.button("Center").clicked() {
+                        if let (Some(video_info), Some(osd_file), Some(font_file)) =
+                            (&self.video_info, &self.osd_file, &self.font_file)
+                        {
+                            self.osd_options.vertical_offset = calculate_vertical_offset(
+                                video_info.height,
+                                osd_file
+                                    .frames
+                                    .get(self.osd_preview.preview_frame as usize - 1)
+                                    .unwrap(),
+                                &font_file.character_size,
+                            );
+                            self.update_osd_preview(ctx);
+                        }
+                    }
+
+                    if ui.button("Reset").clicked() {
+                        self.osd_options.vertical_offset = 0;
+                        self.update_osd_preview(ctx);
+                    }
+                });
                 ui.end_row();
 
-                if horizontal_offset_slider.changed() || vertical_offset_slider.changed() {
-                    self.update_osd_preview(ctx);
-                }
+                //
+
+                ui.label("Show SRT data");
+                ui.horizontal(|ui| {
+                    ui.add_enabled_ui(self.srt_file.is_some(), |ui| {
+                        let options = &mut self.osd_options.srt_options;
+                        let has_distance = self.srt_file.as_ref().map(|s| s.has_distance).unwrap_or(false);
+                        if [
+                            ui.checkbox(&mut options.show_time, "Time "),
+                            ui.checkbox(&mut options.show_sbat, "SBat "),
+                            ui.checkbox(&mut options.show_gbat, "GBat "),
+                            ui.checkbox(&mut options.show_signal, "Signal "),
+                            ui.checkbox(&mut options.show_latency, "Latency "),
+                            ui.checkbox(&mut options.show_bitrate, "Bitrate "),
+                            ui.add_enabled(has_distance, Checkbox::new(&mut options.show_distance, "Distance")),
+                        ]
+                        .iter()
+                        .any(|r| r.changed())
+                        {
+                            self.update_osd_preview(ctx);
+                        }
+                    });
+                });
+                ui.end_row();
             });
     }
 

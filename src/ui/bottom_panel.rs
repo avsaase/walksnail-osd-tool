@@ -32,19 +32,24 @@ impl WalksnailOsdTool {
             {
                 tracing::info!("Start render button clicked");
                 self.render_status.start_render();
-                if let (Some(video_path), Some(osd_file), Some(font_file), Some(video_info)) =
-                    (&self.video_file, &self.osd_file, &self.font_file, &self.video_info)
-                {
+                if let (Some(video_path), Some(osd_file), Some(font_file), Some(video_info), Some(srt_file)) = (
+                    &self.video_file,
+                    &self.osd_file,
+                    &self.font_file,
+                    &self.video_info,
+                    &self.srt_file,
+                ) {
                     match start_video_render(
                         &self.dependencies.ffmpeg_path,
                         video_path,
                         &get_output_video_path(video_path),
                         osd_file.frames.clone(),
+                        srt_file.frames.clone(),
                         font_file.clone(),
+                        self.srt_font.as_ref().unwrap().clone(),
+                        &self.osd_options,
                         video_info,
                         &self.render_settings,
-                        self.osd_preview.horizontal_offset,
-                        self.osd_preview.vertical_offset,
                     ) {
                         Ok((to_ffmpeg_sender, from_ffmpeg_receiver)) => {
                             self.to_ffmpeg_sender = Some(to_ffmpeg_sender);

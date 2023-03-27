@@ -11,21 +11,22 @@ use ffmpeg_sidecar::{
     event::{FfmpegEvent, LogLevel},
 };
 
-use crate::{font, osd, overlay::FrameOverlayIter};
+use crate::{font, osd, overlay::FrameOverlayIter, srt, ui::OsdOptions};
 
 use super::{encoder_settings::EncoderSettings, Encoder, FromFfmpegMessage, ToFfmpegMessage, VideoInfo};
 
-#[tracing::instrument(skip(osd_frames, font_file), err)]
+#[tracing::instrument(skip(osd_frames, srt_frames, font_file), err)]
 pub fn start_video_render(
     ffmpeg_path: &PathBuf,
     input_video: &PathBuf,
     output_video: &PathBuf,
     osd_frames: Vec<osd::Frame>,
+    srt_frames: Vec<srt::SrtFrame>,
     font_file: font::FontFile,
+    srt_font: rusttype::Font<'static>,
+    osd_options: &OsdOptions,
     video_info: &VideoInfo,
     render_settings: &EncoderSettings,
-    horizontal_offset: i32,
-    vertical_offset: i32,
 ) -> Result<(Sender<ToFfmpegMessage>, Receiver<FromFfmpegMessage>), io::Error> {
     let mut decoder_process = spawn_decoder(ffmpeg_path, input_video)?;
 
@@ -50,9 +51,10 @@ pub fn start_video_render(
             .expect("Failed to create `FfmpegIterator` for decoder"),
         decoder_process,
         osd_frames,
+        srt_frames,
         font_file,
-        horizontal_offset,
-        vertical_offset,
+        srt_font,
+        osd_options,
         from_ffmpeg_tx.clone(),
         to_ffmpeg_rx,
     );

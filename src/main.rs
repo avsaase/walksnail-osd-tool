@@ -14,6 +14,7 @@ mod ffmpeg;
 mod font;
 mod osd;
 mod overlay;
+mod srt;
 mod ui;
 mod util;
 

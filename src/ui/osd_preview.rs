@@ -1,18 +1,21 @@
 use image::RgbaImage;
 
-use crate::{font, osd, overlay::overlay_osd_on_image};
+use crate::{font, osd, overlay::overlay_osd_on_image, srt};
 
-#[tracing::instrument(skip(osd_frame, font))]
-pub fn osd_preview(
+use super::OsdOptions;
+
+#[tracing::instrument(skip(osd_frame, srt_frame, font))]
+pub fn create_osd_preview(
     width: u32,
     height: u32,
     osd_frame: &osd::Frame,
+    srt_frame: &srt::SrtFrame,
     font: &font::FontFile,
-    horizontal_offset: i32,
-    vertical_offset: i32,
+    srt_font: &rusttype::Font,
+    osd_options: &OsdOptions,
 ) -> RgbaImage {
     let mut image = RgbaImage::new(width, height);
-    overlay_osd_on_image(osd_frame, font, &mut image, horizontal_offset, vertical_offset);
+    overlay_osd_on_image(osd_frame, srt_frame, font, srt_font, &mut image, osd_options);
     image
 }
 

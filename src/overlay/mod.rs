@@ -1,7 +1,7 @@
-mod frame_overlay_iter;
-mod image;
-mod video_frame;
+mod iter;
+mod osd;
+mod srt;
 
-pub use self::image::overlay_osd_on_image;
-pub use frame_overlay_iter::FrameOverlayIter;
-pub use video_frame::overlay_osd_on_video;
+pub use iter::FrameOverlayIter;
+pub use osd::overlay_osd_on_image;
+pub use osd::overlay_osd_on_video;

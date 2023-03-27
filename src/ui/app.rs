@@ -5,11 +5,12 @@ use egui::{pos2, text::LayoutJob, vec2, Color32, TextFormat, TextStyle, TextureH
 
 use crate::{
     ffmpeg::{Encoder, EncoderSettings, FromFfmpegMessage, ToFfmpegMessage, VideoInfo},
-    font,
-    osd::{self, osd_preview},
+    font, osd, srt,
+    util::Coordinates,
 };
 
 use super::{
+    osd_preview::create_osd_preview,
     utils::{set_custom_fonts, set_font_styles},
     RenderStatus,
 };
@@ -20,6 +21,7 @@ pub struct WalksnailOsdTool {
     pub video_info: Option<VideoInfo>,
     pub osd_file: Option<osd::OsdFile>,
     pub font_file: Option<font::FontFile>,
+    pub srt_file: Option<srt::SrtFile>,
     pub ui_dimensions: UiDimensions,
     pub to_ffmpeg_sender: Option<Sender<ToFfmpegMessage>>,
     pub from_ffmpeg_receiver: Option<Receiver<FromFfmpegMessage>>,
@@ -30,8 +32,10 @@ pub struct WalksnailOsdTool {
     pub dependencies: Dependencies,
     pub render_settings: EncoderSettings,
     pub osd_preview: OsdPreview,
+    pub osd_options: OsdOptions,
     pub about_window_open: bool,
     pub dark_mode: bool,
+    pub srt_font: Option<rusttype::Font<'static>>,
 }
 
 impl WalksnailOsdTool {
@@ -48,6 +52,9 @@ impl WalksnailOsdTool {
         set_custom_fonts(ctx);
         ctx.set_visuals(visuals);
 
+        let srt_font: rusttype::Font<'static> =
+            rusttype::Font::try_from_bytes(include_bytes!("../../resources/fonts/AzeretMono-Regular.ttf")).unwrap();
+
         Self {
             dependencies: Dependencies {
                 dependencies_satisfied,
@@ -55,6 +62,7 @@ impl WalksnailOsdTool {
                 ffprobe_path,
             },
             encoders: encoders.into_iter().map(Rc::new).collect(),
+            srt_font: Some(srt_font),
             ..Default::default()
         }
     }
@@ -69,8 +77,6 @@ pub struct Dependencies {
 
 pub struct OsdPreview {
     pub texture_handle: Option<TextureHandle>,
-    pub horizontal_offset: i32,
-    pub vertical_offset: i32,
     pub preview_frame: u32,
 }
 
@@ -78,9 +84,53 @@ impl Default for OsdPreview {
     fn default() -> Self {
         Self {
             texture_handle: Default::default(),
+            preview_frame: 1,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct OsdOptions {
+    pub horizontal_offset: i32,
+    pub vertical_offset: i32,
+    pub srt_options: SrtOptions,
+}
+
+impl Default for OsdOptions {
+    fn default() -> Self {
+        Self {
             horizontal_offset: Default::default(),
             vertical_offset: Default::default(),
-            preview_frame: 1,
+            srt_options: Default::default(),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct SrtOptions {
+    pub position: Coordinates<i32>,
+    pub scale: f32,
+    pub show_time: bool,
+    pub show_sbat: bool,
+    pub show_gbat: bool,
+    pub show_signal: bool,
+    pub show_latency: bool,
+    pub show_bitrate: bool,
+    pub show_distance: bool,
+}
+
+impl Default for SrtOptions {
+    fn default() -> Self {
+        Self {
+            position: Coordinates { x: 25, y: 1035 },
+            scale: 35.0,
+            show_time: true,
+            show_sbat: true,
+            show_gbat: true,
+            show_signal: true,
+            show_latency: true,
+            show_bitrate: true,
+            show_distance: true,
         }
     }
 }
@@ -153,24 +203,28 @@ impl WalksnailOsdTool {
     }
 
     pub fn update_osd_preview(&mut self, ctx: &egui::Context) {
-        if let (Some(video_info), Some(osd_file), Some(font_file)) = (&self.video_info, &self.osd_file, &self.font_file)
+        if let (Some(video_info), Some(osd_file), Some(font_file), Some(srt_file)) =
+            (&self.video_info, &self.osd_file, &self.font_file, &self.srt_file)
         {
             let image = egui::ColorImage::from_rgba_unmultiplied(
                 [video_info.width as usize, video_info.height as usize],
-                &osd_preview(
+                &create_osd_preview(
                     video_info.width,
                     video_info.height,
                     osd_file
                         .frames
                         .get(self.osd_preview.preview_frame as usize - 1)
                         .unwrap(),
+                    srt_file.frames.last().unwrap(),
                     font_file,
-                    self.osd_preview.horizontal_offset,
-                    self.osd_preview.vertical_offset,
+                    &self.srt_font.as_ref().unwrap(),
+                    &self.osd_options,
                 ),
             );
             let handle = ctx.load_texture("OSD preview", image, egui::TextureOptions::default());
             self.osd_preview.texture_handle = Some(handle);
+        } else {
+            self.osd_preview.texture_handle = None;
         }
     }
 

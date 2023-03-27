@@ -5,40 +5,53 @@ use std::{
 
 use egui::{Separator, Ui};
 
-use crate::{ffmpeg::VideoInfo, font::FontFile, osd::OsdFile};
+use crate::{ffmpeg::VideoInfo, font::FontFile, osd::OsdFile, srt::SrtFile};
 
-use super::WalksnailOsdTool;
+use super::{SrtOptions, WalksnailOsdTool};
 
 impl WalksnailOsdTool {
     pub fn all_files_loaded(&self) -> bool {
-        match (&self.video_file, &self.video_info, &self.osd_file, &self.font_file) {
-            (Some(_), Some(_), Some(_), Some(_)) => true,
-            (_, _, _, _) => false,
-        }
+        self.video_file.is_some()
+            && self.video_info.is_some()
+            && self.osd_file.is_some()
+            && self.srt_file.is_some()
+            && self.font_file.is_some()
     }
 
-    pub fn import_font_file(&mut self, file_handles: &[PathBuf]) {
-        if let Some(font_file_path) = find_file_with_extention(file_handles, "png") {
-            self.font_file = FontFile::open(font_file_path.clone()).ok();
+    pub fn import_video_file(&mut self, file_handles: &[PathBuf]) {
+        if let Some(video_file) = filter_file_with_extention(file_handles, "mp4") {
+            self.video_file = Some(video_file.clone());
+            self.video_info = VideoInfo::get(video_file, &self.dependencies.ffprobe_path).ok();
+
+            // Try to load the matching OSD and SRT files
+            self.import_osd_file(&[matching_file_with_extension(video_file, "osd")]);
+            self.import_srt_file(&[matching_file_with_extension(video_file, "srt")]);
         }
     }
 
     pub fn import_osd_file(&mut self, file_handles: &[PathBuf]) {
-        if let Some(osd_file_path) = find_file_with_extention(file_handles, "osd") {
+        if let Some(osd_file_path) = filter_file_with_extention(file_handles, "osd") {
             self.osd_file = OsdFile::open(osd_file_path.clone()).ok();
             self.osd_preview.preview_frame = 1;
         }
     }
 
-    pub fn import_video_file(&mut self, file_handles: &[PathBuf]) {
-        if let Some(video_file) = find_file_with_extention(file_handles, "mp4") {
-            self.video_file = Some(video_file.clone());
-            self.video_info = VideoInfo::get(video_file, &self.dependencies.ffprobe_path).ok();
+    pub fn import_srt_file(&mut self, file_handles: &[PathBuf]) {
+        if let Some(str_file_path) = filter_file_with_extention(file_handles, "srt") {
+            self.srt_file = SrtFile::open(str_file_path.clone()).ok();
+            self.osd_options.srt_options = SrtOptions::default();
+            self.osd_options.srt_options.show_distance = self.srt_file.as_ref().map(|s| s.has_distance).unwrap_or(true);
+        }
+    }
+
+    pub fn import_font_file(&mut self, file_handles: &[PathBuf]) {
+        if let Some(font_file_path) = filter_file_with_extention(file_handles, "png") {
+            self.font_file = FontFile::open(font_file_path.clone()).ok();
         }
     }
 }
 
-pub fn find_file_with_extention<'a>(files: &'a [PathBuf], extention: &'a str) -> Option<&'a PathBuf> {
+pub fn filter_file_with_extention<'a>(files: &'a [PathBuf], extention: &'a str) -> Option<&'a PathBuf> {
     files.iter().find_map(|f| {
         f.extension().and_then(|e| {
             if e.to_string_lossy() == extention {
@@ -48,6 +61,13 @@ pub fn find_file_with_extention<'a>(files: &'a [PathBuf], extention: &'a str) ->
             }
         })
     })
+}
+
+#[tracing::instrument(ret, level = "info")]
+pub fn matching_file_with_extension(path: &PathBuf, extention: &str) -> PathBuf {
+    let file_name = path.file_stem().unwrap();
+    let parent = path.parent().unwrap();
+    parent.join(file_name).with_extension(extention)
 }
 
 pub fn separator_with_space(ui: &mut Ui, space: f32) {
