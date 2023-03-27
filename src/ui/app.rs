@@ -89,21 +89,11 @@ impl Default for OsdPreview {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct OsdOptions {
     pub horizontal_offset: i32,
     pub vertical_offset: i32,
     pub srt_options: SrtOptions,
-}
-
-impl Default for OsdOptions {
-    fn default() -> Self {
-        Self {
-            horizontal_offset: Default::default(),
-            vertical_offset: Default::default(),
-            srt_options: Default::default(),
-        }
-    }
 }
 
 #[derive(Debug, Clone)]
@@ -217,7 +207,7 @@ impl WalksnailOsdTool {
                         .unwrap(),
                     srt_file.frames.last().unwrap(),
                     font_file,
-                    &self.srt_font.as_ref().unwrap(),
+                    self.srt_font.as_ref().unwrap(),
                     &self.osd_options,
                 ),
             );
