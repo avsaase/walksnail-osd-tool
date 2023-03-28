@@ -99,24 +99,22 @@ impl WalksnailOsdTool {
 
                 ui.label("Show SRT data");
                 ui.horizontal(|ui| {
-                    ui.add_enabled_ui(self.srt_file.is_some(), |ui| {
-                        let options = &mut self.osd_options.srt_options;
-                        let has_distance = self.srt_file.as_ref().map(|s| s.has_distance).unwrap_or(false);
-                        if [
-                            ui.checkbox(&mut options.show_time, "Time "),
-                            ui.checkbox(&mut options.show_sbat, "SBat "),
-                            ui.checkbox(&mut options.show_gbat, "GBat "),
-                            ui.checkbox(&mut options.show_signal, "Signal "),
-                            ui.checkbox(&mut options.show_latency, "Latency "),
-                            ui.checkbox(&mut options.show_bitrate, "Bitrate "),
-                            ui.add_enabled(has_distance, Checkbox::new(&mut options.show_distance, "Distance")),
-                        ]
-                        .iter()
-                        .any(|r| r.changed())
-                        {
-                            self.update_osd_preview(ctx);
-                        }
-                    });
+                    let options = &mut self.osd_options.srt_options;
+                    let has_distance = self.srt_file.as_ref().map(|s| s.has_distance).unwrap_or(true);
+                    if [
+                        ui.checkbox(&mut options.show_time, "Time "),
+                        ui.checkbox(&mut options.show_sbat, "SBat "),
+                        ui.checkbox(&mut options.show_gbat, "GBat "),
+                        ui.checkbox(&mut options.show_signal, "Signal "),
+                        ui.checkbox(&mut options.show_latency, "Latency "),
+                        ui.checkbox(&mut options.show_bitrate, "Bitrate "),
+                        ui.add_enabled(has_distance, Checkbox::new(&mut options.show_distance, "Distance")),
+                    ]
+                    .iter()
+                    .any(|r| r.changed())
+                    {
+                        self.update_osd_preview(ctx);
+                    }
                 });
                 ui.end_row();
             });

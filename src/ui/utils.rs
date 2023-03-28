@@ -11,11 +11,23 @@ use super::{SrtOptions, WalksnailOsdTool};
 
 impl WalksnailOsdTool {
     pub fn all_files_loaded(&self) -> bool {
-        self.video_file.is_some()
-            && self.video_info.is_some()
-            && self.osd_file.is_some()
-            && self.srt_file.is_some()
-            && self.font_file.is_some()
+        self.video_loaded() && self.osd_loaded() && self.srt_loaded() && self.font_loaded()
+    }
+
+    pub fn video_loaded(&self) -> bool {
+        self.video_file.is_some() && self.video_info.is_some()
+    }
+
+    pub fn osd_loaded(&self) -> bool {
+        self.osd_file.is_some()
+    }
+
+    pub fn srt_loaded(&self) -> bool {
+        self.srt_file.is_some()
+    }
+
+    pub fn font_loaded(&self) -> bool {
+        self.font_file.is_some()
     }
 
     pub fn import_video_file(&mut self, file_handles: &[PathBuf]) {
