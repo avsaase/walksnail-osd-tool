@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Added
 - Render data from the SRT file on the video. Select which values are rendered.
 - Automatically load the matching OSD and SRT files when importing a video (they must be in the same folder and have the same file name).
+- Upscale output video to 1440p to get better compression on YouTube.
 
 ### Changed
 - New UI layout with better support for different screen sizes.

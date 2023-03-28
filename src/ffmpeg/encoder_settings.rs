@@ -6,6 +6,7 @@ use crate::ffmpeg::{Codec, Encoder};
 pub struct EncoderSettings {
     pub encoder: Rc<Encoder>,
     pub bitrate_mbps: u32,
+    pub upscale: bool,
 }
 
 impl Default for EncoderSettings {
@@ -18,6 +19,7 @@ impl Default for EncoderSettings {
                 detected: false,
             }),
             bitrate_mbps: 40,
+            upscale: false,
         }
     }
 }

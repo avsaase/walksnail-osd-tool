@@ -38,6 +38,7 @@ pub fn start_video_render(
         render_settings.bitrate_mbps,
         &render_settings.encoder,
         output_video,
+        render_settings.upscale,
     )?;
 
     // Channels to communicate with ffmpeg handler thread
@@ -107,20 +108,30 @@ pub fn spawn_encoder(
     bitrate_mbps: u32,
     video_encoder: &Encoder,
     output_video: &PathBuf,
+    upscale: bool,
 ) -> Result<FfmpegChild, io::Error> {
-    let encoder = FfmpegCommand::new_with_path(ffmpeg_path)
+    let mut encoder_command = FfmpegCommand::new_with_path(ffmpeg_path);
+
+    encoder_command
         .create_no_window()
         .format("rawvideo")
         .pix_fmt("rgba")
         .size(width, height)
         .rate(frame_rate)
-        .input("-")
+        .input("-");
+
+    if upscale {
+        encoder_command.args(["-vf", "scale=2560x1440:flags=bicubic"]);
+    }
+
+    encoder_command
         .pix_fmt("yuv420p")
         .codec_video(&video_encoder.name)
         .args(["-b:v", &format!("{}M", bitrate_mbps)])
         .overwrite()
-        .output(output_video.to_str().unwrap())
-        .spawn()?;
+        .output(output_video.to_str().unwrap());
+
+    let encoder = encoder_command.spawn()?;
     Ok(encoder)
 }
 
