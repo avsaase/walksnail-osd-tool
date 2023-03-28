@@ -1,6 +1,6 @@
 use rayon::prelude::*;
 
-use std::{fmt::Display, path::PathBuf, process::Command, vec};
+use std::{fmt::Display, path::PathBuf, process::Command};
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Codec {
@@ -38,7 +38,7 @@ impl Encoder {
     #[tracing::instrument(ret)]
     pub fn get_available_encoders(ffmpeg_path: &PathBuf) -> Vec<Self> {
         #[rustfmt::skip]
-        let mut all_encoders = vec![
+        let mut all_encoders = [
             Encoder::new("libx264", Codec::H264, false),
             Encoder::new("libx265", Codec::H265, false),
 

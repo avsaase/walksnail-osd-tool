@@ -177,6 +177,21 @@ impl WalksnailOsdTool {
                                     }
                                 });
                             });
+
+                            body.row(row_height, |mut row| {
+                                row.col(|ui| {
+                                    ui.label("Duration:");
+                                });
+                                row.col(|ui| {
+                                    if let Some(duration_secs) = osd_file.map(|i| i.duration_seconds) {
+                                        let minutes = duration_secs / 60;
+                                        let seconds = duration_secs % 60;
+                                        ui.label(format!("{}:{:0>2}", minutes, seconds));
+                                    } else {
+                                        ui.label("-");
+                                    }
+                                });
+                            });
                         });
                 });
             });
@@ -213,6 +228,21 @@ impl WalksnailOsdTool {
                                                 .map(|f| f.to_string_lossy())
                                                 .unwrap_or("-".into()),
                                         );
+                                    } else {
+                                        ui.label("-");
+                                    }
+                                });
+                            });
+
+                            body.row(row_height, |mut row| {
+                                row.col(|ui| {
+                                    ui.label("Duration:");
+                                });
+                                row.col(|ui| {
+                                    if let Some(duration_secs) = srt_file.map(|i| i.duration_seconds) {
+                                        let minutes = duration_secs / 60;
+                                        let seconds = duration_secs % 60;
+                                        ui.label(format!("{}:{:0>2}", minutes, seconds));
                                     } else {
                                         ui.label("-");
                                     }

@@ -9,6 +9,7 @@ use super::{error::SrtFileError, frame::SrtFrame, SrtFrameData};
 pub struct SrtFile {
     pub file_path: PathBuf,
     pub has_distance: bool,
+    pub duration_seconds: u32,
     #[derivative(Debug = "ignore")]
     pub frames: Vec<SrtFrame>,
 }
@@ -28,11 +29,14 @@ impl SrtFile {
                     data,
                 })
             })
-            .collect::<Result<_, _>>()?;
+            .collect::<Result<Vec<_>, _>>()?;
+
+        let duration_seconds = srt_frames.last().unwrap().end_time_secs as u32;
 
         Ok(Self {
             file_path: path,
             has_distance,
+            duration_seconds,
             frames: srt_frames,
         })
     }
