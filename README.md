@@ -7,19 +7,24 @@
 [![Latest build](https://img.shields.io/github/last-commit/avsaase/walksnail-osd-tool/master?label=latest%20build)](https://nightly.link/avsaase/walksnail-osd-tool/workflows/release.yaml/master/walksnail-osd-tool-all-platforms.zip)
 [![Totally awesome](https://img.shields.io/badge/totally%20awesome-true-blue)](https://github.com/avsaase/walksnail-osd-tool)
 
-Cross-platform tool for overlaying the OSD from the Walksnail Avatar HD FPV system on top of the video recording.
+Cross-platform tool to render the OSD from the Walksnail Avatar HD FPV system on top of the goggle/VRX DVR.
+
+![image](https://user-images.githubusercontent.com/880421/228286034-ffd7bf0d-4bb0-4774-9ee1-dd408bd97a88.png)
+
 
 ## Features
 - [x] Easy to use graphic user interface.
+- [x] Native installer for Windows, App bundle for MacOS.
 - [x] Immediately start rendering the video. No intermediate PNG files!
 - [x] Hardware-accelerated encoding powered by ffmpeg.
 - [x] Choose between h264 and h265 codecs (more can be added later).
-- [x] View basic information about the video, OSD and font files.
+- [x] View basic information about the video, OSD, SRT and font files.
 - [x] Preview OSD frames before rendering.
 - [x] Automatically center the OSD or position it manually.
+- [x] Display info from the `.srt` file on the video.
 - [x] Selectable output video bitrate (more encoder settings will be added later).
+- [x] Upscale output video to 1440p for higher quality when uploading to YouTube.
 - [ ] Mask OSD items.
-- [ ] Display info from the `.srt` file on the video.
 - [ ] Anything else? Open a feature request [here](https://github.com/avsaase/walksnail-osd-tool/issues/new?assignees=&labels=enhancement&template=feature_request.yaml).
 
 ## Installation
@@ -46,6 +51,10 @@ The project builds on Ubuntu in CI but I haven't tried runnning it myself. I don
 2. Run `cargo install --release --git https://github.com/avsaase/walksnail-osd-tool.git`. The executable will be installed in `$HOME/.cargo/bin/` and added to your path.
 3. To run the app you need the `ffmpeg` and `ffprobe` binaries in your `path` or placed next to the executable you just build.
 4. Run the app with `walksnail-osd-tool`.
+
+### Similar projects
+- [kirek007/ws-osd-py](https://github.com/kirek007/ws-osd-py): Python-based tool with GUI and CLI. No longer maintained in favor of this project but has a few features that this project currently lacks. Depending on your OS it can require some manual setup due to Python dependencies.
+- [shellixyz/hd_fpv_video_tool](https://github.com/shellixyz/hd_fpv_video_tool): Rust-based CLI tool with support for with Walksnail and DJI. Mainly targets Linux and can be difficult to build from source on Windows and MacOS. Has some cool features like live playback of the DVR with OSD without rendering.
 
 ## Disclaimer
 This project is not affiliated with Walksnail/Caddx.
