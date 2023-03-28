@@ -6,7 +6,7 @@ use egui::{pos2, text::LayoutJob, vec2, Color32, TextFormat, TextStyle, TextureH
 use crate::{
     ffmpeg::{Encoder, EncoderSettings, FromFfmpegMessage, ToFfmpegMessage, VideoInfo},
     font, osd, srt,
-    util::Coordinates,
+    util::{Coordinates, Dimension},
 };
 
 use super::{
@@ -112,8 +112,8 @@ pub struct SrtOptions {
 impl Default for SrtOptions {
     fn default() -> Self {
         Self {
-            position: Coordinates { x: 25, y: 1035 },
-            scale: 35.0,
+            position: Default::default(),
+            scale: Default::default(),
             show_time: true,
             show_sbat: true,
             show_gbat: true,
@@ -122,6 +122,16 @@ impl Default for SrtOptions {
             show_bitrate: true,
             show_distance: true,
         }
+    }
+}
+
+impl SrtOptions {
+    pub fn for_frame_size(&mut self, frame_size: Dimension<u32>) {
+        let scale = frame_size.height / 30;
+        let x_position = frame_size.width / 45;
+        let y_position = frame_size.height - scale - x_position / 2;
+        self.position = Coordinates::new(x_position as i32, y_position as i32);
+        self.scale = scale as f32;
     }
 }
 

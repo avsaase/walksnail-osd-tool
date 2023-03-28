@@ -9,10 +9,22 @@ pub struct Coordinates<T> {
     pub y: T,
 }
 
+impl<T> Coordinates<T> {
+    pub fn new(x: T, y: T) -> Self {
+        Self { x, y }
+    }
+}
+
 #[derive(Debug)]
 pub struct Dimension<T> {
     pub width: T,
     pub height: T,
+}
+
+impl<T> Dimension<T> {
+    pub fn new(width: T, height: T) -> Self {
+        Self { width, height }
+    }
 }
 
 impl Display for Dimension<u32> {
