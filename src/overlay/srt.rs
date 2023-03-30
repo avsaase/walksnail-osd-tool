@@ -38,7 +38,7 @@ pub fn draw_srt_data(image: &mut RgbaImage, srt_data: &SrtFrameData, font: &rust
     };
 
     let bitrate_str = if srt_options.show_bitrate {
-        format!("Bitrate:{: >2}Mbps  ", srt_data.bitrate_mbps)
+        format!("Bitrate:{: >4.1}Mbps  ", srt_data.bitrate_mbps)
     } else {
         "".into()
     };
