@@ -122,7 +122,7 @@ impl WalksnailOsdTool {
                         let version = get_version().unwrap_or("Unknown".into());
                         if ui
                             .add(Label::new(&version).sense(Sense::click()))
-                            .on_hover_text("Double-click to copy to clipboard")
+                            .on_hover_text_at_pointer("Double-click to copy to clipboard")
                             .double_clicked()
                         {
                             ui.output_mut(|o| o.copied_text = version);
