@@ -13,7 +13,7 @@ Cross-platform tool to render the OSD from the Walksnail Avatar HD FPV system on
 
 
 ## Features
-- [x] Easy to use graphic user interface.
+- [x] Easy to use graphical user interface.
 - [x] Native installer for Windows, App bundle for MacOS.
 - [x] Immediately start rendering the video. No intermediate PNG files!
 - [x] Hardware-accelerated encoding powered by ffmpeg.
