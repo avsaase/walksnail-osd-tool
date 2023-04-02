@@ -3,13 +3,13 @@ use std::rc::Rc;
 use crate::ffmpeg::{Codec, Encoder};
 
 #[derive(Debug)]
-pub struct EncoderSettings {
+pub struct RenderSettings {
     pub encoder: Rc<Encoder>,
     pub bitrate_mbps: u32,
     pub upscale: bool,
 }
 
-impl Default for EncoderSettings {
+impl Default for RenderSettings {
     fn default() -> Self {
         Self {
             encoder: Rc::new(Encoder {

@@ -13,7 +13,7 @@ use ffmpeg_sidecar::{
 
 use crate::{font, osd, overlay::FrameOverlayIter, srt, ui::OsdOptions};
 
-use super::{encoder_settings::EncoderSettings, Encoder, FromFfmpegMessage, ToFfmpegMessage, VideoInfo};
+use super::{render_settings::RenderSettings, Encoder, FromFfmpegMessage, ToFfmpegMessage, VideoInfo};
 
 #[tracing::instrument(skip(osd_frames, srt_frames, font_file), err)]
 pub fn start_video_render(
@@ -26,7 +26,7 @@ pub fn start_video_render(
     srt_font: rusttype::Font<'static>,
     osd_options: &OsdOptions,
     video_info: &VideoInfo,
-    render_settings: &EncoderSettings,
+    render_settings: &RenderSettings,
 ) -> Result<(Sender<ToFfmpegMessage>, Receiver<FromFfmpegMessage>), io::Error> {
     let mut decoder_process = spawn_decoder(ffmpeg_path, input_video)?;
 

@@ -4,7 +4,7 @@ use crossbeam_channel::{Receiver, Sender};
 use egui::{pos2, text::LayoutJob, vec2, Color32, TextFormat, TextStyle, TextureHandle, Visuals};
 
 use crate::{
-    ffmpeg::{Encoder, EncoderSettings, FromFfmpegMessage, ToFfmpegMessage, VideoInfo},
+    ffmpeg::{Encoder, FromFfmpegMessage, RenderSettings, ToFfmpegMessage, VideoInfo},
     font, osd, srt,
     util::{Coordinates, Dimension},
 };
@@ -30,7 +30,7 @@ pub struct WalksnailOsdTool {
     pub show_undetected_encoders: bool,
     pub selected_encoder_idx: usize,
     pub dependencies: Dependencies,
-    pub render_settings: EncoderSettings,
+    pub render_settings: RenderSettings,
     pub osd_preview: OsdPreview,
     pub osd_options: OsdOptions,
     pub about_window_open: bool,
