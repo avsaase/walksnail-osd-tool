@@ -56,7 +56,8 @@ impl WalksnailOsdTool {
                     .srt_options
                     .for_frame_size(Dimension::new(video_info.width, video_info.height));
             }
-            self.osd_options.srt_options.show_distance = self.srt_file.as_ref().map(|s| s.has_distance).unwrap_or(true);
+            self.osd_options.srt_options.show_distance &=
+                self.srt_file.as_ref().map(|s| s.has_distance).unwrap_or(true);
         }
     }
 
