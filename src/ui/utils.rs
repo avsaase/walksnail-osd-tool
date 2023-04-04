@@ -5,7 +5,7 @@ use std::{
 
 use egui::{Separator, Ui};
 
-use crate::{ffmpeg::VideoInfo, font::FontFile, osd::OsdFile, srt::SrtFile, util::Dimension};
+use crate::{ffmpeg::VideoInfo, font::FontFile, osd::OsdFile, srt::SrtFile};
 
 use super::WalksnailOsdTool;
 
@@ -51,13 +51,7 @@ impl WalksnailOsdTool {
     pub fn import_srt_file(&mut self, file_handles: &[PathBuf]) {
         if let Some(str_file_path) = filter_file_with_extention(file_handles, "srt") {
             self.srt_file = SrtFile::open(str_file_path.clone()).ok();
-            if let Some(video_info) = &self.video_info {
-                self.osd_options
-                    .srt_options
-                    .for_frame_size(Dimension::new(video_info.width, video_info.height));
-            }
-            self.osd_options.srt_options.show_distance &=
-                self.srt_file.as_ref().map(|s| s.has_distance).unwrap_or(true);
+            self.srt_options.show_distance &= self.srt_file.as_ref().map(|s| s.has_distance).unwrap_or(true);
         }
     }
 

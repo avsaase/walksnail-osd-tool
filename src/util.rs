@@ -1,9 +1,10 @@
 use std::{env::current_exe, fmt::Display, path::PathBuf};
 
+use serde::{Deserialize, Serialize};
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::{filter, prelude::__tracing_subscriber_SubscriberExt, util::SubscriberInitExt, Layer};
 
-#[derive(Debug, Clone, Default, Copy)]
+#[derive(Debug, Clone, Default, Copy, Serialize, Deserialize)]
 pub struct Coordinates<T> {
     pub x: T,
     pub y: T,
@@ -40,7 +41,7 @@ impl From<Dimension<u32>> for String {
 }
 
 pub fn init_tracing() -> Option<WorkerGuard> {
-    directories::ProjectDirs::from("", "", "Walksnail OSD Tool").map(|dir| {
+    directories::ProjectDirs::from("rs", "", "Walksnail OSD Tool").map(|dir| {
         let log_dir = dir.data_dir();
 
         std::fs::remove_file(log_dir.join("walksnail-osd-tool.log")).ok();

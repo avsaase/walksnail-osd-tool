@@ -11,7 +11,12 @@ use ffmpeg_sidecar::{
     event::{FfmpegEvent, LogLevel},
 };
 
-use crate::{font, osd, overlay::FrameOverlayIter, srt, ui::OsdOptions};
+use crate::{
+    font, osd,
+    overlay::FrameOverlayIter,
+    srt,
+    ui::{OsdOptions, SrtOptions},
+};
 
 use super::{render_settings::RenderSettings, Encoder, FromFfmpegMessage, ToFfmpegMessage, VideoInfo};
 
@@ -25,6 +30,7 @@ pub fn start_video_render(
     font_file: font::FontFile,
     srt_font: rusttype::Font<'static>,
     osd_options: &OsdOptions,
+    srt_options: &SrtOptions,
     video_info: &VideoInfo,
     render_settings: &RenderSettings,
 ) -> Result<(Sender<ToFfmpegMessage>, Receiver<FromFfmpegMessage>), io::Error> {
@@ -56,6 +62,7 @@ pub fn start_video_render(
         font_file,
         srt_font,
         osd_options,
+        srt_options,
         from_ffmpeg_tx.clone(),
         to_ffmpeg_rx,
     );

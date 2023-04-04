@@ -48,6 +48,7 @@ impl WalksnailOsdTool {
                         font_file.clone(),
                         self.srt_font.as_ref().unwrap().clone(),
                         &self.osd_options,
+                        &self.srt_options,
                         video_info,
                         &self.render_settings,
                     ) {

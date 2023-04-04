@@ -9,6 +9,7 @@ use ui::WalksnailOsdTool;
 
 use crate::dependencies::{ffmpeg_available, ffprobe_available};
 
+mod config;
 mod dependencies;
 mod ffmpeg;
 mod font;

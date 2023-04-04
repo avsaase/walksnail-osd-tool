@@ -6,14 +6,15 @@ use ffmpeg_sidecar::{
     event::{FfmpegEvent, OutputVideoFrame},
     iter::FfmpegIterator,
 };
+use image::RgbaImage;
 
 use crate::{
     ffmpeg::{handle_decoder_events, FromFfmpegMessage, ToFfmpegMessage},
-    font, osd,
-    overlay::overlay_osd_on_video,
-    srt,
-    ui::OsdOptions,
+    font, osd, srt,
+    ui::{OsdOptions, SrtOptions},
 };
+
+use super::{overlay_osd, overlay_srt_data};
 
 pub struct FrameOverlayIter<'a> {
     decoder_iter: FfmpegIterator,
@@ -22,6 +23,7 @@ pub struct FrameOverlayIter<'a> {
     srt_frames_iter: Peekable<IntoIter<srt::SrtFrame>>,
     font_file: font::FontFile,
     osd_options: OsdOptions,
+    srt_options: SrtOptions,
     srt_font: rusttype::Font<'a>,
     current_osd_frame: osd::Frame,
     current_srt_frame: srt::SrtFrame,
@@ -39,6 +41,7 @@ impl<'a> FrameOverlayIter<'a> {
         font_file: font::FontFile,
         srt_font: rusttype::Font<'a>,
         osd_options: &OsdOptions,
+        srt_options: &SrtOptions,
         ffmpeg_sender: Sender<FromFfmpegMessage>,
         ffmpeg_receiver: Receiver<ToFfmpegMessage>,
     ) -> Self {
@@ -53,6 +56,7 @@ impl<'a> FrameOverlayIter<'a> {
             srt_frames_iter: srt_frames_iter.peekable(),
             font_file,
             osd_options: osd_options.clone(),
+            srt_options: srt_options.clone(),
             srt_font: srt_font.clone(),
             current_osd_frame: first_osd_frame,
             current_srt_frame: first_srt_frame,
@@ -72,7 +76,7 @@ impl Iterator for FrameOverlayIter<'_> {
         }
 
         self.decoder_iter.find_map(|e| match e {
-            FfmpegEvent::OutputFrame(video_frame) => {
+            FfmpegEvent::OutputFrame(mut video_frame) => {
                 // For every video frame check if frame time is later than the next OSD frame time.
                 // If so advance the iterator over the OSD frames so we use the correct OSD frame
                 // for this video frame
@@ -90,14 +94,31 @@ impl Iterator for FrameOverlayIter<'_> {
                     }
                 }
 
-                Some(overlay_osd_on_video(
-                    video_frame,
+                let mut frame_image =
+                    RgbaImage::from_raw(video_frame.width, video_frame.height, video_frame.data).unwrap();
+                overlay_osd(
+                    &mut frame_image,
                     &self.current_osd_frame,
-                    &self.current_srt_frame,
                     &self.font_file,
-                    &self.srt_font,
                     &self.osd_options,
-                ))
+                );
+                overlay_srt_data(
+                    &mut frame_image,
+                    &self.current_srt_frame.data,
+                    &self.srt_font,
+                    &self.srt_options,
+                );
+                video_frame.data = frame_image.as_raw().to_vec();
+                Some(video_frame)
+
+                // Some(overlay_osd_on_video(
+                //     video_frame,
+                //     &self.current_osd_frame,
+                //     &self.current_srt_frame,
+                //     &self.font_file,
+                //     &self.srt_font,
+                //     &self.osd_options,
+                // ))
             }
             other_event => {
                 handle_decoder_events(other_event, &self.ffmpeg_sender);

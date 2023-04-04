@@ -4,7 +4,12 @@ use imageproc::drawing::draw_text_mut;
 use crate::{srt::SrtFrameData, ui::SrtOptions};
 
 #[inline]
-pub fn draw_srt_data(image: &mut RgbaImage, srt_data: &SrtFrameData, font: &rusttype::Font, srt_options: &SrtOptions) {
+pub fn overlay_srt_data(
+    image: &mut RgbaImage,
+    srt_data: &SrtFrameData,
+    font: &rusttype::Font,
+    srt_options: &SrtOptions,
+) {
     let time_str = if srt_options.show_time {
         let minutes = srt_data.flight_time / 60;
         let seconds = srt_data.flight_time % 60;
@@ -57,11 +62,16 @@ pub fn draw_srt_data(image: &mut RgbaImage, srt_data: &SrtFrameData, font: &rust
 
     let srt_string = format!("{time_str}{sbat_str}{gbat_str}{signal_str}{latency_str}{bitrate_str}{distance_str}");
 
+    let image_dimensions = image.dimensions();
+
+    let x_pos = srt_options.position.x * image_dimensions.0 as f32;
+    let y_pos = srt_options.position.y * image_dimensions.1 as f32;
+
     draw_text_mut(
         image,
         Rgba([240u8, 240u8, 240u8, 10u8]),
-        srt_options.position.x,
-        srt_options.position.y,
+        x_pos as i32,
+        y_pos as i32,
         rusttype::Scale::uniform(srt_options.scale),
         font,
         &srt_string,

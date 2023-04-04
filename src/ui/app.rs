@@ -1,12 +1,18 @@
-use std::{path::PathBuf, rc::Rc};
+use std::{
+    path::PathBuf,
+    rc::Rc,
+    time::{Duration, Instant},
+};
 
 use crossbeam_channel::{Receiver, Sender};
 use egui::{pos2, text::LayoutJob, vec2, Color32, TextFormat, TextStyle, TextureHandle, Visuals};
+use serde::{Deserialize, Serialize};
 
 use crate::{
+    config::AppConfig,
     ffmpeg::{Encoder, FromFfmpegMessage, RenderSettings, ToFfmpegMessage, VideoInfo},
     font, osd, srt,
-    util::{Coordinates, Dimension},
+    util::Coordinates,
 };
 
 use super::{
@@ -17,6 +23,7 @@ use super::{
 
 #[derive(Default)]
 pub struct WalksnailOsdTool {
+    pub config_changed: Option<Instant>,
     pub video_file: Option<PathBuf>,
     pub video_info: Option<VideoInfo>,
     pub osd_file: Option<osd::OsdFile>,
@@ -33,9 +40,10 @@ pub struct WalksnailOsdTool {
     pub render_settings: RenderSettings,
     pub osd_preview: OsdPreview,
     pub osd_options: OsdOptions,
+    pub srt_options: SrtOptions,
+    pub srt_font: Option<rusttype::Font<'static>>,
     pub about_window_open: bool,
     pub dark_mode: bool,
-    pub srt_font: Option<rusttype::Font<'static>>,
 }
 
 impl WalksnailOsdTool {
@@ -55,6 +63,10 @@ impl WalksnailOsdTool {
         let srt_font: rusttype::Font<'static> =
             rusttype::Font::try_from_bytes(include_bytes!("../../resources/fonts/AzeretMono-Regular.ttf")).unwrap();
 
+        let config = AppConfig::load_or_create();
+        let srt_options = config.srt_config.into();
+        let osd_options = config.osd_config;
+
         Self {
             dependencies: Dependencies {
                 dependencies_satisfied,
@@ -63,6 +75,8 @@ impl WalksnailOsdTool {
             },
             encoders: encoders.into_iter().map(Rc::new).collect(),
             srt_font: Some(srt_font),
+            osd_options,
+            srt_options,
             ..Default::default()
         }
     }
@@ -89,16 +103,15 @@ impl Default for OsdPreview {
     }
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct OsdOptions {
     pub horizontal_offset: i32,
     pub vertical_offset: i32,
-    pub srt_options: SrtOptions,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SrtOptions {
-    pub position: Coordinates<i32>,
+    pub position: Coordinates<f32>,
     pub scale: f32,
     pub show_time: bool,
     pub show_sbat: bool,
@@ -112,8 +125,8 @@ pub struct SrtOptions {
 impl Default for SrtOptions {
     fn default() -> Self {
         Self {
-            position: Default::default(),
-            scale: Default::default(),
+            position: Coordinates::new(0.015, 0.95),
+            scale: 35.0,
             show_time: true,
             show_sbat: true,
             show_gbat: true,
@@ -122,16 +135,6 @@ impl Default for SrtOptions {
             show_bitrate: true,
             show_distance: true,
         }
-    }
-}
-
-impl SrtOptions {
-    pub fn for_frame_size(&mut self, frame_size: Dimension<u32>) {
-        let scale = frame_size.height / 30;
-        let x_position = frame_size.width / 45;
-        let y_position = frame_size.height - scale - x_position / 2;
-        self.position = Coordinates::new(x_position as i32, y_position as i32);
-        self.scale = scale as f32;
     }
 }
 
@@ -171,6 +174,8 @@ impl eframe::App for WalksnailOsdTool {
         self.render_sidepanel(ctx);
 
         self.render_central_panel(ctx);
+
+        self.save_config_if_changed();
     }
 }
 
@@ -219,6 +224,7 @@ impl WalksnailOsdTool {
                     font_file,
                     self.srt_font.as_ref().unwrap(),
                     &self.osd_options,
+                    &self.srt_options,
                 ),
             );
             let handle = ctx.load_texture("OSD preview", image, egui::TextureOptions::default());
@@ -240,6 +246,20 @@ impl WalksnailOsdTool {
                 }
                 self.render_status.update_from_ffmpeg_message(message, video_info)
             }
+        }
+    }
+
+    fn save_config_if_changed(&mut self) {
+        if self
+            .config_changed
+            .map_or(false, |t| t.elapsed() > Duration::from_millis(2000))
+        {
+            let config = AppConfig {
+                osd_config: self.osd_options.clone(),
+                srt_config: self.srt_options.clone().into(),
+            };
+            config.save();
+            self.config_changed = None;
         }
     }
 }

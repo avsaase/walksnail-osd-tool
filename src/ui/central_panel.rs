@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 use egui::{vec2, Checkbox, Color32, Image, Slider, Ui};
 
 use super::{
@@ -26,17 +28,15 @@ impl WalksnailOsdTool {
     fn osd_options(&mut self, ui: &mut Ui, ctx: &egui::Context) {
         ui.heading("OSD Options");
         ui.style_mut().spacing.slider_width = self.ui_dimensions.osd_position_sliders_length;
+        let mut changed = false;
         egui::Grid::new("position_sliders")
             .spacing(vec2(15.0, 10.0))
             .show(ui, |ui| {
                 ui.label("Horizontal offset");
                 ui.horizontal(|ui| {
-                    if ui
+                    changed |= ui
                         .add(Slider::new(&mut self.osd_options.horizontal_offset, -200..=700).text("Pixels"))
-                        .changed()
-                    {
-                        self.update_osd_preview(ctx);
-                    }
+                        .changed();
 
                     if ui.button("Center").clicked() {
                         if let (Some(video_info), Some(osd_file), Some(font_file)) =
@@ -50,13 +50,13 @@ impl WalksnailOsdTool {
                                     .unwrap(),
                                 &font_file.character_size,
                             );
-                            self.update_osd_preview(ctx);
+                            changed |= true;
                         }
                     }
 
                     if ui.button("Reset").clicked() {
                         self.osd_options.horizontal_offset = 0;
-                        self.update_osd_preview(ctx);
+                        changed |= true;
                     }
                 });
                 ui.end_row();
@@ -65,12 +65,9 @@ impl WalksnailOsdTool {
 
                 ui.label("Vertical offset");
                 ui.horizontal(|ui| {
-                    if ui
+                    changed |= ui
                         .add(Slider::new(&mut self.osd_options.vertical_offset, -200..=700).text("Pixels"))
-                        .changed()
-                    {
-                        self.update_osd_preview(ctx);
-                    }
+                        .changed();
 
                     if ui.button("Center").clicked() {
                         if let (Some(video_info), Some(osd_file), Some(font_file)) =
@@ -84,13 +81,13 @@ impl WalksnailOsdTool {
                                     .unwrap(),
                                 &font_file.character_size,
                             );
-                            self.update_osd_preview(ctx);
+                            changed |= true
                         }
                     }
 
                     if ui.button("Reset").clicked() {
                         self.osd_options.vertical_offset = 0;
-                        self.update_osd_preview(ctx);
+                        changed |= true
                     }
                 });
                 ui.end_row();
@@ -99,9 +96,9 @@ impl WalksnailOsdTool {
 
                 ui.label("Show SRT data");
                 ui.horizontal(|ui| {
-                    let options = &mut self.osd_options.srt_options;
+                    let options = &mut self.srt_options;
                     let has_distance = self.srt_file.as_ref().map(|s| s.has_distance).unwrap_or(true);
-                    if [
+                    changed |= [
                         ui.checkbox(&mut options.show_time, "Time "),
                         ui.checkbox(&mut options.show_sbat, "SBat "),
                         ui.checkbox(&mut options.show_gbat, "GBat "),
@@ -111,13 +108,15 @@ impl WalksnailOsdTool {
                         ui.add_enabled(has_distance, Checkbox::new(&mut options.show_distance, "Distance")),
                     ]
                     .iter()
-                    .any(|r| r.changed())
-                    {
-                        self.update_osd_preview(ctx);
-                    }
+                    .any(|r| r.changed());
                 });
                 ui.end_row();
             });
+
+        if changed {
+            self.update_osd_preview(ctx);
+            self.config_changed = Some(Instant::now());
+        }
     }
 
     fn osd_preview(&mut self, ui: &mut Ui, ctx: &egui::Context) {
