@@ -8,7 +8,7 @@ use crate::{
 
 use super::{OsdOptions, SrtOptions};
 
-#[tracing::instrument(skip(osd_frame, srt_frame, font))]
+#[tracing::instrument(skip(osd_frame, srt_frame, font), level = "debug")]
 pub fn create_osd_preview(
     width: u32,
     height: u32,

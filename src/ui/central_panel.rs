@@ -1,6 +1,6 @@
 use std::time::Instant;
 
-use egui::{vec2, Checkbox, Color32, Image, Slider, Ui};
+use egui::{vec2, CentralPanel, Checkbox, Color32, Grid, Image, ScrollArea, Slider, Ui};
 
 use super::{
     osd_preview::{calculate_horizontal_offset, calculate_vertical_offset},
@@ -10,9 +10,15 @@ use super::{
 
 impl WalksnailOsdTool {
     pub fn render_central_panel(&mut self, ctx: &egui::Context) {
-        egui::CentralPanel::default().show(ctx, |ui| {
-            egui::ScrollArea::vertical().show(ui, |ui| {
+        CentralPanel::default().show(ctx, |ui| {
+            ScrollArea::vertical().show(ui, |ui| {
+                ui.style_mut().spacing.slider_width = self.ui_dimensions.osd_position_sliders_length;
+
                 self.osd_options(ui, ctx);
+
+                separator_with_space(ui, 10.0);
+
+                self.srt_options(ui, ctx);
 
                 separator_with_space(ui, 10.0);
 
@@ -27,10 +33,11 @@ impl WalksnailOsdTool {
 
     fn osd_options(&mut self, ui: &mut Ui, ctx: &egui::Context) {
         ui.heading("OSD Options");
-        ui.style_mut().spacing.slider_width = self.ui_dimensions.osd_position_sliders_length;
         let mut changed = false;
-        egui::Grid::new("position_sliders")
-            .spacing(vec2(15.0, 10.0))
+
+        Grid::new("osd_options")
+            // .spacing(vec2(15.0, 10.0))
+            .min_col_width(140.0)
             .show(ui, |ui| {
                 ui.label("Horizontal offset");
                 ui.horizontal(|ui| {
@@ -91,10 +98,22 @@ impl WalksnailOsdTool {
                     }
                 });
                 ui.end_row();
+            });
+        if changed {
+            self.update_osd_preview(ctx);
+            self.config_changed = Some(Instant::now());
+        }
+    }
 
-                //
+    fn srt_options(&mut self, ui: &mut Ui, ctx: &egui::Context) {
+        ui.heading("SRT Options");
+        let mut changed = false;
 
-                ui.label("Show SRT data");
+        Grid::new("srt_options")
+            // .spacing(vec2(15.0, 10.0))
+            .min_col_width(140.0)
+            .show(ui, |ui| {
+                ui.label("Elements");
                 ui.horizontal(|ui| {
                     let options = &mut self.srt_options;
                     let has_distance = self.srt_file.as_ref().map(|s| s.has_distance).unwrap_or(true);
@@ -109,6 +128,45 @@ impl WalksnailOsdTool {
                     ]
                     .iter()
                     .any(|r| r.changed());
+                });
+                ui.end_row();
+
+                ui.label("Horizontal position");
+                ui.horizontal(|ui| {
+                    changed |= ui
+                        .add(Slider::new(&mut self.srt_options.position.x, 0.0..=1.0).fixed_decimals(3))
+                        .changed();
+
+                    if ui.button("Reset").clicked() {
+                        self.srt_options.position.x = 0.015;
+                        changed |= true;
+                    }
+                });
+                ui.end_row();
+
+                ui.label("Vertical position");
+                ui.horizontal(|ui| {
+                    changed |= ui
+                        .add(Slider::new(&mut self.srt_options.position.y, 0.0..=1.0).fixed_decimals(3))
+                        .changed();
+
+                    if ui.button("Reset").clicked() {
+                        self.srt_options.position.y = 0.95;
+                        changed |= true;
+                    }
+                });
+                ui.end_row();
+
+                ui.label("Size");
+                ui.horizontal(|ui| {
+                    changed |= ui
+                        .add(Slider::new(&mut self.srt_options.scale, 0.0..=100.0).fixed_decimals(2))
+                        .changed();
+
+                    if ui.button("Reset").clicked() {
+                        self.srt_options.scale = 35.0;
+                        changed |= true;
+                    }
                 });
                 ui.end_row();
             });
@@ -152,8 +210,9 @@ impl WalksnailOsdTool {
             .filter(|e| self.show_undetected_encoders || e.detected)
             .collect::<Vec<_>>();
 
-        egui::Grid::new("render_options")
-            .spacing(vec2(15.0, 10.0))
+        Grid::new("render_options")
+            // .spacing(vec2(15.0, 10.0))
+            .min_col_width(140.0)
             .show(ui, |ui| {
                 ui.label("Encoder");
                 ui.horizontal(|ui| {
