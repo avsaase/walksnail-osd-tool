@@ -66,13 +66,14 @@ pub fn overlay_srt_data(
 
     let x_pos = srt_options.position.x * image_dimensions.0 as f32;
     let y_pos = srt_options.position.y * image_dimensions.1 as f32;
+    let scale = srt_options.scale * image_dimensions.1 as f32;
 
     draw_text_mut(
         image,
         Rgba([240u8, 240u8, 240u8, 10u8]),
         x_pos as i32,
         y_pos as i32,
-        rusttype::Scale::uniform(srt_options.scale),
+        rusttype::Scale::uniform(scale),
         font,
         &srt_string,
     );

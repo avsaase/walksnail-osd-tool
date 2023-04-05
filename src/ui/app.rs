@@ -126,7 +126,7 @@ impl Default for SrtOptions {
     fn default() -> Self {
         Self {
             position: Coordinates::new(0.015, 0.95),
-            scale: 35.0,
+            scale: 0.03,
             show_time: true,
             show_sbat: true,
             show_gbat: true,

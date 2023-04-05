@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 - When loading a SRT file with distance data the distance checkbox doesn't get automatically checked.
+- Options sections can be collapsed to save screen space.
 
 ## [0.1.0]
 
