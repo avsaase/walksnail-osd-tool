@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, time::Duration};
 
 use ffprobe::FfProbe;
 
@@ -10,7 +10,7 @@ pub struct VideoInfo {
     pub height: u32,
     pub frame_rate: f32,
     pub bitrate: u32,
-    pub duration_seconds: u32,
+    pub duration: Duration,
     pub total_frames: u32,
 }
 
@@ -49,20 +49,22 @@ impl TryFrom<FfProbe> for VideoInfo {
             .and_then(|b| b.parse::<u32>().ok())
             .ok_or(VideoInfoError::NoBitrate)?;
 
-        let duration_seconds = stream
-            .duration
-            .as_ref()
-            .and_then(|s| s.parse::<f32>().ok())
-            .ok_or(VideoInfoError::NoDuration)? as u32;
+        let duration = Duration::from_secs_f32(
+            stream
+                .duration
+                .as_ref()
+                .and_then(|s| s.parse::<f32>().ok())
+                .ok_or(VideoInfoError::NoDuration)?,
+        );
 
-        let total_frames = (frame_rate * duration_seconds as f32) as u32;
+        let total_frames = (frame_rate * duration.as_secs_f32()) as u32;
 
         Ok(Self {
             width,
             height,
             frame_rate,
             bitrate,
-            duration_seconds,
+            duration,
             total_frames,
         })
     }

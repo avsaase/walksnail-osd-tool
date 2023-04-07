@@ -92,11 +92,14 @@ impl WalksnailOsdTool {
                     ui.add(ProgressBar::new(*progress_pct).show_percentage());
                     ui.with_layout(Layout::right_to_left(Align::Min), |ui| {
                         ui.add_space(3.0);
+                        let time_remaining_string = if let Some(time_remaining) = time_remaining {
+                            format_minutes_seconds(time_remaining)
+                        } else {
+                            "––:––".into()
+                        };
                         ui.label(format!(
                             "Time remaining: {}, fps: {:.1}, speed: {:.3}x",
-                            format_minutes_seconds(time_remaining),
-                            fps,
-                            speed
+                            time_remaining_string, fps, speed
                         ));
                     });
                 });

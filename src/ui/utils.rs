@@ -88,15 +88,10 @@ pub fn separator_with_space(ui: &mut Ui, space: f32) {
     });
 }
 
-pub fn format_minutes_seconds(mabe_duration: &Option<Duration>) -> String {
-    match mabe_duration {
-        Some(duration) => {
-            let minutes = duration.as_secs() / 60;
-            let seconds = duration.as_secs() % 60;
-            format!("{}:{:0>2}", minutes, seconds)
-        }
-        None => "––:––".into(),
-    }
+pub fn format_minutes_seconds(duration: &Duration) -> String {
+    let minutes = duration.as_secs() / 60;
+    let seconds = duration.as_secs() % 60;
+    format!("{}:{:0>2}", minutes, seconds)
 }
 
 pub fn get_output_video_path(input_video_path: &Path) -> PathBuf {

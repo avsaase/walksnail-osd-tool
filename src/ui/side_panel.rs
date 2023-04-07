@@ -1,7 +1,10 @@
 use egui::{CollapsingHeader, RichText, Ui};
 use egui_extras::{Column, TableBuilder};
 
-use super::{utils::separator_with_space, WalksnailOsdTool};
+use super::{
+    utils::{format_minutes_seconds, separator_with_space},
+    WalksnailOsdTool,
+};
 
 impl WalksnailOsdTool {
     pub fn render_sidepanel(&mut self, ctx: &egui::Context) {
@@ -101,10 +104,8 @@ impl WalksnailOsdTool {
                                     ui.label("Duration:");
                                 });
                                 row.col(|ui| {
-                                    if let Some(duration_secs) = video_info.map(|i| i.duration_seconds) {
-                                        let minutes = duration_secs / 60;
-                                        let seconds = duration_secs % 60;
-                                        ui.label(format!("{}:{:0>2}", minutes, seconds));
+                                    if let Some(duration) = video_info.map(|i| i.duration) {
+                                        ui.label(format_minutes_seconds(&duration));
                                     } else {
                                         ui.label("-");
                                     }
@@ -183,10 +184,8 @@ impl WalksnailOsdTool {
                                     ui.label("Duration:");
                                 });
                                 row.col(|ui| {
-                                    if let Some(duration_secs) = osd_file.map(|i| i.duration_seconds) {
-                                        let minutes = duration_secs / 60;
-                                        let seconds = duration_secs % 60;
-                                        ui.label(format!("{}:{:0>2}", minutes, seconds));
+                                    if let Some(duration) = osd_file.map(|i| i.duration) {
+                                        ui.label(format_minutes_seconds(&duration));
                                     } else {
                                         ui.label("-");
                                     }
@@ -239,10 +238,8 @@ impl WalksnailOsdTool {
                                     ui.label("Duration:");
                                 });
                                 row.col(|ui| {
-                                    if let Some(duration_secs) = srt_file.map(|i| i.duration_seconds) {
-                                        let minutes = duration_secs / 60;
-                                        let seconds = duration_secs % 60;
-                                        ui.label(format!("{}:{:0>2}", minutes, seconds));
+                                    if let Some(duration) = srt_file.map(|i| i.duration) {
+                                        ui.label(format_minutes_seconds(&duration));
                                     } else {
                                         ui.label("-");
                                     }

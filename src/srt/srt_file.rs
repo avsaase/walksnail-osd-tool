@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, time::Duration};
 
 use derivative::Derivative;
 
@@ -9,7 +9,7 @@ use super::{error::SrtFileError, frame::SrtFrame, SrtFrameData};
 pub struct SrtFile {
     pub file_path: PathBuf,
     pub has_distance: bool,
-    pub duration_seconds: u32,
+    pub duration: Duration,
     #[derivative(Debug = "ignore")]
     pub frames: Vec<SrtFrame>,
 }
@@ -31,12 +31,12 @@ impl SrtFile {
             })
             .collect::<Result<Vec<_>, _>>()?;
 
-        let duration_seconds = srt_frames.last().unwrap().end_time_secs as u32;
+        let duration = Duration::from_secs_f32(srt_frames.last().unwrap().end_time_secs);
 
         Ok(Self {
             file_path: path,
             has_distance,
-            duration_seconds,
+            duration,
             frames: srt_frames,
         })
     }
