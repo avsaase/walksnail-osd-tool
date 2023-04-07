@@ -64,9 +64,9 @@ pub fn overlay_srt_data(
 
     let image_dimensions = image.dimensions();
 
-    let x_pos = srt_options.position.x * image_dimensions.0 as f32;
-    let y_pos = srt_options.position.y * image_dimensions.1 as f32;
-    let scale = srt_options.scale * image_dimensions.1 as f32;
+    let x_pos = srt_options.position.x / 100.0 * image_dimensions.0 as f32;
+    let y_pos = srt_options.position.y / 100.0 * image_dimensions.1 as f32;
+    let scale = srt_options.scale / 1080.0 * image_dimensions.1 as f32;
 
     draw_text_mut(
         image,

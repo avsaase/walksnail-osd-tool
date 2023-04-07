@@ -125,8 +125,8 @@ pub struct SrtOptions {
 impl Default for SrtOptions {
     fn default() -> Self {
         Self {
-            position: Coordinates::new(0.015, 0.95),
-            scale: 0.03,
+            position: Coordinates::new(30.0, 1026.0),
+            scale: 35.0,
             show_time: true,
             show_sbat: true,
             show_gbat: true,

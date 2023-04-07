@@ -134,15 +134,11 @@ impl WalksnailOsdTool {
                     ui.label("Horizontal position");
                     ui.horizontal(|ui| {
                         changed |= ui
-                            .add(
-                                Slider::new(&mut self.srt_options.position.x, 0.0..=1.0)
-                                    .fixed_decimals(3)
-                                    .text("%"),
-                            )
+                            .add(Slider::new(&mut self.srt_options.position.x, 0.0..=100.0).fixed_decimals(1))
                             .changed();
 
                         if ui.button("Reset").clicked() {
-                            self.srt_options.position.x = 0.015;
+                            self.srt_options.position.x = 1.5;
                             changed |= true;
                         }
                     });
@@ -151,15 +147,11 @@ impl WalksnailOsdTool {
                     ui.label("Vertical position");
                     ui.horizontal(|ui| {
                         changed |= ui
-                            .add(
-                                Slider::new(&mut self.srt_options.position.y, 0.0..=1.0)
-                                    .fixed_decimals(3)
-                                    .text("%"),
-                            )
+                            .add(Slider::new(&mut self.srt_options.position.y, 0.0..=100.0).fixed_decimals(1))
                             .changed();
 
                         if ui.button("Reset").clicked() {
-                            self.srt_options.position.y = 0.95;
+                            self.srt_options.position.y = 95.0;
                             changed |= true;
                         }
                     });
@@ -168,15 +160,11 @@ impl WalksnailOsdTool {
                     ui.label("Size");
                     ui.horizontal(|ui| {
                         changed |= ui
-                            .add(
-                                Slider::new(&mut self.srt_options.scale, 0.0..=0.1)
-                                    .fixed_decimals(3)
-                                    .text("%"),
-                            )
+                            .add(Slider::new(&mut self.srt_options.scale, 10.0..=60.0).fixed_decimals(1))
                             .changed();
 
                         if ui.button("Reset").clicked() {
-                            self.srt_options.scale = 0.03;
+                            self.srt_options.scale = 35.0;
                             changed |= true;
                         }
                     });
