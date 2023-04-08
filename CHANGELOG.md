@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Added
 - Save OSD and SRT options between program runs.
 - Custom position and text size of SRT data.
+- Option to adjust OSD playback speed to correct for OSD lag with <=32.37.10 firmware.
 
 ### Changed
 - When loading a SRT file with distance data the distance checkbox doesn't get automatically checked.

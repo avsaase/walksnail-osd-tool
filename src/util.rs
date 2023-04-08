@@ -6,7 +6,9 @@ use tracing_subscriber::{filter, prelude::__tracing_subscriber_SubscriberExt, ut
 
 #[derive(Debug, Clone, Default, Copy, Serialize, Deserialize)]
 pub struct Coordinates<T> {
+    #[serde(rename = "x_position")]
     pub x: T,
+    #[serde(rename = "y_position")]
     pub y: T,
 }
 

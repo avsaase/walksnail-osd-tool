@@ -39,6 +39,13 @@ impl WalksnailOsdTool {
                     &self.video_info,
                     &self.srt_file,
                 ) {
+                    self.osd_options.osd_playback_speed_factor = if self.osd_options.adjust_playback_speed {
+                        let video_duration = video_info.duration;
+                        let osd_duration = osd_file.duration;
+                        video_duration.as_secs_f32() / osd_duration.as_secs_f32()
+                    } else {
+                        1.0
+                    };
                     match start_video_render(
                         &self.dependencies.ffmpeg_path,
                         video_path,

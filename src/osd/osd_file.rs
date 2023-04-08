@@ -33,7 +33,11 @@ impl OsdFile {
             .map(|frame_bytes| frame_bytes.try_into().unwrap())
             .collect::<Vec<Frame>>();
 
-        let duration = Duration::from_millis(frames.last().unwrap().time_millis.into());
+        let frame_interval = (frames.last().unwrap().time_millis - frames.first().unwrap().time_millis) as f32
+            / (frames.len() - 1) as f32;
+
+        let duration = Duration::from_millis(frames.last().unwrap().time_millis.into())
+            + Duration::from_secs_f32(frame_interval / 1000.0);
 
         Ok(Self {
             file_path: path,

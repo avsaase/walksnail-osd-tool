@@ -5,6 +5,7 @@ use std::{
 };
 
 use crossbeam_channel::{Receiver, Sender};
+use derivative::Derivative;
 use egui::{pos2, text::LayoutJob, vec2, Color32, TextFormat, TextStyle, TextureHandle, Visuals};
 use serde::{Deserialize, Serialize};
 
@@ -103,14 +104,21 @@ impl Default for OsdPreview {
     }
 }
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Derivative)]
+#[derivative(Default)]
 pub struct OsdOptions {
-    pub horizontal_offset: i32,
-    pub vertical_offset: i32,
+    #[serde(flatten)]
+    pub position: Coordinates<i32>,
+    #[derivative(Default(value = "true"))]
+    pub adjust_playback_speed: bool,
+    #[derivative(Default(value = "1.0"))]
+    #[serde(skip)]
+    pub osd_playback_speed_factor: f32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SrtOptions {
+    #[serde(flatten)]
     pub position: Coordinates<f32>,
     pub scale: f32,
     pub show_time: bool,
@@ -125,7 +133,7 @@ pub struct SrtOptions {
 impl Default for SrtOptions {
     fn default() -> Self {
         Self {
-            position: Coordinates::new(30.0, 1026.0),
+            position: Coordinates::new(1.5, 95.0),
             scale: 35.0,
             show_time: true,
             show_sbat: true,
@@ -142,6 +150,7 @@ pub struct UiDimensions {
     pub file_info_column1_width: f32,
     pub file_info_column2_width: f32,
     pub file_info_row_height: f32,
+    pub options_column1_width: f32,
     pub osd_position_sliders_length: f32,
 }
 
@@ -151,6 +160,7 @@ impl Default for UiDimensions {
             file_info_row_height: 17.0,
             file_info_column1_width: 100.0,
             file_info_column2_width: 135.0,
+            options_column1_width: 180.0,
             osd_position_sliders_length: 200.0,
         }
     }

@@ -15,8 +15,8 @@ pub fn overlay_osd(image: &mut RgbaImage, osd_frame: &osd::Frame, font: &font::F
             overlay(
                 image,
                 character_image,
-                (grid_position.x as i32 * char_width as i32 + osd_options.horizontal_offset).into(),
-                (grid_position.y as i32 * char_height as i32 + osd_options.vertical_offset).into(),
+                (grid_position.x as i32 * char_width as i32 + osd_options.position.x).into(),
+                (grid_position.y as i32 * char_height as i32 + osd_options.position.y).into(),
             )
         }
     }

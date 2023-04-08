@@ -82,7 +82,7 @@ impl Iterator for FrameOverlayIter<'_> {
                 // for this video frame
                 if let Some(next_osd_frame) = self.osd_frames_iter.peek() {
                     let next_osd_frame_secs = next_osd_frame.time_millis as f32 / 1000.0;
-                    if video_frame.timestamp > next_osd_frame_secs {
+                    if video_frame.timestamp > next_osd_frame_secs * self.osd_options.osd_playback_speed_factor {
                         self.current_osd_frame = self.osd_frames_iter.next().unwrap();
                     }
                 }
@@ -110,15 +110,6 @@ impl Iterator for FrameOverlayIter<'_> {
                 );
                 video_frame.data = frame_image.as_raw().to_vec();
                 Some(video_frame)
-
-                // Some(overlay_osd_on_video(
-                //     video_frame,
-                //     &self.current_osd_frame,
-                //     &self.current_srt_frame,
-                //     &self.font_file,
-                //     &self.srt_font,
-                //     &self.osd_options,
-                // ))
             }
             other_event => {
                 handle_decoder_events(other_event, &self.ffmpeg_sender);
