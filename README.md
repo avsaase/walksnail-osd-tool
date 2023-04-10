@@ -16,7 +16,7 @@ Cross-platform tool to render the OSD from the Walksnail Avatar HD FPV system on
 - [x] Easy to use graphical user interface.
 - [x] Native installer for Windows, App bundle for MacOS.
 - [x] Hardware-accelerated encoding powered by ffmpeg.
-- [x] Choose between h264 and h265 codecs (more can be added later).
+- [x] Choose between H.264 and H.265 codecs (more can be added later).
 - [x] View basic information about the video, OSD, SRT and font files.
 - [x] Preview OSD frames before rendering.
 - [x] Automatically center the OSD or position it manually.

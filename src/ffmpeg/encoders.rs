@@ -11,8 +11,8 @@ pub enum Codec {
 impl Display for Codec {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Codec::H264 => write!(f, "h264"),
-            Codec::H265 => write!(f, "h265"),
+            Codec::H264 => write!(f, "H.264"),
+            Codec::H265 => write!(f, "H.265"),
         }
     }
 }
