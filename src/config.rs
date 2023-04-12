@@ -5,8 +5,8 @@ use crate::ui::{OsdOptions, SrtOptions};
 
 #[derive(Debug, Default, Deserialize, Serialize)]
 pub struct AppConfig {
-    pub osd_config: OsdOptions,
-    pub srt_config: SrtOptions,
+    pub osd_options: OsdOptions,
+    pub srt_options: SrtOptions,
 }
 
 impl AppConfig {
