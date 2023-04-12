@@ -94,7 +94,7 @@ impl WalksnailOsdTool {
                             }
 
                             if ui.button("Reset").clicked() {
-                                self.osd_options.position.x = 0;
+                                self.osd_options.position.y = 0;
                                 changed |= true
                             }
                         });
