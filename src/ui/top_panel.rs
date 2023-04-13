@@ -9,6 +9,8 @@ impl WalksnailOsdTool {
             ui.horizontal(|ui| {
                 self.import_files(ui, ctx);
                 self.reset_files(ui);
+                ui.add_space(150.0);
+                self.new_version_if_available(ui);
                 ui.add_space(ui.available_width() - 55.0);
                 self.toggle_light_dark_theme(ui, ctx);
                 self.about_window(ui, ctx);
@@ -75,6 +77,15 @@ impl WalksnailOsdTool {
         }
     }
 
+    fn new_version_if_available(&self, ui: &mut Ui) {
+        if let Some(promise) = &self.app_update.promise
+            && let Some(result) = promise.ready()
+            && let Ok(maybe_release) = result
+            && let Some(latest_release) = maybe_release {
+                ui.hyperlink_to("New version available!", &latest_release.html_url);
+            }
+    }
+
     fn toggle_light_dark_theme(&mut self, ui: &mut Ui, ctx: &egui::Context) {
         let icon = if self.dark_mode { "☀" } else { "🌙" };
         if ui.add(Button::new(icon).frame(false)).clicked() {
@@ -119,7 +130,7 @@ impl WalksnailOsdTool {
                         ui.end_row();
 
                         ui.label("Version:");
-                        let version = get_version().unwrap_or("Unknown".into());
+                        let version = get_version().to_string();
                         if ui
                             .add(Label::new(&version).sense(Sense::click()))
                             .on_hover_text_at_pointer("Double-click to copy to clipboard")

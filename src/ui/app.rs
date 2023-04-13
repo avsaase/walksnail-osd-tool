@@ -7,13 +7,15 @@ use std::{
 use crossbeam_channel::{Receiver, Sender};
 use derivative::Derivative;
 use egui::{pos2, text::LayoutJob, vec2, Color32, TextFormat, TextStyle, TextureHandle, Visuals};
+use github_release_check::{GitHubReleaseItem, LookupError};
+use poll_promise::Promise;
 use serde::{Deserialize, Serialize};
 
 use crate::{
     config::AppConfig,
     ffmpeg::{Encoder, FromFfmpegMessage, RenderSettings, ToFfmpegMessage, VideoInfo},
     font, osd, srt,
-    util::Coordinates,
+    util::{check_updates, Coordinates},
 };
 
 use super::{
@@ -45,6 +47,7 @@ pub struct WalksnailOsdTool {
     pub srt_font: Option<rusttype::Font<'static>>,
     pub about_window_open: bool,
     pub dark_mode: bool,
+    pub app_update: AppUpdate,
 }
 
 impl WalksnailOsdTool {
@@ -68,6 +71,12 @@ impl WalksnailOsdTool {
         let srt_options = config.srt_options.into();
         let osd_options = config.osd_options;
 
+        // Check for app updates
+        let app_update = AppUpdate {
+            promise: Some(Promise::spawn_thread("check_updates", || check_updates())),
+            new_version: None,
+        };
+
         Self {
             dependencies: Dependencies {
                 dependencies_satisfied,
@@ -78,6 +87,7 @@ impl WalksnailOsdTool {
             srt_font: Some(srt_font),
             osd_options,
             srt_options,
+            app_update,
             ..Default::default()
         }
     }
@@ -164,6 +174,12 @@ impl Default for UiDimensions {
             osd_position_sliders_length: 200.0,
         }
     }
+}
+
+#[derive(Default)]
+pub struct AppUpdate {
+    pub promise: Option<Promise<Result<Option<GitHubReleaseItem>, LookupError>>>,
+    pub new_version: Option<GitHubReleaseItem>,
 }
 
 impl eframe::App for WalksnailOsdTool {

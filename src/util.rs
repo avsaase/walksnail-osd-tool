@@ -1,8 +1,11 @@
 use std::{env::current_exe, fmt::Display, path::PathBuf};
 
+use github_release_check::{GitHubReleaseItem, LookupError};
 use serde::{Deserialize, Serialize};
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::{filter, prelude::__tracing_subscriber_SubscriberExt, util::SubscriberInitExt, Layer};
+
+use crate::util::build_info::Build;
 
 #[derive(Debug, Clone, Default, Copy, Serialize, Deserialize)]
 pub struct Coordinates<T> {
@@ -94,15 +97,34 @@ pub fn get_dependency_path(dependency: &str) -> PathBuf {
 }
 
 pub mod build_info {
-    pub fn get_version() -> Option<String> {
-        let version: Option<&'static str> = option_env!("GIT_VERSION");
+    use std::fmt::Display;
+
+    use semver::Version;
+
+    pub enum Build {
+        Release { version: Version, commit: String },
+        Dev { commit: String },
+        Unknown,
+    }
+
+    impl Display for Build {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            match self {
+                Build::Release { version, commit } => write!(f, "{version} ({commit})"),
+                Build::Dev { commit } => write!(f, "dev ({commit})"),
+                Build::Unknown => write!(f, "Unknown"),
+            }
+        }
+    }
+
+    pub fn get_version() -> Build {
+        let version: Option<Version> = option_env!("GIT_VERSION").and_then(|s| Version::parse(s).ok());
         let short_hash: Option<&'static str> = option_env!("GIT_COMMIT_HASH");
 
-        match (version, short_hash) {
-            (None, None) => None,
-            (None, Some(commit)) => Some(format!("dev ({})", commit)),
-            (Some(version), None) => Some(version.to_string()),
-            (Some(version), Some(commit)) => Some(format!("{} ({})", version, commit)),
+        match (version, short_hash.map(|s| s.to_string())) {
+            (Some(version), Some(commit)) => Build::Release { version, commit },
+            (None, Some(commit)) => Build::Dev { commit },
+            _ => Build::Unknown,
         }
     }
 
@@ -113,4 +135,19 @@ pub mod build_info {
     pub fn get_target() -> &'static str {
         env!("VERGEN_CARGO_TARGET_TRIPLE")
     }
+}
+
+#[tracing::instrument(ret)]
+pub fn check_updates() -> Result<Option<GitHubReleaseItem>, LookupError> {
+    let github = github_release_check::GitHub::new().unwrap();
+    const REPO: &str = "avsaase/walksnail-osd-tool";
+    if let Build::Release { version, .. } = build_info::get_version() {
+        let latest_version = github.get_latest_version(REPO)?;
+        if latest_version > version {
+            let releases = github.query(REPO)?;
+            let latest_release = releases.first().cloned();
+            return Ok(latest_release);
+        }
+    }
+    Ok(None)
 }

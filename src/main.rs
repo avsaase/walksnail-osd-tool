@@ -1,6 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // Hide console on Windows in release builds
 #![allow(clippy::too_many_arguments)]
 #![allow(clippy::collapsible_else_if)]
+#![feature(let_chains)]
 
 use eframe::IconData;
 use egui::vec2;
@@ -30,7 +31,7 @@ fn main() -> Result<(), eframe::Error> {
         "{}",
         format!(
             "App started (version: {}, target: {}, compiled with: rustc {})",
-            build_info::get_version().unwrap_or("Unknwon".into()),
+            build_info::get_version(),
             build_info::get_target(),
             build_info::get_compiler()
         )
