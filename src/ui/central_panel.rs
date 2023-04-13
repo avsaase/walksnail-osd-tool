@@ -164,20 +164,21 @@ impl WalksnailOsdTool {
                         ui.end_row();
 
                         ui.label("Elements");
-                        ui.horizontal(|ui| {
-                            let options = &mut self.srt_options;
-                            let has_distance = self.srt_file.as_ref().map(|s| s.has_distance).unwrap_or(true);
-                            changed |= [
-                                ui.checkbox(&mut options.show_time, "Time "),
-                                ui.checkbox(&mut options.show_sbat, "SBat "),
-                                ui.checkbox(&mut options.show_gbat, "GBat "),
-                                ui.checkbox(&mut options.show_signal, "Signal "),
-                                ui.checkbox(&mut options.show_latency, "Latency "),
-                                ui.checkbox(&mut options.show_bitrate, "Bitrate "),
-                                ui.add_enabled(has_distance, Checkbox::new(&mut options.show_distance, "Distance")),
-                            ]
-                            .iter()
-                            .any(|r| r.changed());
+                        let options = &mut self.srt_options;
+                        let has_distance = self.srt_file.as_ref().map(|s| s.has_distance).unwrap_or(true);
+                        Grid::new("srt_selection").show(ui, |ui| {
+                            changed |= ui.checkbox(&mut options.show_time, "Time").changed();
+                            changed |= ui.checkbox(&mut options.show_sbat, "SBat").changed();
+                            changed |= ui.checkbox(&mut options.show_gbat, "GBat").changed();
+                            changed |= ui.checkbox(&mut options.show_signal, "Signal").changed();
+                            ui.end_row();
+
+                            changed |= ui.checkbox(&mut options.show_latency, "Latency").changed();
+                            changed |= ui.checkbox(&mut options.show_bitrate, "Bitrate").changed();
+                            changed |= ui
+                                .add_enabled(has_distance, Checkbox::new(&mut options.show_distance, "Distance"))
+                                .changed();
+                            ui.end_row();
                         });
                         ui.end_row();
                     });
@@ -193,7 +194,6 @@ impl WalksnailOsdTool {
         CollapsingHeader::new(RichText::new("Preview").heading())
             .default_open(true)
             .show_unindented(ui, |ui| {
-                // ui.heading("Preview");
                 if let (Some(handle), Some(video_info)) = (&self.osd_preview.texture_handle, &self.video_info) {
                     let preview_width = ui.available_width();
                     let aspect_ratio = video_info.width as f32 / video_info.height as f32;
