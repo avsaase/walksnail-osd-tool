@@ -145,9 +145,9 @@ impl Default for SrtOptions {
         Self {
             position: Coordinates::new(1.5, 95.0),
             scale: 35.0,
-            show_time: true,
-            show_sbat: true,
-            show_gbat: true,
+            show_time: false,
+            show_sbat: false,
+            show_gbat: false,
             show_signal: true,
             show_latency: true,
             show_bitrate: true,

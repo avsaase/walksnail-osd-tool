@@ -1,6 +1,6 @@
 use std::{
     path::{Path, PathBuf},
-    time::Duration,
+    time::{Duration, Instant},
 };
 
 use egui::{Separator, Ui};
@@ -52,6 +52,7 @@ impl WalksnailOsdTool {
         if let Some(str_file_path) = filter_file_with_extention(file_handles, "srt") {
             self.srt_file = SrtFile::open(str_file_path.clone()).ok();
             self.srt_options.show_distance &= self.srt_file.as_ref().map(|s| s.has_distance).unwrap_or(true);
+            self.config_changed = Some(Instant::now());
         }
     }
 
