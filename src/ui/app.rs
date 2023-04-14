@@ -100,18 +100,12 @@ pub struct Dependencies {
     pub ffprobe_path: PathBuf,
 }
 
+#[derive(Derivative)]
+#[derivative(Default)]
 pub struct OsdPreview {
     pub texture_handle: Option<TextureHandle>,
+    #[derivative(Default(value = "1"))]
     pub preview_frame: u32,
-}
-
-impl Default for OsdPreview {
-    fn default() -> Self {
-        Self {
-            texture_handle: Default::default(),
-            preview_frame: 1,
-        }
-    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Derivative)]
