@@ -122,6 +122,8 @@ pub mod build_info {
         let version: Option<Version> = option_env!("GIT_VERSION").and_then(|s| Version::parse(s).ok());
         let short_hash: Option<&'static str> = option_env!("GIT_COMMIT_HASH");
 
+        let version = Version::parse("0.0.1").unwrap().into();
+
         match (version, short_hash.map(|s| s.to_string())) {
             (Some(version), Some(commit)) => Build::Release { version, commit },
             (None, Some(commit)) => Build::Dev { commit },
@@ -150,7 +152,7 @@ pub fn check_updates() -> Result<Option<GitHubReleaseItem>, LookupError> {
         let update_target = releases
             .iter()
             .find(|release| {
-                Version::parse(&release.tag_name)
+                Version::parse(release.tag_name.trim_start_matches('v'))
                     .map_or(false, |version| should_update_to_version(&current_version, &version))
             })
             .cloned();

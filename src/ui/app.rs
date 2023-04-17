@@ -69,11 +69,11 @@ impl WalksnailOsdTool {
             rusttype::Font::try_from_bytes(include_bytes!("../../resources/fonts/AzeretMono-Regular.ttf")).unwrap();
 
         let config = AppConfig::load_or_create();
-        let srt_options = config.srt_options.into();
+        let srt_options = config.srt_options;
         let osd_options = config.osd_options;
 
         // Check for app updates
-        let app_update_promise = Promise::spawn_thread("check_updates", || check_updates()).into();
+        let app_update_promise = Promise::spawn_thread("check_updates", check_updates).into();
 
         Self {
             dependencies: Dependencies {
@@ -274,7 +274,7 @@ impl WalksnailOsdTool {
         {
             let config = AppConfig {
                 osd_options: self.osd_options.clone(),
-                srt_options: self.srt_options.clone().into(),
+                srt_options: self.srt_options.clone(),
             };
             config.save();
             self.config_changed = None;
