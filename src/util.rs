@@ -1,6 +1,7 @@
 use std::{env::current_exe, fmt::Display, path::PathBuf};
 
 use github_release_check::{GitHubReleaseItem, LookupError};
+use semver::Version;
 use serde::{Deserialize, Serialize};
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::{filter, prelude::__tracing_subscriber_SubscriberExt, util::SubscriberInitExt, Layer};
@@ -139,15 +140,104 @@ pub mod build_info {
 
 #[tracing::instrument(ret)]
 pub fn check_updates() -> Result<Option<GitHubReleaseItem>, LookupError> {
-    let github = github_release_check::GitHub::new().unwrap();
-    const REPO: &str = "avsaase/walksnail-osd-tool";
-    if let Build::Release { version, .. } = build_info::get_version() {
-        let latest_version = github.get_latest_version(REPO)?;
-        if latest_version > version {
-            let releases = github.query(REPO)?;
-            let latest_release = releases.first().cloned();
-            return Ok(latest_release);
-        }
+    if let Build::Release {
+        version: current_version,
+        ..
+    } = build_info::get_version()
+    {
+        let github = github_release_check::GitHub::new().unwrap();
+        let releases = github.query("avsaase/walksnail-osd-tool")?;
+        let update_target = releases
+            .iter()
+            .find(|release| {
+                Version::parse(&release.tag_name)
+                    .map_or(false, |version| should_update_to_version(&current_version, &version))
+            })
+            .cloned();
+        Ok(update_target)
+    } else {
+        Ok(None)
     }
-    Ok(None)
+}
+
+fn should_update_to_version(current_version: &Version, to_version: &Version) -> bool {
+    if to_version <= current_version {
+        return false;
+    }
+
+    let version_is_full_release = to_version.pre.is_empty();
+    if version_is_full_release {
+        return true;
+    }
+
+    let current_version_is_prerelease = !current_version.pre.is_empty();
+    if current_version_is_prerelease {
+        return to_version.major == current_version.major && to_version.minor == current_version.minor;
+    }
+
+    false
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn version(version: &str) -> Version {
+        Version::parse(version).unwrap()
+    }
+
+    #[test]
+    fn update_to_new_release() {
+        let current_version = version("0.1.0");
+        let new_version = version("0.2.0");
+        assert!(should_update_to_version(&current_version, &new_version));
+    }
+
+    #[test]
+    fn not_update_to_older_release() {
+        let current_version = version("0.2.0");
+        let new_version = version("0.1.0");
+        assert!(!should_update_to_version(&current_version, &new_version));
+    }
+
+    #[test]
+    fn update_from_prerelease_to_full_release() {
+        let current_version = version("0.1.0-beta.2");
+        let new_version = version("0.1.0");
+        assert!(should_update_to_version(&current_version, &new_version));
+    }
+
+    #[test]
+    fn update_from_prerelease_to_new_prerelease() {
+        let current_version = version("0.1.0-beta.1");
+        let new_version = version("0.1.0-beta.3");
+        assert!(should_update_to_version(&current_version, &new_version));
+    }
+
+    #[test]
+    fn not_update_from_prerelease_to_older_prerelease() {
+        let current_version = version("0.1.0-beta.3");
+        let new_version = version("0.1.0-beta.2");
+        assert!(!should_update_to_version(&current_version, &new_version));
+    }
+
+    #[test]
+    fn not_update_from_prerelease_to_prerelease_in_new_cyce() {
+        let current_version = version("0.1.0-beta.3");
+        let new_version = version("0.2.0-beta.2");
+        assert!(!should_update_to_version(&current_version, &new_version));
+    }
+
+    #[test]
+    fn not_update_from_release_to_prerelease_of_new_release() {
+        let current_version = version("0.1.0");
+        let new_version = version("0.2.0-beta.2");
+        assert!(!should_update_to_version(&current_version, &new_version));
+    }
+
+    #[test]
+    fn not_update_to_same_release() {
+        let current_version = version("0.1.0");
+        assert!(!should_update_to_version(&current_version, &current_version));
+    }
 }

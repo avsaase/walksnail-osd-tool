@@ -25,6 +25,7 @@ use super::{
 };
 
 #[derive(Default)]
+
 pub struct WalksnailOsdTool {
     pub config_changed: Option<Instant>,
     pub video_file: Option<PathBuf>,
@@ -47,7 +48,7 @@ pub struct WalksnailOsdTool {
     pub srt_font: Option<rusttype::Font<'static>>,
     pub about_window_open: bool,
     pub dark_mode: bool,
-    pub app_update: AppUpdate,
+    pub app_update_promise: Option<Promise<Result<Option<GitHubReleaseItem>, LookupError>>>,
 }
 
 impl WalksnailOsdTool {
@@ -72,10 +73,7 @@ impl WalksnailOsdTool {
         let osd_options = config.osd_options;
 
         // Check for app updates
-        let app_update = AppUpdate {
-            promise: Some(Promise::spawn_thread("check_updates", || check_updates())),
-            new_version: None,
-        };
+        let app_update_promise = Promise::spawn_thread("check_updates", || check_updates()).into();
 
         Self {
             dependencies: Dependencies {
@@ -87,7 +85,7 @@ impl WalksnailOsdTool {
             srt_font: Some(srt_font),
             osd_options,
             srt_options,
-            app_update,
+            app_update_promise,
             ..Default::default()
         }
     }

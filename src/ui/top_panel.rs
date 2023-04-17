@@ -78,7 +78,7 @@ impl WalksnailOsdTool {
     }
 
     fn new_version_if_available(&self, ui: &mut Ui) {
-        if let Some(promise) = &self.app_update.promise
+        if let Some(promise) = &self.app_update_promise
             && let Some(result) = promise.ready()
             && let Ok(maybe_release) = result
             && let Some(latest_release) = maybe_release {
