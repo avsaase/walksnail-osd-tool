@@ -111,7 +111,7 @@ pub mod build_info {
     impl Display for Build {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             match self {
-                Build::Release { version, commit } => write!(f, "{version} ({commit})"),
+                Build::Release { version, .. } => write!(f, "{version}"),
                 Build::Dev { commit } => write!(f, "dev ({commit})"),
                 Build::Unknown => write!(f, "Unknown"),
             }

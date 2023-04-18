@@ -20,6 +20,7 @@ egui_extras = { version = "0.21.0", features = ["image"] }
 ffmpeg-sidecar = "0.3.2"
 ffprobe = { git = "https://github.com/avsaase/ffprobe-rs/", branch = "suppress-console-windows" }
 github_release_check = "0.2.1"
+if_chain = "1.0.2"
 image = "0.24.5"
 imageproc = "0.23.0"
 parse-display = "0.8.0"
@@ -35,7 +36,7 @@ tracing = "0.1.37"
 tracing-appender = { version = "0.2.2", default-features = false }
 tracing-subscriber = "0.3.16"
 
-# Use local version of eguis and friends
+# Use local version of egui and friends
 # eframe = { path = "../egui/crates/eframe" }
 # egui = { path = "../egui/crates/egui" }
 # egui_extras = { path = "../egui/crates/egui_extras", features = ["image"] }

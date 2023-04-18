@@ -1,4 +1,4 @@
-use egui::{vec2, Align2, Button, Frame, Label, RichText, Sense, Ui, Visuals};
+use egui::{vec2, Align2, Button, Frame, Label, RichText, Sense, Ui, Visuals, Window};
 
 use super::WalksnailOsdTool;
 
@@ -9,13 +9,11 @@ impl WalksnailOsdTool {
             ui.horizontal(|ui| {
                 self.import_files(ui, ctx);
                 self.reset_files(ui);
-                ui.add_space(150.0);
-                self.new_version_if_available(ui);
                 ui.add_space(ui.available_width() - 55.0);
                 self.toggle_light_dark_theme(ui, ctx);
                 self.about_window(ui, ctx);
             });
-            ui.add_space(5.0);
+            ui.add_space(3.0);
         });
     }
 
@@ -77,15 +75,6 @@ impl WalksnailOsdTool {
         }
     }
 
-    fn new_version_if_available(&self, ui: &mut Ui) {
-        if let Some(promise) = &self.app_update_promise
-            && let Some(result) = promise.ready()
-            && let Ok(maybe_release) = result
-            && let Some(latest_release) = maybe_release {
-                ui.hyperlink_to("New version available!", &latest_release.html_url);
-            }
-    }
-
     fn toggle_light_dark_theme(&mut self, ui: &mut Ui, ctx: &egui::Context) {
         let icon = if self.dark_mode { "☀" } else { "🌙" };
         if ui.add(Button::new(icon).frame(false)).clicked() {
@@ -114,7 +103,7 @@ impl WalksnailOsdTool {
         };
         let frame = Frame::window(&style);
         if self.about_window_open {
-            egui::Window::new("About")
+            Window::new("About")
                 .anchor(Align2::CENTER_CENTER, vec2(0.0, 0.0))
                 .frame(frame)
                 .open(&mut self.about_window_open)

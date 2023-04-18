@@ -7,6 +7,7 @@ mod side_panel;
 mod top_panel;
 mod utils;
 
+pub use app::AppUpdate;
 pub use app::OsdOptions;
 pub use app::SrtOptions;
 pub use app::WalksnailOsdTool;

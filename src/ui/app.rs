@@ -6,7 +6,7 @@ use std::{
 
 use crossbeam_channel::{Receiver, Sender};
 use derivative::Derivative;
-use egui::{pos2, text::LayoutJob, vec2, Color32, TextFormat, TextStyle, TextureHandle, Visuals};
+use egui::{pos2, text::LayoutJob, vec2, Align2, Color32, Grid, TextFormat, TextStyle, TextureHandle, Visuals, Window};
 use github_release_check::{GitHubReleaseItem, LookupError};
 use poll_promise::Promise;
 use serde::{Deserialize, Serialize};
@@ -15,7 +15,7 @@ use crate::{
     config::AppConfig,
     ffmpeg::{Encoder, FromFfmpegMessage, RenderSettings, ToFfmpegMessage, VideoInfo},
     font, osd, srt,
-    util::{check_updates, Coordinates},
+    util::{build_info, check_updates, Coordinates},
 };
 
 use super::{
@@ -48,7 +48,7 @@ pub struct WalksnailOsdTool {
     pub srt_font: Option<rusttype::Font<'static>>,
     pub about_window_open: bool,
     pub dark_mode: bool,
-    pub app_update_promise: Option<Promise<Result<Option<GitHubReleaseItem>, LookupError>>>,
+    pub app_update: AppUpdate,
 }
 
 impl WalksnailOsdTool {
@@ -73,7 +73,12 @@ impl WalksnailOsdTool {
         let osd_options = config.osd_options;
 
         // Check for app updates
-        let app_update_promise = Promise::spawn_thread("check_updates", check_updates).into();
+        let promise = Promise::spawn_thread("check_updates", check_updates).into();
+        let app_update = AppUpdate {
+            promise,
+            // check_on_startup: config.check_updates_on_startup,
+            ..Default::default()
+        };
 
         Self {
             dependencies: Dependencies {
@@ -85,7 +90,7 @@ impl WalksnailOsdTool {
             srt_font: Some(srt_font),
             osd_options,
             srt_options,
-            app_update_promise,
+            app_update,
             ..Default::default()
         }
     }
@@ -168,15 +173,39 @@ impl Default for UiDimensions {
     }
 }
 
-#[derive(Default)]
+#[derive(Derivative, Deserialize, Serialize)]
+#[derivative(Default, Debug)]
 pub struct AppUpdate {
+    #[serde(skip)]
+    #[derivative(Debug = "ignore")]
     pub promise: Option<Promise<Result<Option<GitHubReleaseItem>, LookupError>>>,
-    pub new_version: Option<GitHubReleaseItem>,
+    #[serde(skip)]
+    pub new_release: Option<GitHubReleaseItem>,
+    #[serde(skip)]
+    pub window_open: bool,
+    #[serde(skip)]
+    pub check_finished: bool,
+    #[derivative(Default(value = "true"))]
+    pub check_on_startup: bool,
+}
+
+impl Clone for AppUpdate {
+    fn clone(&self) -> Self {
+        Self {
+            promise: None,
+            new_release: self.new_release.clone(),
+            window_open: self.window_open.clone(),
+            check_finished: self.check_finished.clone(),
+            check_on_startup: self.check_on_startup.clone(),
+        }
+    }
 }
 
 impl eframe::App for WalksnailOsdTool {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         self.missing_dependencies_warning(ctx);
+
+        self.update_window(ctx);
 
         // Keep updating the UI thread when rendering to make sure the indicated progress is up-to-date
         if self.render_status.is_in_progress() {
@@ -184,6 +213,7 @@ impl eframe::App for WalksnailOsdTool {
         }
 
         self.receive_ffmpeg_message();
+        self.poll_update_check();
 
         self.render_top_panel(ctx);
 
@@ -272,12 +302,61 @@ impl WalksnailOsdTool {
             .config_changed
             .map_or(false, |t| t.elapsed() > Duration::from_millis(2000))
         {
-            let config = AppConfig {
-                osd_options: self.osd_options.clone(),
-                srt_options: self.srt_options.clone(),
-            };
+            let config: AppConfig = self.into();
             config.save();
             self.config_changed = None;
+        }
+    }
+
+    fn poll_update_check(&mut self) {
+        if !self.app_update.check_finished {
+            if let Some(promise) = &self.app_update.promise {
+                if let Some(result) = promise.ready() {
+                    self.app_update.check_finished = true;
+                    if let Ok(maybe_release) = result {
+                        if let Some(release) = maybe_release {
+                            self.app_update.new_release = Some(release.clone());
+                            self.app_update.window_open = true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fn update_window(&mut self, ctx: &egui::Context) {
+        if self.app_update.window_open {
+            if let Some(latest_release) = &self.app_update.new_release {
+                Window::new("App update!")
+                    .anchor(Align2::CENTER_CENTER, vec2(0.0, 0.0))
+                    .open(&mut self.app_update.window_open)
+                    .collapsible(false)
+                    .auto_sized()
+                    .show(ctx, |ui| {
+                        Grid::new("update").show(ui, |ui| {
+                            ui.label("Current version:");
+                            ui.label(build_info::get_version().to_string());
+                            ui.end_row();
+
+                            ui.label("New version:");
+                            ui.label(latest_release.tag_name.trim_start_matches('v'));
+                            ui.end_row();
+                        });
+                        ui.hyperlink_to("View release on GitHub", &latest_release.html_url);
+
+                        ui.horizontal(|ui| {
+                            if ui
+                                .checkbox(
+                                    &mut self.app_update.check_on_startup,
+                                    "Check for updates on when program starts",
+                                )
+                                .changed()
+                            {
+                                self.config_changed = Instant::now().into();
+                            };
+                        });
+                    });
+            }
         }
     }
 }
