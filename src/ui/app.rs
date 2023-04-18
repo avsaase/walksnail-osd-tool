@@ -73,7 +73,11 @@ impl WalksnailOsdTool {
         let osd_options = config.osd_options;
 
         // Check for app updates
-        let promise = Promise::spawn_thread("check_updates", check_updates).into();
+        let promise = if config.app_update.check_on_startup {
+            Promise::spawn_thread("check_updates", check_updates).into()
+        } else {
+            None
+        };
         let app_update = AppUpdate {
             promise,
             // check_on_startup: config.check_updates_on_startup,
