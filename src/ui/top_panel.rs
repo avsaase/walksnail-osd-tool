@@ -94,14 +94,7 @@ impl WalksnailOsdTool {
             self.about_window_open = !self.about_window_open;
         }
 
-        let mut style = (*ui.style_mut()).clone();
-        style.spacing.window_margin = egui::Margin {
-            left: 25.0,
-            right: 25.0,
-            top: 6.0,
-            bottom: 25.0,
-        };
-        let frame = Frame::window(&style);
+        let frame = Frame::window(&ctx.style());
         if self.about_window_open {
             Window::new("About")
                 .anchor(Align2::CENTER_CENTER, vec2(0.0, 0.0))
@@ -110,7 +103,7 @@ impl WalksnailOsdTool {
                 .auto_sized()
                 .collapsible(false)
                 .show(ctx, |ui| {
-                    ui.add_space(19.0);
+                    ui.add_space(10.0);
 
                     egui::Grid::new("about").spacing(vec2(10.0, 5.0)).show(ui, |ui| {
                         use crate::util::build_info::*;

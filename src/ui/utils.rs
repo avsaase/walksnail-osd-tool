@@ -3,7 +3,7 @@ use std::{
     time::{Duration, Instant},
 };
 
-use egui::{Separator, Ui};
+use egui::{Margin, Separator, Ui};
 
 use crate::{ffmpeg::VideoInfo, font::FontFile, osd::OsdFile, srt::SrtFile};
 
@@ -103,7 +103,7 @@ pub fn get_output_video_path(input_video_path: &Path) -> PathBuf {
     output_video_path
 }
 
-pub fn set_font_styles(ctx: &egui::Context) {
+pub fn set_style(ctx: &egui::Context) {
     use egui::{
         FontFamily::{Monospace, Proportional},
         FontId, Style, TextStyle,
@@ -117,6 +117,12 @@ pub fn set_font_styles(ctx: &egui::Context) {
         (TextStyle::Monospace, FontId::new(14.0, Monospace)),
     ]
     .into();
+    style.spacing.window_margin = Margin {
+        left: 20.0,
+        right: 20.0,
+        top: 6.0,
+        bottom: 20.0,
+    };
     ctx.set_style(style);
 }
 

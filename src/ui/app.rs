@@ -6,7 +6,9 @@ use std::{
 
 use crossbeam_channel::{Receiver, Sender};
 use derivative::Derivative;
-use egui::{pos2, text::LayoutJob, vec2, Align2, Color32, Grid, TextFormat, TextStyle, TextureHandle, Visuals, Window};
+use egui::{
+    pos2, text::LayoutJob, vec2, Align2, Color32, Frame, Grid, TextFormat, TextStyle, TextureHandle, Visuals, Window,
+};
 use github_release_check::{GitHubReleaseItem, LookupError};
 use poll_promise::Promise;
 use serde::{Deserialize, Serialize};
@@ -20,7 +22,7 @@ use crate::{
 
 use super::{
     osd_preview::create_osd_preview,
-    utils::{set_custom_fonts, set_font_styles},
+    utils::{set_custom_fonts, set_style},
     RenderStatus,
 };
 
@@ -59,7 +61,7 @@ impl WalksnailOsdTool {
         ffprobe_path: PathBuf,
         encoders: Vec<Encoder>,
     ) -> Self {
-        set_font_styles(ctx);
+        set_style(ctx);
         let mut visuals = Visuals::light();
         visuals.indent_has_left_vline = false;
         set_custom_fonts(ctx);
@@ -198,9 +200,9 @@ impl Clone for AppUpdate {
         Self {
             promise: None,
             new_release: self.new_release.clone(),
-            window_open: self.window_open.clone(),
-            check_finished: self.check_finished.clone(),
-            check_on_startup: self.check_on_startup.clone(),
+            window_open: self.window_open,
+            check_finished: self.check_finished,
+            check_on_startup: self.check_on_startup,
         }
     }
 }
@@ -327,12 +329,16 @@ impl WalksnailOsdTool {
     fn update_window(&mut self, ctx: &egui::Context) {
         if self.app_update.window_open {
             if let Some(latest_release) = &self.app_update.new_release {
+                let frame = Frame::window(&ctx.style());
                 Window::new("App update!")
                     .anchor(Align2::CENTER_CENTER, vec2(0.0, 0.0))
+                    .frame(frame)
                     .open(&mut self.app_update.window_open)
                     .collapsible(false)
                     .auto_sized()
                     .show(ctx, |ui| {
+                        ui.add_space(10.0);
+
                         Grid::new("update").spacing(vec2(10.0, 5.0)).show(ui, |ui| {
                             ui.label("Current version:");
                             ui.label(build_info::get_version().to_string());
@@ -342,7 +348,10 @@ impl WalksnailOsdTool {
                             ui.label(latest_release.tag_name.trim_start_matches('v'));
                             ui.end_row();
                         });
+                        ui.add_space(5.0);
                         ui.hyperlink_to("View release on GitHub", &latest_release.html_url);
+
+                        ui.add_space(10.0);
 
                         ui.horizontal(|ui| {
                             if ui
