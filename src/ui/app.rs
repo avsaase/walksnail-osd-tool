@@ -310,17 +310,13 @@ impl WalksnailOsdTool {
 
     fn poll_update_check(&mut self) {
         if !self.app_update.check_finished {
-            if let Some(promise) = &self.app_update.promise {
-                if let Some(result) = promise.ready() {
-                    self.app_update.check_finished = true;
-                    if let Ok(maybe_release) = result {
-                        if let Some(release) = maybe_release {
-                            self.app_update.new_release = Some(release.clone());
-                            self.app_update.window_open = true;
-                        }
-                    }
-                }
-            }
+            let Some(promise) = &self.app_update.promise else {return;};
+            let Some(result) = promise.ready() else {return;};
+            self.app_update.check_finished = true;
+            if let Ok(Some(latest_release)) = result {
+                self.app_update.new_release = Some(latest_release.clone());
+                self.app_update.window_open = true;
+            };
         }
     }
 
@@ -333,7 +329,7 @@ impl WalksnailOsdTool {
                     .collapsible(false)
                     .auto_sized()
                     .show(ctx, |ui| {
-                        Grid::new("update").show(ui, |ui| {
+                        Grid::new("update").spacing(vec2(10.0, 5.0)).show(ui, |ui| {
                             ui.label("Current version:");
                             ui.label(build_info::get_version().to_string());
                             ui.end_row();
