@@ -112,7 +112,7 @@ impl WalksnailOsdTool {
                 .show(ctx, |ui| {
                     ui.add_space(19.0);
 
-                    egui::Grid::new("about").spacing(vec2(10.0, 7.0)).show(ui, |ui| {
+                    egui::Grid::new("about").spacing(vec2(10.0, 5.0)).show(ui, |ui| {
                         use crate::util::build_info::*;
                         ui.label("Author:");
                         ui.label("Alexander van Saase");

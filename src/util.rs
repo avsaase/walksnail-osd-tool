@@ -28,21 +28,9 @@ pub struct Dimension<T> {
     pub height: T,
 }
 
-impl<T> Dimension<T> {
-    pub fn new(width: T, height: T) -> Self {
-        Self { width, height }
-    }
-}
-
 impl Display for Dimension<u32> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}x{}", self.width, self.height)
-    }
-}
-
-impl From<Dimension<u32>> for String {
-    fn from(value: Dimension<u32>) -> Self {
-        format!("{}x{}", value.width, value.height)
     }
 }
 
@@ -121,8 +109,6 @@ pub mod build_info {
     pub fn get_version() -> Build {
         let version: Option<Version> = option_env!("GIT_VERSION").and_then(|s| Version::parse(s).ok());
         let short_hash: Option<&'static str> = option_env!("GIT_COMMIT_HASH");
-
-        let version = Version::parse("0.0.1").unwrap().into();
 
         match (version, short_hash.map(|s| s.to_string())) {
             (Some(version), Some(commit)) => Build::Release { version, commit },
