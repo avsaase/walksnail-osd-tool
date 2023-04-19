@@ -3,30 +3,6 @@ name: Continuous integration
 on: [push, pull_request]
 
 jobs:
-  format-check:
-    name: Format check
-    runs-on: windows-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Install toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
-          override: true
-          components: rustfmt
-
-      - name: Cache dependencies
-        uses: Swatinem/rust-cache@v2
-
-      - name: Cargo fmt
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
-
   test:
     name: Tests
     runs-on: windows-latest
@@ -45,13 +21,13 @@ jobs:
       - name: Cache dependencies
         uses: Swatinem/rust-cache@v2
 
-      - name: Cargo test
+      - name: Run cargo test
         uses: actions-rs/cargo@v1
         with:
           command: test
 
-  clippy-check:
-    name: Clippy check
+  lints:
+    name: Lints
     runs-on: windows-latest
     steps:
       - name: Checkout code
@@ -63,16 +39,22 @@ jobs:
           toolchain: stable
           profile: minimal
           override: true
-          components: clippy
+          components: rustfmt, clippy
 
       - name: Cache dependencies
         uses: Swatinem/rust-cache@v2
 
-      - name: Clippy
-        uses: giraffate/clippy-action@v1
+      - name: Run cargo fmt
+        uses: actions-rs/cargo@v1
         with:
-          reporter: 'github-pr-review'
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          command: fmt
+          args: --all -- --check
+
+      - name: Run cargo clippy
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: -- -D warnings
 
   dependencies:
     name: Unused dependencies
