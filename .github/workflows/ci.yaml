@@ -56,8 +56,8 @@ jobs:
           command: clippy
           args: -- -D warnings
 
-  build:
-    name: Build
+  check:
+    name: Check
     strategy:
       fail-fast: false
       matrix:
@@ -85,5 +85,7 @@ jobs:
       - name: Cache dependencies
         uses: Swatinem/rust-cache@v2
 
-      - name: Build
-        run: cargo build
+      - name: Run cargo check
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
