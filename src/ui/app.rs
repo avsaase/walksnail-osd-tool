@@ -1,4 +1,5 @@
 use std::{
+    collections::HashSet,
     path::PathBuf,
     rc::Rc,
     time::{Duration, Instant},
@@ -115,23 +116,41 @@ pub struct OsdPreview {
     pub texture_handle: Option<TextureHandle>,
     #[derivative(Default(value = "1"))]
     pub preview_frame: u32,
+    pub mask_edit_mode_enabled: bool,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Derivative)]
-#[derivative(Default)]
+#[derive(Clone, Serialize, Deserialize, Derivative)]
+#[derivative(Default, Debug)]
 pub struct OsdOptions {
-    #[serde(flatten)]
     pub position: Coordinates<i32>,
     #[derivative(Default(value = "true"))]
     pub adjust_playback_speed: bool,
     #[derivative(Default(value = "1.0"))]
     #[serde(skip)]
     pub osd_playback_speed_factor: f32,
+    pub masked_grid_positions: HashSet<Coordinates<u32>>,
+}
+
+impl OsdOptions {
+    pub fn get_mask(&self, position: &Coordinates<u32>) -> bool {
+        self.masked_grid_positions.contains(position)
+    }
+
+    pub fn toggle_mask(&mut self, position: Coordinates<u32>) {
+        if self.masked_grid_positions.contains(&position) {
+            self.masked_grid_positions.remove(&position);
+        } else {
+            self.masked_grid_positions.insert(position);
+        }
+    }
+
+    pub fn reset_mask(&mut self) {
+        self.masked_grid_positions.clear();
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SrtOptions {
-    #[serde(flatten)]
     pub position: Coordinates<f32>,
     pub scale: f32,
     pub show_time: bool,
@@ -315,14 +334,14 @@ impl WalksnailOsdTool {
     }
 
     fn poll_update_check(&mut self) {
-        if !self.app_update.check_finished {
-            let Some(promise) = &self.app_update.promise else {return;};
-            let Some(result) = promise.ready() else {return;};
-            self.app_update.check_finished = true;
-            if let Ok(Some(latest_release)) = result {
-                self.app_update.new_release = Some(latest_release.clone());
-                self.app_update.window_open = true;
-            };
+        if !self.app_update.check_finished
+            && let Some(promise) = &self.app_update.promise
+            && let Some(result) = promise.ready() {
+                self.app_update.check_finished = true;
+                if let Ok(Some(latest_release)) = result {
+                    self.app_update.new_release = Some(latest_release.clone());
+                    self.app_update.window_open = true;
+                };
         }
     }
 

@@ -1,6 +1,11 @@
 use std::time::Instant;
 
-use egui::{vec2, CentralPanel, Checkbox, CollapsingHeader, Color32, Grid, Image, RichText, ScrollArea, Slider, Ui};
+use egui::{
+    vec2, CentralPanel, Checkbox, CollapsingHeader, Color32, CursorIcon, Grid, Image, Rect, RichText, ScrollArea,
+    Sense, Slider, Stroke, Ui,
+};
+
+use crate::util::Coordinates;
 
 use super::{
     osd_preview::{calculate_horizontal_offset, calculate_vertical_offset},
@@ -97,6 +102,27 @@ impl WalksnailOsdTool {
                                 self.osd_options.position.y = 0;
                                 changed |= true
                             }
+                        });
+                        ui.end_row();
+
+                        ui.label("Mask");
+                        ui.horizontal(|ui| {
+                            if !self.osd_preview.mask_edit_mode_enabled {
+                                if ui.button("Edit").clicked() {
+                                    self.osd_preview.mask_edit_mode_enabled = true;
+                                }
+                            } else {
+                                if ui.button("Save").clicked() {
+                                    self.osd_preview.mask_edit_mode_enabled = false;
+                                }
+                            }
+                            if ui.button("Reset").clicked() {
+                                self.osd_options.reset_mask();
+                                self.config_changed = Instant::now().into();
+                                self.update_osd_preview(ctx);
+                            }
+                            let masked_positions = self.osd_options.masked_grid_positions.len();
+                            ui.label(&format!("{} positions masked", masked_positions));
                         });
                         ui.end_row();
 
@@ -199,7 +225,11 @@ impl WalksnailOsdTool {
                     let aspect_ratio = video_info.width as f32 / video_info.height as f32;
                     let preview_height = preview_width / aspect_ratio;
                     let image = Image::new(handle, vec2(preview_width, preview_height));
-                    ui.add(image.bg_fill(Color32::LIGHT_GRAY));
+                    let rect = ui.add(image.bg_fill(Color32::LIGHT_GRAY)).rect;
+
+                    if self.osd_preview.mask_edit_mode_enabled {
+                        self.draw_grid(ui, ctx, rect);
+                    }
 
                     ui.horizontal(|ui| {
                         ui.label("Preview frame");
@@ -216,6 +246,71 @@ impl WalksnailOsdTool {
                     });
                 }
             });
+    }
+
+    fn draw_grid(&mut self, ui: &mut Ui, ctx: &egui::Context, image_rect: Rect) {
+        let video_width = self.video_info.as_ref().unwrap().width as f32;
+        let video_height = self.video_info.as_ref().unwrap().height as f32;
+
+        let top_left = image_rect.left_top();
+        let preview_width = image_rect.width();
+        let preview_height = image_rect.height();
+
+        let grid_width = preview_width * 0.99375;
+        let grid_height = preview_height;
+        let cell_width = grid_width / 53.0;
+        let cell_height = grid_height / 20.0;
+
+        let painter = ui.painter_at(image_rect);
+
+        let horizontal_offset = self.osd_options.position.x as f32 / video_width * preview_width;
+        let vertical_offset = self.osd_options.position.y as f32 / video_height * preview_height;
+
+        let response = ui
+            .allocate_rect(image_rect, Sense::click())
+            .on_hover_cursor(CursorIcon::Crosshair);
+
+        for i in 0..53 {
+            for j in 0..20 {
+                let rect = Rect::from_min_size(
+                    top_left
+                        + vec2(i as f32 * cell_width, j as f32 * cell_height)
+                        + vec2(horizontal_offset, vertical_offset),
+                    vec2(cell_width, cell_height),
+                );
+
+                let grid_position = Coordinates::new(i, j);
+                let masked = self.osd_options.get_mask(&grid_position);
+                if masked {
+                    painter.rect_filled(rect, 0.0, Color32::RED.gamma_multiply(0.5));
+                }
+
+                if let Some(hover_pos) = ctx.pointer_hover_pos() && rect.contains(hover_pos) {
+                    painter.rect_filled(rect, 0.0, Color32::RED.gamma_multiply(0.2));
+                }
+
+                if response.clicked() && let Some(click_position) = ctx.pointer_interact_pos() && rect.contains(click_position){
+                    self.osd_options.toggle_mask(grid_position);
+                    self.update_osd_preview(ctx);
+                    self.config_changed = Instant::now().into();
+                }
+            }
+        }
+
+        let line_stroke = Stroke::new(1.0, Color32::GRAY.gamma_multiply(0.5));
+
+        for i in 0..=53 {
+            let x = top_left.x + i as f32 * cell_width + horizontal_offset;
+            let y_min = image_rect.y_range().start() + vertical_offset;
+            let y_max = image_rect.y_range().end() + vertical_offset;
+            painter.vline(x, y_min..=y_max, line_stroke);
+        }
+        for i in 0..=20 {
+            let x_min = image_rect.x_range().start() + horizontal_offset;
+            let x_max = image_rect.x_range().end() + horizontal_offset;
+            let y = top_left.y + i as f32 * cell_height + vertical_offset;
+            painter.hline(x_min..=x_max, y, line_stroke);
+        }
     }
 
     fn rendering_options(&mut self, ui: &mut Ui) {

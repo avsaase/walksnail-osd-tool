@@ -10,7 +10,7 @@ readme = "README.md"
 license = "GPL-3.0"
 
 [dependencies]
-confy = "0.5.1"
+confy = { version = "0.5.1", features = ["ron_conf"], default-features = false }
 crossbeam-channel = "0.5.7"
 derivative = "2.2.0"
 directories = "4.0.1"
@@ -29,6 +29,7 @@ rfd = "0.11.1"
 rusttype = "0.9.3"
 semver = "1.0.17"
 serde = { version = "1.0.159", features = ["derive"] }
+serde-big-array = "0.5.1"
 srtparse = "0.2.0"
 thiserror = "1.0.38"
 tracing = "0.1.37"

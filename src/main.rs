@@ -1,6 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // Hide console on Windows in release builds
 #![allow(clippy::too_many_arguments)]
 #![allow(clippy::collapsible_else_if)]
+#![feature(let_chains)]
 
 use eframe::IconData;
 use egui::vec2;

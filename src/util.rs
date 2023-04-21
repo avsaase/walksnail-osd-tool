@@ -8,11 +8,9 @@ use tracing_subscriber::{filter, prelude::__tracing_subscriber_SubscriberExt, ut
 
 use crate::util::build_info::Build;
 
-#[derive(Debug, Clone, Default, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Copy, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct Coordinates<T> {
-    #[serde(rename = "x_position")]
     pub x: T,
-    #[serde(rename = "y_position")]
     pub y: T,
 }
 

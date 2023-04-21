@@ -6,7 +6,7 @@ use crate::{font, osd, ui::OsdOptions};
 pub fn overlay_osd(image: &mut RgbaImage, osd_frame: &osd::Frame, font: &font::FontFile, osd_options: &OsdOptions) {
     // TODO: check if this can be run in parallel
     for character in &osd_frame.glyphs {
-        if character.index == 0 {
+        if character.index == 0 || osd_options.get_mask(&character.grid_position) {
             continue;
         }
         if let Some(character_image) = font.characters.get(character.index as usize) {

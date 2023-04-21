@@ -10,15 +10,13 @@ pub struct AppConfig {
     pub osd_options: OsdOptions,
     pub srt_options: SrtOptions,
     pub app_update: AppUpdate,
-    // #[derivative(Default(value = "true"))]
-    // pub check_updates_on_startup: bool,
 }
 
 impl AppConfig {
     #[tracing::instrument(ret)]
     pub fn load_or_create() -> Self {
         let config: Result<Self, _> = confy::load("Walksnail OSD Tool", "saved_settings");
-        if let Err(ConfyError::BadTomlData(_)) = config {
+        if let Err(ConfyError::BadRonData(_)) = config {
             tracing::warn!("Invalid config found, resetting to default");
             let default_config = AppConfig::default();
             default_config.save();
@@ -44,7 +42,6 @@ impl From<&mut WalksnailOsdTool> for AppConfig {
             osd_options: app_state.osd_options.clone(),
             srt_options: app_state.srt_options.clone(),
             app_update: app_state.app_update.clone(),
-            // check_updates_on_startup: app_state.app_update.check_on_startup,
         }
     }
 }
