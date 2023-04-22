@@ -83,7 +83,6 @@ impl WalksnailOsdTool {
         };
         let app_update = AppUpdate {
             promise,
-            // check_on_startup: config.check_updates_on_startup,
             ..Default::default()
         };
 
