@@ -333,14 +333,16 @@ impl WalksnailOsdTool {
     }
 
     fn poll_update_check(&mut self) {
-        if !self.app_update.check_finished
-            && let Some(promise) = &self.app_update.promise
-            && let Some(result) = promise.ready() {
-                self.app_update.check_finished = true;
-                if let Ok(Some(latest_release)) = result {
-                    self.app_update.new_release = Some(latest_release.clone());
-                    self.app_update.window_open = true;
-                };
+        if !self.app_update.check_finished {
+            if let Some(promise) = &self.app_update.promise {
+                if let Some(result) = promise.ready() {
+                    self.app_update.check_finished = true;
+                    if let Ok(Some(latest_release)) = result {
+                        self.app_update.new_release = Some(latest_release.clone());
+                        self.app_update.window_open = true;
+                    };
+                }
+            }
         }
     }
 

@@ -285,14 +285,20 @@ impl WalksnailOsdTool {
                     painter.rect_filled(rect, 0.0, Color32::RED.gamma_multiply(0.5));
                 }
 
-                if let Some(hover_pos) = ctx.pointer_hover_pos() && rect.contains(hover_pos) {
-                    painter.rect_filled(rect, 0.0, Color32::RED.gamma_multiply(0.2));
+                if let Some(hover_pos) = ctx.pointer_hover_pos() {
+                    if rect.contains(hover_pos) {
+                        painter.rect_filled(rect, 0.0, Color32::RED.gamma_multiply(0.2));
+                    }
                 }
 
-                if response.clicked() && let Some(click_position) = ctx.pointer_interact_pos() && rect.contains(click_position){
-                    self.osd_options.toggle_mask(grid_position);
-                    self.update_osd_preview(ctx);
-                    self.config_changed = Instant::now().into();
+                if response.clicked() {
+                    if let Some(click_pos) = ctx.pointer_interact_pos() {
+                        if rect.contains(click_pos) {
+                            self.osd_options.toggle_mask(grid_position);
+                            self.update_osd_preview(ctx);
+                            self.config_changed = Instant::now().into();
+                        }
+                    }
                 }
             }
         }
