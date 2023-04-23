@@ -1,7 +1,6 @@
 use std::{
     collections::HashSet,
     path::PathBuf,
-    rc::Rc,
     time::{Duration, Instant},
 };
 
@@ -40,9 +39,7 @@ pub struct WalksnailOsdTool {
     pub to_ffmpeg_sender: Option<Sender<ToFfmpegMessage>>,
     pub from_ffmpeg_receiver: Option<Receiver<FromFfmpegMessage>>,
     pub render_status: RenderStatus,
-    pub encoders: Vec<Rc<Encoder>>,
-    pub show_undetected_encoders: bool,
-    pub selected_encoder_idx: usize,
+    pub encoders: Vec<Encoder>,
     pub dependencies: Dependencies,
     pub render_settings: RenderSettings,
     pub osd_preview: OsdPreview,
@@ -92,7 +89,7 @@ impl WalksnailOsdTool {
                 ffmpeg_path,
                 ffprobe_path,
             },
-            encoders: encoders.into_iter().map(Rc::new).collect(),
+            encoders,
             srt_font: Some(srt_font),
             osd_options,
             srt_options,

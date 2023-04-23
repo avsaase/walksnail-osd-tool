@@ -333,13 +333,14 @@ impl WalksnailOsdTool {
     }
 
     fn rendering_options(&mut self, ui: &mut Ui) {
+        let mut changed = false;
         CollapsingHeader::new(RichText::new("Rendering Options").heading())
             .default_open(true)
             .show_unindented(ui, |ui| {
                 let selectable_encoders = self
                     .encoders
                     .iter()
-                    .filter(|e| self.show_undetected_encoders || e.detected)
+                    .filter(|e| self.render_settings.show_undetected_encoders || e.detected)
                     .collect::<Vec<_>>();
 
                 Grid::new("render_options")
@@ -350,7 +351,7 @@ impl WalksnailOsdTool {
                         ui.horizontal(|ui| {
                             let selection = egui::ComboBox::from_id_source("encoder").width(350.0).show_index(
                                 ui,
-                                &mut self.selected_encoder_idx,
+                                &mut self.render_settings.selected_encoder_idx,
                                 selectable_encoders.len(),
                                 |i| {
                                     selectable_encoders
@@ -362,26 +363,32 @@ impl WalksnailOsdTool {
                             if selection.changed() {
                                 // This is a little hacky but it's nice to have a single struct that keeps track of all render settings
                                 self.render_settings.encoder =
-                                    (*selectable_encoders.get(self.selected_encoder_idx).unwrap()).clone()
+                                    (*selectable_encoders.get(self.render_settings.selected_encoder_idx).unwrap()).clone();
+                                
+                                changed |= true;
                             }
+
                             if ui
-                                .add(Checkbox::without_text(&mut self.show_undetected_encoders))
-                                .changed()
-                            {
-                                self.selected_encoder_idx = 0;
-                                tracing::info!("Set show undetected encoders: {}", self.show_undetected_encoders);
+                                .add(Checkbox::without_text(&mut self.render_settings.show_undetected_encoders))
+                                .changed() {
+                                    self.render_settings.selected_encoder_idx = 0;
+                                    changed |= true;
                             }
                         });
                         ui.end_row();
 
                         ui.label("Encoding bitrate").on_hover_text(tooltip_text("Target bitrate of the rendered video."));
-                        ui.add(Slider::new(&mut self.render_settings.bitrate_mbps, 0..=100).text("Mbps"));
+                        changed |= ui.add(Slider::new(&mut self.render_settings.bitrate_mbps, 0..=100).text("Mbps")).changed();
                         ui.end_row();
 
                         ui.label("Upscale to 1440p").on_hover_text(tooltip_text("Upscale the output video to 1440p to get better quality after uplaoding to YouTube."));
-                        ui.add(Checkbox::without_text(&mut self.render_settings.upscale));
+                        changed|= ui.add(Checkbox::without_text(&mut self.render_settings.upscale)).changed();
                         ui.end_row();
                     });
             });
+
+            if changed {
+                self.config_changed = Some(Instant::now());
+            }
     }
 }

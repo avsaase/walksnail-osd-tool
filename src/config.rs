@@ -2,13 +2,17 @@ use confy::ConfyError;
 use derivative::Derivative;
 use serde::{Deserialize, Serialize};
 
-use crate::ui::{AppUpdate, OsdOptions, SrtOptions, WalksnailOsdTool};
+use crate::{
+    ffmpeg::RenderSettings,
+    ui::{AppUpdate, OsdOptions, SrtOptions, WalksnailOsdTool},
+};
 
 #[derive(Debug, Deserialize, Serialize, Derivative)]
 #[derivative(Default)]
 pub struct AppConfig {
     pub osd_options: OsdOptions,
     pub srt_options: SrtOptions,
+    pub render_options: RenderSettings,
     pub app_update: AppUpdate,
 }
 
@@ -41,6 +45,7 @@ impl From<&mut WalksnailOsdTool> for AppConfig {
         Self {
             osd_options: app_state.osd_options.clone(),
             srt_options: app_state.srt_options.clone(),
+            render_options: app_state.render_settings.clone(),
             app_update: app_state.app_update.clone(),
         }
     }

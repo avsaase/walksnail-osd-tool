@@ -1,8 +1,9 @@
 use rayon::prelude::*;
+use serde::{Deserialize, Serialize};
 
 use std::{fmt::Display, path::PathBuf, process::Command};
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub enum Codec {
     H264,
     H265,
@@ -17,7 +18,7 @@ impl Display for Codec {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct Encoder {
     pub name: String,
     pub codec: Codec,
