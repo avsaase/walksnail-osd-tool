@@ -9,7 +9,7 @@ use crate::util::Coordinates;
 
 use super::{
     osd_preview::{calculate_horizontal_offset, calculate_vertical_offset},
-    utils::separator_with_space,
+    utils::{separator_with_space, tooltip_text},
     WalksnailOsdTool,
 };
 
@@ -45,7 +45,8 @@ impl WalksnailOsdTool {
                 Grid::new("osd_options")
                     .min_col_width(self.ui_dimensions.options_column1_width)
                     .show(ui, |ui| {
-                        ui.label("Horizontal position");
+                        ui.label("Horizontal position")
+                            .on_hover_text(tooltip_text("Horizontal position of the flight controller OSD (pixels from the left edge of the video)."));
                         ui.horizontal(|ui| {
                             changed |= ui
                                 .add(Slider::new(&mut self.osd_options.position.x, -200..=700).text("Pixels"))
@@ -76,7 +77,8 @@ impl WalksnailOsdTool {
 
                         //
 
-                        ui.label("Vertical position");
+                        ui.label("Vertical position")
+                            .on_hover_text(tooltip_text("Vertical position of the flight controller OSD (pixels from the top of the video).").small());
                         ui.horizontal(|ui| {
                             changed |= ui
                                 .add(Slider::new(&mut self.osd_options.position.y, -200..=700).text("Pixels"))
@@ -105,7 +107,8 @@ impl WalksnailOsdTool {
                         });
                         ui.end_row();
 
-                        ui.label("Mask");
+                        ui.label("Mask")
+                            .on_hover_text(tooltip_text("When all files are loaded, click edit to select OSD elements on the preview that should not be rendered on the video. This can be useful to hide GPS coordinates, etc."));
                         ui.horizontal(|ui| {
                             if !self.osd_preview.mask_edit_mode_enabled {
                                 if ui.button("Edit").clicked() {
@@ -126,7 +129,8 @@ impl WalksnailOsdTool {
                         });
                         ui.end_row();
 
-                        ui.label("Adjust playback speed");
+                        ui.label("Adjust playback speed")
+                            .on_hover_text(tooltip_text("Correct for wrong OSD frame timestamps in <=32.37.10 firmwares that causes video and OSD to get out of sync."));
                         ui.horizontal(|ui| {
                             changed |= ui
                                 .add(Checkbox::without_text(&mut self.osd_options.adjust_playback_speed))
@@ -150,7 +154,9 @@ impl WalksnailOsdTool {
                 Grid::new("srt_options")
                     .min_col_width(self.ui_dimensions.options_column1_width)
                     .show(ui, |ui| {
-                        ui.label("Horizontal position");
+                        ui.label("Horizontal position").on_hover_text(tooltip_text(
+                            "Horizontal position of the SRT data (% of the total video width from the left edge).",
+                        ));
                         ui.horizontal(|ui| {
                             changed |= ui
                                 .add(Slider::new(&mut self.srt_options.position.x, 0.0..=100.0).fixed_decimals(1))
@@ -163,7 +169,9 @@ impl WalksnailOsdTool {
                         });
                         ui.end_row();
 
-                        ui.label("Vertical position");
+                        ui.label("Vertical position").on_hover_text(tooltip_text(
+                            "Vertical position of the SR data (% of video height from the top edge).",
+                        ));
                         ui.horizontal(|ui| {
                             changed |= ui
                                 .add(Slider::new(&mut self.srt_options.position.y, 0.0..=100.0).fixed_decimals(1))
@@ -176,7 +184,8 @@ impl WalksnailOsdTool {
                         });
                         ui.end_row();
 
-                        ui.label("Size");
+                        ui.label("Size")
+                            .on_hover_text(tooltip_text("Font size of the SRT data."));
                         ui.horizontal(|ui| {
                             changed |= ui
                                 .add(Slider::new(&mut self.srt_options.scale, 10.0..=60.0).fixed_decimals(1))
@@ -189,7 +198,9 @@ impl WalksnailOsdTool {
                         });
                         ui.end_row();
 
-                        ui.label("Elements");
+                        ui.label("SRT data").on_hover_text(tooltip_text(
+                            "Select data from the SRT file to be rendered on the video.",
+                        ));
                         let options = &mut self.srt_options;
                         let has_distance = self.srt_file.as_ref().map(|s| s.has_distance).unwrap_or(true);
                         Grid::new("srt_selection").show(ui, |ui| {
@@ -232,7 +243,9 @@ impl WalksnailOsdTool {
                     }
 
                     ui.horizontal(|ui| {
-                        ui.label("Preview frame");
+                        ui.label("Preview frame").on_hover_text(tooltip_text(
+                            "The selected frame is also used for centering the OSD under OSD Options.",
+                        ));
                         let preview_frame_slider = ui.add(
                             Slider::new(
                                 &mut self.osd_preview.preview_frame,
@@ -332,7 +345,8 @@ impl WalksnailOsdTool {
                 Grid::new("render_options")
                     .min_col_width(self.ui_dimensions.options_column1_width)
                     .show(ui, |ui| {
-                        ui.label("Encoder");
+                        ui.label("Encoder")
+                            .on_hover_text(tooltip_text("Encoder used for rendering. In some cases not all available encoders are detected. Check the box to also show these."));
                         ui.horizontal(|ui| {
                             let selection = egui::ComboBox::from_id_source("encoder").width(350.0).show_index(
                                 ui,
@@ -351,20 +365,20 @@ impl WalksnailOsdTool {
                                     (*selectable_encoders.get(self.selected_encoder_idx).unwrap()).clone()
                             }
                             if ui
-                                .checkbox(&mut self.show_undetected_encoders, "Show undeteced encoders")
+                                .add(Checkbox::without_text(&mut self.show_undetected_encoders))
                                 .changed()
                             {
                                 self.selected_encoder_idx = 0;
-                                tracing::info!("Toggled show undetected encoders: {}", self.show_undetected_encoders);
-                            };
+                                tracing::info!("Set show undetected encoders: {}", self.show_undetected_encoders);
+                            }
                         });
                         ui.end_row();
 
-                        ui.label("Encoding bitrate");
+                        ui.label("Encoding bitrate").on_hover_text(tooltip_text("Target bitrate of the rendered video."));
                         ui.add(Slider::new(&mut self.render_settings.bitrate_mbps, 0..=100).text("Mbps"));
                         ui.end_row();
 
-                        ui.label("Upscale to 1440p");
+                        ui.label("Upscale to 1440p").on_hover_text(tooltip_text("Upscale the output video to 1440p to get better quality after uplaoding to YouTube."));
                         ui.add(Checkbox::without_text(&mut self.render_settings.upscale));
                         ui.end_row();
                     });

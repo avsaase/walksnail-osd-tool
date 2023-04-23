@@ -3,7 +3,7 @@ use std::{
     time::{Duration, Instant},
 };
 
-use egui::{Margin, Separator, Ui};
+use egui::{FontFamily, FontId, Margin, RichText, Separator, TextStyle, Ui};
 
 use crate::{ffmpeg::VideoInfo, font::FontFile, osd::OsdFile, srt::SrtFile};
 
@@ -106,7 +106,7 @@ pub fn get_output_video_path(input_video_path: &Path) -> PathBuf {
 pub fn set_style(ctx: &egui::Context) {
     use egui::{
         FontFamily::{Monospace, Proportional},
-        FontId, Style, TextStyle,
+        Style,
     };
     let mut style = Style::clone(&ctx.style());
     style.text_styles = [
@@ -115,6 +115,7 @@ pub fn set_style(ctx: &egui::Context) {
         (TextStyle::Button, FontId::new(15.0, Proportional)),
         (TextStyle::Heading, FontId::new(17.0, Proportional)),
         (TextStyle::Monospace, FontId::new(14.0, Monospace)),
+        (TextStyle::Name("Tooltip".into()), FontId::new(14.0, Proportional)),
     ]
     .into();
     style.spacing.window_margin = Margin {
@@ -124,6 +125,10 @@ pub fn set_style(ctx: &egui::Context) {
         bottom: 20.0,
     };
     ctx.set_style(style);
+}
+
+pub fn tooltip_text(text: &str) -> RichText {
+    RichText::new(text).font(FontId::new(14.0, FontFamily::Proportional))
 }
 
 pub fn set_custom_fonts(ctx: &egui::Context) {

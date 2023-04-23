@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Option to adjust OSD playback speed to correct for OSD lag with <=32.37.10 firmware.
 - Check for app updates during startup.
 - Hide/mask OSD elements from the rendered video ([demo](https://i.imgur.com/u8xi2tX.mp4)).
+- Tooltips explaining options and settings.
 
 ### Changed
 - When loading a SRT file with distance data the distance checkbox doesn't get automatically checked.
