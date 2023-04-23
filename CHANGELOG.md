@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [0.2.0] - 2023-04-23
+
 ### Added
 - Save OSD and SRT options between program runs.
 - Custom position and text size of SRT data.
@@ -18,12 +20,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - When loading a SRT file with distance data the distance checkbox doesn't get automatically checked.
 - Options sections can be collapsed to save screen space.
 
-## [0.1.0]
+## [0.1.0] - 2023-03-31
 
 ### Fixed
 - Parsing of firmware version 32.37.10 SRT data.
 
-## [0.1.0-beta4]
+## [0.1.0-beta4] - 2023-03-28
 
 ### Added
 - Render data from the SRT file on the video. Select which values are rendered.
@@ -37,7 +39,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Fixed
 - Show correct number of characters in font file.
 
-## [0.1.0-beta3] - 2023-03-23
+## [0.1.0-beta3] - 2023-03-21
 
 ### Added
 - Open files by dropping them on the window.
