@@ -372,6 +372,8 @@ impl WalksnailOsdTool {
                                 .add(Checkbox::without_text(&mut self.render_settings.show_undetected_encoders))
                                 .changed() {
                                     self.render_settings.selected_encoder_idx = 0;
+                                    self.render_settings.encoder =
+                                        (*selectable_encoders.first().unwrap()).clone();
                                     changed |= true;
                             }
                         });
