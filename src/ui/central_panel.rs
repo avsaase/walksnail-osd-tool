@@ -1,8 +1,8 @@
 use std::time::Instant;
 
 use egui::{
-    vec2, CentralPanel, Checkbox, CollapsingHeader, Color32, CursorIcon, Grid, Image, Rect, RichText, ScrollArea,
-    Sense, Slider, Stroke, Ui,
+    vec2, Button, CentralPanel, Checkbox, CollapsingHeader, Color32, CursorIcon, Grid, Image, Rect, RichText,
+    ScrollArea, Sense, Slider, Stroke, Ui,
 };
 
 use crate::util::Coordinates;
@@ -108,16 +108,12 @@ impl WalksnailOsdTool {
                         ui.end_row();
 
                         ui.label("Mask")
-                            .on_hover_text(tooltip_text("When all files are loaded, click edit to select OSD elements on the preview that should not be rendered on the video. This can be useful to hide GPS coordinates, etc."));
+                            .on_hover_text(tooltip_text("Click edit to select OSD elements on the preview that should not be rendered on the video. This can be useful to hide GPS coordinates, etc."));
                         ui.horizontal(|ui| {
-                            if !self.osd_preview.mask_edit_mode_enabled {
-                                if ui.button("Edit").clicked() {
-                                    self.osd_preview.mask_edit_mode_enabled = true;
-                                }
-                            } else {
-                                if ui.button("Save").clicked() {
-                                    self.osd_preview.mask_edit_mode_enabled = false;
-                                }
+                            let txt = if !self.osd_preview.mask_edit_mode_enabled || !self.all_files_loaded() {"Edit"} else {"Save"};
+                            if ui.add_enabled(self.all_files_loaded(), Button::new(txt))
+                                .on_disabled_hover_text(tooltip_text("First load the input files")).clicked() {
+                                self.osd_preview.mask_edit_mode_enabled = !self.osd_preview.mask_edit_mode_enabled;
                             }
                             if ui.button("Reset").clicked() {
                                 self.osd_options.reset_mask();
@@ -130,7 +126,7 @@ impl WalksnailOsdTool {
                         ui.end_row();
 
                         ui.label("Adjust playback speed")
-                            .on_hover_text(tooltip_text("Correct for wrong OSD frame timestamps in <=32.37.10 firmwares that causes video and OSD to get out of sync."));
+                            .on_hover_text(tooltip_text("Attempt to correct for wrong OSD timestamps in <=32.37.10 firmwares that causes video and OSD to get out of sync."));
                         ui.horizontal(|ui| {
                             changed |= ui
                                 .add(Checkbox::without_text(&mut self.osd_options.adjust_playback_speed))
@@ -364,7 +360,6 @@ impl WalksnailOsdTool {
                                 // This is a little hacky but it's nice to have a single struct that keeps track of all render settings
                                 self.render_settings.encoder =
                                     (*selectable_encoders.get(self.render_settings.selected_encoder_idx).unwrap()).clone();
-                                
                                 changed |= true;
                             }
 
@@ -389,8 +384,8 @@ impl WalksnailOsdTool {
                     });
             });
 
-            if changed {
-                self.config_changed = Some(Instant::now());
-            }
+        if changed {
+            self.config_changed = Some(Instant::now());
+        }
     }
 }
