@@ -8,6 +8,8 @@ use tracing_subscriber::{filter, prelude::__tracing_subscriber_SubscriberExt, ut
 
 use crate::util::build_info::Build;
 
+pub const NAMESPACE: &str = "walksnail-osd-tool";
+
 #[derive(Debug, Clone, Default, Copy, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct Coordinates<T> {
     pub x: T,

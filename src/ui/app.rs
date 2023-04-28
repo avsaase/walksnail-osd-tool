@@ -72,6 +72,10 @@ impl WalksnailOsdTool {
         let srt_options = config.srt_options;
         let osd_options = config.osd_options;
 
+        // Load last used font file
+        let font_path = PathBuf::from(config.font_path);
+        let font_file = font::FontFile::open(font_path).ok();
+
         // Check for app updates
         let promise = if config.app_update.check_on_startup {
             Promise::spawn_thread("check_updates", check_updates).into()
@@ -93,6 +97,7 @@ impl WalksnailOsdTool {
             srt_font: Some(srt_font),
             osd_options,
             srt_options,
+            font_file,
             app_update,
             ..Default::default()
         }
