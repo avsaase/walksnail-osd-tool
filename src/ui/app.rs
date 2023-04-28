@@ -71,7 +71,6 @@ impl WalksnailOsdTool {
         let config = AppConfig::load_or_create();
         let srt_options = config.srt_options;
         let osd_options = config.osd_options;
-        let render_settings = config.render_options;
 
         // Load last used font file
         let mut font_file = None;
@@ -103,7 +102,6 @@ impl WalksnailOsdTool {
             srt_font: Some(srt_font),
             osd_options,
             srt_options,
-            render_settings,
             font_file,
             app_update,
             ..Default::default()
