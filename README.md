@@ -13,18 +13,19 @@ Cross-platform tool for rendering the flight controller OSD and SRT data from th
 
 
 ## Features
-- [x] Easy to use graphical user interface.
-- [x] Native installer for Windows, App bundle for MacOS.
-- [x] Hardware-accelerated encoding powered by ffmpeg.
-- [x] Choose between H.264 and H.265 codecs (more can be added later).
-- [x] View basic information about the video, OSD, SRT and font files.
-- [x] Preview OSD frames before rendering.
-- [x] Automatically center the OSD or position it manually.
-- [x] Display info from the SRT file on the video.
-- [x] Selectable output video bitrate (more encoder settings will be added later).
-- [x] Upscale output video to 1440p for higher quality when uploading to YouTube.
-- [ ] Mask OSD items.
-- [ ] Anything else? Open a feature request [here](https://github.com/avsaase/walksnail-osd-tool/issues/new?assignees=&labels=enhancement&template=feature_request.yaml).
+- Easy to use graphical user interface.
+- Native installer for Windows, App bundle for MacOS.
+- Hardware-accelerated encoding powered by ffmpeg.
+- Choose between H.264 and H.265 codecs (more can be added later).
+- View basic information about the video, OSD, SRT and font files.
+- Preview OSD frames before rendering.
+- Automatically center the OSD or position it manually.
+- Render selected info from the SRT file.
+- Selectable output video bitrate (more encoder settings will be added later).
+- Upscale output video to 1440p for higher quality when uploading to YouTube.
+- Mask OSD items ([demo](https://imgur.com/u8xi2tX)).
+
+Anything else? Open a feature request [here](https://github.com/avsaase/walksnail-osd-tool/issues/new?assignees=&labels=enhancement&template=feature_request.yaml).
 
 ## Installation
 
