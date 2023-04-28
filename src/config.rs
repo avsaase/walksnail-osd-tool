@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     ffmpeg::RenderSettings,
     ui::{AppUpdate, OsdOptions, SrtOptions, WalksnailOsdTool},
+    util::NAMESPACE,
 };
 
 #[derive(Debug, Deserialize, Serialize, Derivative)]
@@ -17,13 +18,12 @@ pub struct AppConfig {
     pub font_path: String,
 }
 
-const CONFIG_NAMESPACE: &str = "walksnail-osd-tool";
 const CONFIG_NAME: &str = "saved_settings";
 
 impl AppConfig {
     #[tracing::instrument(ret)]
     pub fn load_or_create() -> Self {
-        let config: Result<Self, _> = confy::load(CONFIG_NAMESPACE, CONFIG_NAME);
+        let config: Result<Self, _> = confy::load(NAMESPACE, CONFIG_NAME);
         if let Err(ConfyError::BadRonData(_)) = config {
             tracing::warn!("Invalid config found, resetting to default");
             let default_config = AppConfig::default();
@@ -39,7 +39,7 @@ impl AppConfig {
 
     #[tracing::instrument]
     pub fn save(&self) {
-        confy::store(CONFIG_NAMESPACE, CONFIG_NAME, self)
+        confy::store(NAMESPACE, CONFIG_NAME, self)
             .map_err(|e| tracing::error!("Failed to save config file, {}", e))
             .ok();
     }
