@@ -73,13 +73,8 @@ impl WalksnailOsdTool {
         let osd_options = config.osd_options;
 
         // Load last used font file
-        let mut font_file = None;
         let font_path = PathBuf::from(config.font_path);
-        if font_path.exists() && font_path.is_file() {
-            if let Ok(f) = font::FontFile::open(font_path) {
-                font_file = Some(f);
-            }
-        }
+        let font_file = font::FontFile::open(font_path).ok();
 
         // Check for app updates
         let promise = if config.app_update.check_on_startup {
