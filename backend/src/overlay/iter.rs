@@ -10,8 +10,9 @@ use image::RgbaImage;
 
 use crate::{
     ffmpeg::{handle_decoder_events, FromFfmpegMessage, ToFfmpegMessage},
-    font, osd, srt,
-    ui::{OsdOptions, SrtOptions},
+    font,
+    osd::{self, OsdOptions},
+    srt::{self, SrtOptions},
 };
 
 use super::{overlay_osd, overlay_srt_data};

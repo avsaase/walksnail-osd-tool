@@ -1,10 +1,9 @@
 use egui::{CollapsingHeader, RichText, Ui};
 use egui_extras::{Column, TableBuilder};
 
-use super::{
-    utils::{format_minutes_seconds, separator_with_space},
-    WalksnailOsdTool,
-};
+use crate::util::{format_minutes_seconds, separator_with_space};
+
+use super::WalksnailOsdTool;
 
 impl WalksnailOsdTool {
     pub fn render_sidepanel(&mut self, ctx: &egui::Context) {

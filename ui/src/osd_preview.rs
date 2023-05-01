@@ -1,12 +1,10 @@
-use image::RgbaImage;
-
-use crate::{
-    font, osd,
+use backend::{
+    font,
+    osd::{self, OsdOptions},
     overlay::{overlay_osd, overlay_srt_data},
-    srt,
+    srt::{self, SrtOptions},
 };
-
-use super::{OsdOptions, SrtOptions};
+use image::RgbaImage;
 
 #[tracing::instrument(skip(osd_frame, srt_frame, font), level = "debug")]
 pub fn create_osd_preview(

@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use crate::ffmpeg::{FromFfmpegMessage, VideoInfo};
+use backend::ffmpeg::{FromFfmpegMessage, VideoInfo};
 
 #[derive(Default)]
 pub struct RenderStatus {

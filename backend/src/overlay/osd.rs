@@ -1,6 +1,9 @@
 use image::{imageops::overlay, RgbaImage};
 
-use crate::{font, osd, ui::OsdOptions};
+use crate::{
+    font,
+    osd::{self, OsdOptions},
+};
 
 #[inline]
 pub fn overlay_osd(image: &mut RgbaImage, osd_frame: &osd::Frame, font: &font::FontFile, osd_options: &OsdOptions) {

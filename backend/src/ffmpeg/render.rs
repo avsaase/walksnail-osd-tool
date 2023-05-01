@@ -12,10 +12,10 @@ use ffmpeg_sidecar::{
 };
 
 use crate::{
-    font, osd,
+    font,
+    osd::{self, OsdOptions},
     overlay::FrameOverlayIter,
-    srt,
-    ui::{OsdOptions, SrtOptions},
+    srt::{self, SrtOptions},
 };
 
 use super::{render_settings::RenderSettings, Encoder, FromFfmpegMessage, ToFfmpegMessage, VideoInfo};

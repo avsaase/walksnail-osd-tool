@@ -1,53 +1,5 @@
-[package]
-name = "walksnail-osd-tool"
-version = "0.2.0"
-edition = "2021"
-description = "Cross-platform tool for rendering the flight controller OSD and SRT data from the Walksnail Avatar HD FPV system on top of the goggle or VRX recording."
-authors = ["Alexander van Saase"]
-keywords = ["Walksnail Avatar", "FPV", "Video"]
-repository = "https://github.com/avsaase/walksnail-osd-tool"
-readme = "README.md"
-license = "GPL-3.0"
-
-[dependencies]
-confy = { version = "0.5.1", features = ["ron_conf"], default-features = false }
-crossbeam-channel = "0.5.7"
-derivative = "2.2.0"
-directories = "4.0.1"
-eframe = "0.21.3"
-egui = "0.21.0"
-egui_extras = { version = "0.21.0", features = ["image"] }
-ffmpeg-sidecar = "0.3.2"
-ffprobe = { git = "https://github.com/avsaase/ffprobe-rs/", branch = "suppress-console-windows" }
-github_release_check = "0.2.1"
-image = "0.24.5"
-imageproc = "0.23.0"
-parse-display = "0.8.0"
-poll-promise = "0.2.0"
-rayon = "1.6.1"
-rfd = "0.11.1"
-rusttype = "0.9.3"
-semver = "1.0.17"
-serde = { version = "1.0.159", features = ["derive"] }
-serde-big-array = "0.5.1"
-srtparse = "0.2.0"
-thiserror = "1.0.38"
-tracing = "0.1.37"
-tracing-appender = { version = "0.2.2", default-features = false }
-tracing-subscriber = "0.3.16"
-
-# Use local version of egui and friends
-# eframe = { path = "../egui/crates/eframe" }
-# egui = { path = "../egui/crates/egui" }
-# egui_extras = { path = "../egui/crates/egui_extras", features = ["image"] }
-
-[build-dependencies]
-image = "0.24.5"
-vergen = "7.5.1"
-
-[features]
-macos-app-bundle = []
-windows-installer = []
+[workspace]
+members = ["ui", "backend"]
 
 [profile.dev]
 opt-level = 3
@@ -55,19 +7,3 @@ opt-level = 3
 [profile.release]
 lto = "fat"
 codegen-units = 1
-
-[package.metadata.bundle]
-name = "Walksnail OSD Tool"
-identifier = "org.avsaase.walksnail-osd-tool"
-icon = [
-    "resources/icons/16x16.png",
-    "resources/icons/16x16@2x.png",
-    "resources/icons/32x32.png",
-    "resources/icons/32x32@2x.png",
-    "resources/icons/128x128.png",
-    "resources/icons/128x128@2x.png",
-    "resources/icons/256x256.png",
-    "resources/icons/256x256@2x.png",
-    "resources/icons/512x512.png",
-    "resourcescd /icons/512x512@2x.png",
-]

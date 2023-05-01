@@ -2,25 +2,24 @@
 #![allow(clippy::too_many_arguments)]
 #![allow(clippy::collapsible_else_if)]
 
+use app::WalksnailOsdTool;
+use backend::{
+    config::AppConfig,
+    ffmpeg::{ffmpeg_available, ffprobe_available, Encoder},
+};
 use eframe::IconData;
-use egui::vec2;
-use ffmpeg::Encoder;
-use ui::WalksnailOsdTool;
+use poll_promise::Promise;
 
-use crate::dependencies::{ffmpeg_available, ffprobe_available};
+use crate::util::check_updates;
 
-mod config;
-mod dependencies;
-mod ffmpeg;
-mod font;
-mod osd;
-mod overlay;
-mod srt;
-mod ui;
+mod app;
+mod bottom_panel;
+mod central_panel;
+mod osd_preview;
+mod render_status;
+mod side_panel;
+mod top_panel;
 mod util;
-
-#[cfg(target_os = "windows")]
-const CREATE_NO_WINDOW: u32 = 0x08000000;
 
 fn main() -> Result<(), eframe::Error> {
     let _guard = util::init_tracing();
@@ -47,6 +46,13 @@ fn main() -> Result<(), eframe::Error> {
         vec![]
     };
 
+    let config = AppConfig::load_or_create();
+    let promise = if config.app_update.check_on_startup {
+        Promise::spawn_thread("check_updates", check_updates).into()
+    } else {
+        None
+    };
+
     let icon_data = IconData {
         rgba: include_bytes!(concat!(env!("OUT_DIR"), "/icon_bytes")).to_vec(),
         width: 256,
@@ -55,8 +61,8 @@ fn main() -> Result<(), eframe::Error> {
 
     let options = eframe::NativeOptions {
         drag_and_drop_support: true,
-        initial_window_size: Some(vec2(1000.0, 700.0)),
-        min_window_size: Some(vec2(600.0, 300.0)),
+        initial_window_size: Some([1000.0, 700.0].into()),
+        min_window_size: Some([600.0, 300.0].into()),
         icon_data: Some(icon_data),
         ..Default::default()
     };
@@ -71,6 +77,10 @@ fn main() -> Result<(), eframe::Error> {
                 ffmpeg_path,
                 ffprobe_path,
                 encoders,
+                config,
+                build_info::get_version().to_string(),
+                build_info::get_target().to_string(),
+                promise,
             ))
         }),
     )

@@ -1,15 +1,14 @@
 use std::time::Instant;
 
+use backend::util::Coordinates;
 use egui::{
     vec2, Button, CentralPanel, Checkbox, CollapsingHeader, Color32, CursorIcon, Grid, Image, Rect, RichText,
     ScrollArea, Sense, Slider, Stroke, Ui,
 };
 
-use crate::util::Coordinates;
-
-use super::{
+use crate::{
     osd_preview::{calculate_horizontal_offset, calculate_vertical_offset},
-    utils::{separator_with_space, tooltip_text},
+    util::{separator_with_space, tooltip_text},
     WalksnailOsdTool,
 };
 

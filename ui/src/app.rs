@@ -1,9 +1,15 @@
 use std::{
-    collections::HashSet,
     path::PathBuf,
     time::{Duration, Instant},
 };
 
+use backend::{
+    config::AppConfig,
+    ffmpeg::{Encoder, FromFfmpegMessage, RenderSettings, ToFfmpegMessage, VideoInfo},
+    font::{self, FontFile},
+    osd::{OsdFile, OsdOptions},
+    srt::{SrtFile, SrtOptions},
+};
 use crossbeam_channel::{Receiver, Sender};
 use derivative::Derivative;
 use egui::{
@@ -11,30 +17,21 @@ use egui::{
 };
 use github_release_check::{GitHubReleaseItem, LookupError};
 use poll_promise::Promise;
-use serde::{Deserialize, Serialize};
 
 use crate::{
-    config::AppConfig,
-    ffmpeg::{Encoder, FromFfmpegMessage, RenderSettings, ToFfmpegMessage, VideoInfo},
-    font, osd, srt,
-    util::{build_info, check_updates, Coordinates},
-};
-
-use super::{
     osd_preview::create_osd_preview,
-    utils::{set_custom_fonts, set_style},
-    RenderStatus,
+    render_status::RenderStatus,
+    util::{set_custom_fonts, set_style},
 };
 
 #[derive(Default)]
-
 pub struct WalksnailOsdTool {
     pub config_changed: Option<Instant>,
     pub video_file: Option<PathBuf>,
     pub video_info: Option<VideoInfo>,
-    pub osd_file: Option<osd::OsdFile>,
-    pub font_file: Option<font::FontFile>,
-    pub srt_file: Option<srt::SrtFile>,
+    pub osd_file: Option<OsdFile>,
+    pub font_file: Option<FontFile>,
+    pub srt_file: Option<SrtFile>,
     pub ui_dimensions: UiDimensions,
     pub to_ffmpeg_sender: Option<Sender<ToFfmpegMessage>>,
     pub from_ffmpeg_receiver: Option<Receiver<FromFfmpegMessage>>,
@@ -49,6 +46,8 @@ pub struct WalksnailOsdTool {
     pub about_window_open: bool,
     pub dark_mode: bool,
     pub app_update: AppUpdate,
+    pub app_version: String,
+    pub target: String,
 }
 
 impl WalksnailOsdTool {
@@ -58,6 +57,10 @@ impl WalksnailOsdTool {
         ffmpeg_path: PathBuf,
         ffprobe_path: PathBuf,
         encoders: Vec<Encoder>,
+        saved_settings: AppConfig,
+        app_version: String,
+        target: String,
+        update_check_promise: Option<Promise<Result<Option<GitHubReleaseItem>, LookupError>>>,
     ) -> Self {
         set_style(ctx);
         let mut visuals = Visuals::light();
@@ -68,22 +71,15 @@ impl WalksnailOsdTool {
         let srt_font: rusttype::Font<'static> =
             rusttype::Font::try_from_bytes(include_bytes!("../../resources/fonts/AzeretMono-Regular.ttf")).unwrap();
 
-        let config = AppConfig::load_or_create();
-        let srt_options = config.srt_options;
-        let osd_options = config.osd_options;
+        let srt_options = saved_settings.srt_options;
+        let osd_options = saved_settings.osd_options;
 
         // Load last used font file
-        let font_path = PathBuf::from(config.font_path);
+        let font_path = PathBuf::from(saved_settings.font_path);
         let font_file = font::FontFile::open(font_path).ok();
 
-        // Check for app updates
-        let promise = if config.app_update.check_on_startup {
-            Promise::spawn_thread("check_updates", check_updates).into()
-        } else {
-            None
-        };
         let app_update = AppUpdate {
-            promise,
+            promise: update_check_promise,
             ..Default::default()
         };
 
@@ -99,6 +95,8 @@ impl WalksnailOsdTool {
             srt_options,
             font_file,
             app_update,
+            app_version,
+            target,
             ..Default::default()
         }
     }
@@ -118,65 +116,6 @@ pub struct OsdPreview {
     #[derivative(Default(value = "1"))]
     pub preview_frame: u32,
     pub mask_edit_mode_enabled: bool,
-}
-
-#[derive(Clone, Serialize, Deserialize, Derivative)]
-#[derivative(Default, Debug)]
-pub struct OsdOptions {
-    pub position: Coordinates<i32>,
-    #[derivative(Default(value = "true"))]
-    pub adjust_playback_speed: bool,
-    #[derivative(Default(value = "1.0"))]
-    #[serde(skip)]
-    pub osd_playback_speed_factor: f32,
-    pub masked_grid_positions: HashSet<Coordinates<u32>>,
-}
-
-impl OsdOptions {
-    pub fn get_mask(&self, position: &Coordinates<u32>) -> bool {
-        self.masked_grid_positions.contains(position)
-    }
-
-    pub fn toggle_mask(&mut self, position: Coordinates<u32>) {
-        if self.masked_grid_positions.contains(&position) {
-            self.masked_grid_positions.remove(&position);
-        } else {
-            self.masked_grid_positions.insert(position);
-        }
-    }
-
-    pub fn reset_mask(&mut self) {
-        self.masked_grid_positions.clear();
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SrtOptions {
-    pub position: Coordinates<f32>,
-    pub scale: f32,
-    pub show_time: bool,
-    pub show_sbat: bool,
-    pub show_gbat: bool,
-    pub show_signal: bool,
-    pub show_latency: bool,
-    pub show_bitrate: bool,
-    pub show_distance: bool,
-}
-
-impl Default for SrtOptions {
-    fn default() -> Self {
-        Self {
-            position: Coordinates::new(1.5, 95.0),
-            scale: 35.0,
-            show_time: false,
-            show_sbat: false,
-            show_gbat: false,
-            show_signal: true,
-            show_latency: true,
-            show_bitrate: true,
-            show_distance: true,
-        }
-    }
 }
 
 pub struct UiDimensions {
@@ -199,19 +138,14 @@ impl Default for UiDimensions {
     }
 }
 
-#[derive(Derivative, Deserialize, Serialize)]
+#[derive(Derivative)]
 #[derivative(Default, Debug)]
 pub struct AppUpdate {
-    #[serde(skip)]
     #[derivative(Debug = "ignore")]
     pub promise: Option<Promise<Result<Option<GitHubReleaseItem>, LookupError>>>,
-    #[serde(skip)]
     pub new_release: Option<GitHubReleaseItem>,
-    #[serde(skip)]
     pub window_open: bool,
-    #[serde(skip)]
     pub check_finished: bool,
-    #[derivative(Default(value = "true"))]
     pub check_on_startup: bool,
 }
 
@@ -363,7 +297,7 @@ impl WalksnailOsdTool {
 
                         Grid::new("update").spacing(vec2(10.0, 5.0)).show(ui, |ui| {
                             ui.label("Current version:");
-                            ui.label(build_info::get_version().to_string());
+                            ui.label(&self.app_version);
                             ui.end_row();
 
                             ui.label("New version:");

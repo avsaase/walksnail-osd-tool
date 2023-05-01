@@ -106,24 +106,23 @@ impl WalksnailOsdTool {
                     ui.add_space(10.0);
 
                     egui::Grid::new("about").spacing(vec2(10.0, 5.0)).show(ui, |ui| {
-                        use crate::util::build_info::*;
                         ui.label("Author:");
                         ui.label("Alexander van Saase");
                         ui.end_row();
 
                         ui.label("Version:");
-                        let version = get_version().to_string();
+                        let version = &self.app_version;
                         if ui
-                            .add(Label::new(&version).sense(Sense::click()))
+                            .add(Label::new(version).sense(Sense::click()))
                             .on_hover_text_at_pointer("Double-click to copy to clipboard")
                             .double_clicked()
                         {
-                            ui.output_mut(|o| o.copied_text = version);
+                            ui.output_mut(|o| o.copied_text = version.clone());
                         }
                         ui.end_row();
 
                         ui.label("Target:");
-                        ui.label(get_target());
+                        ui.label(&self.target);
                         ui.end_row();
 
                         ui.label("License:");

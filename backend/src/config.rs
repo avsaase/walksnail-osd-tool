@@ -2,11 +2,7 @@ use confy::ConfyError;
 use derivative::Derivative;
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    ffmpeg::RenderSettings,
-    ui::{AppUpdate, OsdOptions, SrtOptions, WalksnailOsdTool},
-    util::NAMESPACE,
-};
+use crate::{ffmpeg::RenderSettings, osd::OsdOptions, srt::SrtOptions, util::AppUpdate, NAMESPACE};
 
 #[derive(Debug, Deserialize, Serialize, Derivative)]
 #[derivative(Default)]
@@ -42,23 +38,5 @@ impl AppConfig {
         confy::store(NAMESPACE, CONFIG_NAME, self)
             .map_err(|e| tracing::error!("Failed to save config file, {}", e))
             .ok();
-    }
-}
-
-impl From<&mut WalksnailOsdTool> for AppConfig {
-    fn from(app_state: &mut WalksnailOsdTool) -> Self {
-        Self {
-            osd_options: app_state.osd_options.clone(),
-            srt_options: app_state.srt_options.clone(),
-            render_options: app_state.render_settings.clone(),
-            app_update: app_state.app_update.clone(),
-            font_path: app_state
-                .font_file
-                .as_ref()
-                .map(|f| f.file_path.clone())
-                .unwrap_or_default()
-                .to_string_lossy()
-                .to_string(),
-        }
     }
 }

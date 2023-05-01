@@ -1,7 +1,7 @@
 use image::{Rgba, RgbaImage};
 use imageproc::drawing::draw_text_mut;
 
-use crate::{srt::SrtFrameData, ui::SrtOptions};
+use crate::srt::{SrtFrameData, SrtOptions};
 
 #[inline]
 pub fn overlay_srt_data(

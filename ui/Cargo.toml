@@ -1,0 +1,57 @@
+[package]
+name = "walksnail-osd-tool"
+version = "0.2.0"
+edition = "2021"
+description = "Cross-platform tool for rendering the flight controller OSD and SRT data from the Walksnail Avatar HD FPV system on top of the goggle or VRX recording."
+authors = ["Alexander van Saase"]
+keywords = ["Walksnail Avatar", "FPV", "Video"]
+repository = "https://github.com/avsaase/walksnail-osd-tool"
+readme = "README.md"
+license = "GPL-3.0"
+
+[[bin]]
+name = "walksnail-osd-tool"
+
+[dependencies.backend]
+path = "../backend"
+
+[dependencies]
+crossbeam-channel = "0.5.8"
+derivative = "2.2.0"
+eframe = "0.21.3"
+egui = "0.21.0"
+egui_extras = { version = "0.21.0", features = ["image"] }
+github_release_check = "0.2.1"
+image = "0.24.6"
+poll-promise = "0.2.0"
+rfd = "0.11.1"
+rusttype = "0.9.3"
+tracing = "0.1.37"
+tracing-appender = { version = "0.2.2", default-features = false }
+tracing-subscriber = "0.3.16"
+directories = "5.0.0"
+semver = "1.0.17"
+
+[build-dependencies]
+image = "0.24.5"
+vergen = "7.5.1"
+
+[features]
+macos-app-bundle = []
+windows-installer = []
+
+[package.metadata.bundle]
+name = "Walksnail OSD Tool"
+identifier = "org.avsaase.walksnail-osd-tool"
+icon = [
+    "resources/icons/16x16.png",
+    "resources/icons/16x16@2x.png",
+    "resources/icons/32x32.png",
+    "resources/icons/32x32@2x.png",
+    "resources/icons/128x128.png",
+    "resources/icons/128x128@2x.png",
+    "resources/icons/256x256.png",
+    "resources/icons/256x256@2x.png",
+    "resources/icons/512x512.png",
+    "resources/icons/512x512@2x.png",
+]

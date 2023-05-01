@@ -1,3 +1,4 @@
+mod dependencies;
 mod encoders;
 mod error;
 mod message;
@@ -5,6 +6,8 @@ mod render;
 mod render_settings;
 mod video_info;
 
+pub use dependencies::ffmpeg_available;
+pub use dependencies::ffprobe_available;
 pub use encoders::Codec;
 pub use encoders::Encoder;
 pub use message::FromFfmpegMessage;
