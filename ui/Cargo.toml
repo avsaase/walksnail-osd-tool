@@ -43,6 +43,7 @@ windows-installer = []
 [package.metadata.bundle]
 name = "Walksnail OSD Tool"
 identifier = "org.avsaase.walksnail-osd-tool"
+osx_minimum_system_version = "10.11"
 icon = [
     "resources/icons/16x16.png",
     "resources/icons/16x16@2x.png",
