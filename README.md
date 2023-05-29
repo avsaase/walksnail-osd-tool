@@ -46,6 +46,9 @@ If you think this is annoying you can donate some money [here](https://www.buyme
 ### Linux
 The project builds on Ubuntu in CI but I haven't tried runnning it myself. I don't know enough about packaging for Linux to make release binaries so for now you need to build from source.
 
+### OSD Font Files
+This repo contains some font files from Betaflight, ArduPilot and INAV. These can be found in [resources/osd/](https://github.com/avsaase/walksnail-osd-tool/tree/master/resources/osd).
+
 ### Building from source
 1. Install the [Rust toolchain](https://www.rust-lang.org/tools/install).
 2. Run `cargo install --git https://github.com/avsaase/walksnail-osd-tool.git`. The executable will be installed in `$HOME/.cargo/bin/` and added to your path.
