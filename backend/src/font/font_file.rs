@@ -38,11 +38,15 @@ impl FontFile {
 }
 
 fn verify_dimensions(width: u32, height: u32) -> Result<(), FontFileError> {
-    if (width != CharacterSize::Large.width() && width != CharacterSize::Small.width()) || height % width != 0 {
-        return Err(FontFileError::InvalidFontFileDimensions {
-            dimensions: Dimension { width, height },
-        });
-    }
+    let small_characters = width == CharacterSize::Small.width();
+    let large_characters = width == CharacterSize::Large.width();
+
+    if (!small_characters && !large_characters) || 
+        (height % CharacterSize::Small.height() != 0 && height % CharacterSize::Large.height() != 0) {
+            return Err(FontFileError::InvalidFontFileDimensions {
+                dimensions: Dimension { width, height },
+            });
+        }
 
     Ok(())
 }
