@@ -16,6 +16,9 @@ pub enum FontFileError {
         source: image::ImageError,
     },
 
-    #[error("Invalid fond file size")]
+    #[error("Invalid fond file dimensions {dimensions}")]
     InvalidFontFileDimensions { dimensions: Dimension<u32> },
+
+    #[error("Invalid fond file width {width}")]
+    InvalidFontFileWidth { width: u32 },
 }

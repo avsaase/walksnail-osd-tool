@@ -1,5 +1,7 @@
 use std::fmt::Display;
 
+use super::FontFileError;
+
 const CHARACTER_WIDTH_LARGE: u32 = 36;
 const CHARACTER_HEIGHT_LARGE: u32 = 54;
 const CHARACTER_WIDTH_SMALL: u32 = 24;
@@ -12,11 +14,11 @@ pub enum CharacterSize {
 }
 
 impl CharacterSize {
-    pub fn from_width(width: u32) -> Self {
+    pub fn from_width(width: u32) -> Result<Self, FontFileError> {
         match width {
-            CHARACTER_WIDTH_LARGE => Self::Large,
-            CHARACTER_WIDTH_SMALL => Self::Small,
-            _ => panic!("Invalid OSD character width"),
+            CHARACTER_WIDTH_LARGE => Ok(Self::Large),
+            CHARACTER_WIDTH_SMALL => Ok(Self::Small),
+            _ => Err(FontFileError::InvalidFontFileWidth { width }),
         }
     }
 

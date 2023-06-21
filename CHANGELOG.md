@@ -9,6 +9,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Added
 - Load last used OSD font file on startup (@dz0ny).
 
+### Fixed
+- Bug that caused font files with unexpected number of characters to not open.
+
 ## [0.2.0] - 2023-04-23
 
 ### Added

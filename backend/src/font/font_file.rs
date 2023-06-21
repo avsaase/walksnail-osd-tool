@@ -22,8 +22,8 @@ impl FontFile {
     pub fn open(path: PathBuf) -> Result<Self, FontFileError> {
         let font_image = Reader::open(&path)?.decode()?;
         let (width, height) = font_image.dimensions();
-        verify_dimensions(width, height)?;
-        let character_size = CharacterSize::from_width(width);
+        let character_size = CharacterSize::from_width(width)?;
+        verify_dimensions(width, height, &character_size)?;
         let character_count = height / character_size.height();
 
         let characters = split_characters(&font_image, &character_size, character_count);
@@ -37,8 +37,8 @@ impl FontFile {
     }
 }
 
-fn verify_dimensions(width: u32, height: u32) -> Result<(), FontFileError> {
-    if (width != CharacterSize::Large.width() && width != CharacterSize::Small.width()) || height % width != 0 {
+fn verify_dimensions(width: u32, height: u32, character_size: &CharacterSize) -> Result<(), FontFileError> {
+    if height % character_size.height() != 0 {
         return Err(FontFileError::InvalidFontFileDimensions {
             dimensions: Dimension { width, height },
         });
