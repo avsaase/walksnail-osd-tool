@@ -9,6 +9,8 @@ pub struct RenderSettings {
     pub show_undetected_encoders: bool,
     pub bitrate_mbps: u32,
     pub upscale: bool,
+    pub use_chroma_key: bool,
+    pub chroma_key: [f32; 3],
 }
 
 impl Default for RenderSettings {
@@ -24,6 +26,8 @@ impl Default for RenderSettings {
             show_undetected_encoders: false,
             bitrate_mbps: 40,
             upscale: false,
+            use_chroma_key: false,
+            chroma_key: [1.0 / 255.0, 177.0 / 255.0, 64.0 / 255.0],
         }
     }
 }

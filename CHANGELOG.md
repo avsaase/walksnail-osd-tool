@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 - Load last used OSD font file on startup (@dz0ny).
+- Option to render video with a chroma key background instead of the input video so the OSD can be overlayed in a video editor.
 
 ### Fixed
 - Bug that caused font files with unexpected number of characters to not open.

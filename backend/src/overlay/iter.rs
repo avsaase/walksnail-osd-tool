@@ -6,7 +6,7 @@ use ffmpeg_sidecar::{
     event::{FfmpegEvent, OutputVideoFrame},
     iter::FfmpegIterator,
 };
-use image::RgbaImage;
+use image::{Rgba, RgbaImage};
 
 use crate::{
     ffmpeg::{handle_decoder_events, FromFfmpegMessage, ToFfmpegMessage},
@@ -30,6 +30,7 @@ pub struct FrameOverlayIter<'a> {
     current_srt_frame: srt::SrtFrame,
     ffmpeg_sender: Sender<FromFfmpegMessage>,
     ffmpeg_receiver: Receiver<ToFfmpegMessage>,
+    chroma_key: Option<Rgba<u8>>,
 }
 
 impl<'a> FrameOverlayIter<'a> {
@@ -45,11 +46,14 @@ impl<'a> FrameOverlayIter<'a> {
         srt_options: &SrtOptions,
         ffmpeg_sender: Sender<FromFfmpegMessage>,
         ffmpeg_receiver: Receiver<ToFfmpegMessage>,
+        chroma_key: Option<[f32; 3]>,
     ) -> Self {
         let mut osd_frames_iter = osd_frames.into_iter();
         let mut srt_frames_iter = srt_frames.into_iter();
         let first_osd_frame = osd_frames_iter.next().unwrap();
         let first_srt_frame = srt_frames_iter.next().unwrap();
+        let chroma_key =
+            chroma_key.map(|c| Rgba([(c[0] * 255.0) as u8, (c[1] * 255.0) as u8, (c[2] * 255.0) as u8, 255]));
         Self {
             decoder_iter,
             decoder_process,
@@ -63,6 +67,7 @@ impl<'a> FrameOverlayIter<'a> {
             current_srt_frame: first_srt_frame,
             ffmpeg_sender,
             ffmpeg_receiver,
+            chroma_key,
         }
     }
 }
@@ -95,8 +100,12 @@ impl Iterator for FrameOverlayIter<'_> {
                     }
                 }
 
-                let mut frame_image =
-                    RgbaImage::from_raw(video_frame.width, video_frame.height, video_frame.data).unwrap();
+                let mut frame_image = if let Some(chroma_key) = self.chroma_key {
+                    RgbaImage::from_pixel(video_frame.width, video_frame.height, chroma_key)
+                } else {
+                    RgbaImage::from_raw(video_frame.width, video_frame.height, video_frame.data).unwrap()
+                };
+
                 overlay_osd(
                     &mut frame_image,
                     &self.current_osd_frame,

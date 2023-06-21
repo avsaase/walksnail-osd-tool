@@ -378,7 +378,14 @@ impl WalksnailOsdTool {
                         ui.end_row();
 
                         ui.label("Upscale to 1440p").on_hover_text(tooltip_text("Upscale the output video to 1440p to get better quality after uplaoding to YouTube."));
-                        changed|= ui.add(Checkbox::without_text(&mut self.render_settings.upscale)).changed();
+                        changed |= ui.add(Checkbox::without_text(&mut self.render_settings.upscale)).changed();
+                        ui.end_row();
+
+                        ui.label("Chroma key").on_hover_text(tooltip_text("Render the video with a chroma key instead of the input video so the OSD can be overlay in video editing software."));
+                        ui.horizontal(|ui| {
+                            changed |= ui.add(Checkbox::without_text(&mut self.render_settings.use_chroma_key)).changed();
+                            changed |= ui.color_edit_button_rgb(&mut self.render_settings.chroma_key).changed();
+                        });
                         ui.end_row();
                     });
             });

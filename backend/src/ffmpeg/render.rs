@@ -65,6 +65,11 @@ pub fn start_video_render(
         srt_options,
         from_ffmpeg_tx.clone(),
         to_ffmpeg_rx,
+        if render_settings.use_chroma_key {
+            Some(render_settings.chroma_key)
+        } else {
+            None
+        },
     );
 
     // On another thread run the decoder iterator to completion and feed the output to the encoder's stdin
