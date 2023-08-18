@@ -1,8 +1,11 @@
-[target.x86_64-pc-windows-msvc]
-rustflags = ["-C", "target-feature=+crt-static"]
+# [target.x86_64-pc-windows-msvc]
+# rustflags = ["-C", "target-feature=+crt-static"]
 
-[target.i686-pc-windows-msvc]
-rustflags = ["-C", "target-feature=+crt-static"]
+# [target.i686-pc-windows-msvc]
+# rustflags = ["-C", "target-feature=+crt-static"]
 
-[registries.crates-io]
-protocol = "sparse"
+# [registries.crates-io]
+# protocol = "sparse"
+
+# [build]
+# rustflags = ["-C", "link-arg=-fuse-ld=lld"]

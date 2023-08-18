@@ -1,9 +1,9 @@
 [workspace]
 members = ["ui", "backend"]
+resolver = "2"
 
 [profile.dev]
 opt-level = 3
 
 [profile.release]
 lto = "fat"
-codegen-units = 1
