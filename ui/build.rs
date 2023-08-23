@@ -1,4 +1,5 @@
 use std::process::Command;
+
 use vergen::{vergen, Config};
 
 fn main() {

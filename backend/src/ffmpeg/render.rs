@@ -11,14 +11,13 @@ use ffmpeg_sidecar::{
     event::{FfmpegEvent, LogLevel},
 };
 
+use super::{render_settings::RenderSettings, Encoder, FromFfmpegMessage, ToFfmpegMessage, VideoInfo};
 use crate::{
     font,
     osd::{self, OsdOptions},
     overlay::FrameOverlayIter,
     srt::{self, SrtOptions},
 };
-
-use super::{render_settings::RenderSettings, Encoder, FromFfmpegMessage, ToFfmpegMessage, VideoInfo};
 
 #[tracing::instrument(skip(osd_frames, srt_frames, font_file), err)]
 pub fn start_video_render(

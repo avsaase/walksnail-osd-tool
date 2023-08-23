@@ -1,7 +1,7 @@
+use std::{fmt::Display, path::PathBuf, process::Command};
+
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
-
-use std::{fmt::Display, path::PathBuf, process::Command};
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub enum Codec {

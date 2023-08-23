@@ -2,9 +2,8 @@ use std::{fs, path::PathBuf, time::Duration};
 
 use derivative::Derivative;
 
-use crate::osd::frame::Frame;
-
 use super::{error::OsdFileError, fc_firmware::FcFirmware};
+use crate::osd::frame::Frame;
 
 const HEADER_BYTES: usize = 40;
 const FC_TYPE_BYTES: usize = 4;
