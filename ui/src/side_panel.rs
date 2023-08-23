@@ -1,9 +1,9 @@
+use backend::font::FontType;
 use egui::{CollapsingHeader, RichText, Ui};
 use egui_extras::{Column, TableBuilder};
 
-use crate::util::{format_minutes_seconds, separator_with_space};
-
 use super::WalksnailOsdTool;
+use crate::util::{format_minutes_seconds, separator_with_space};
 
 impl WalksnailOsdTool {
     pub fn render_sidepanel(&mut self, ctx: &egui::Context) {
@@ -305,7 +305,14 @@ impl WalksnailOsdTool {
                                 });
                                 row.col(|ui| {
                                     if let Some(font_file) = font_file {
-                                        ui.label(font_file.character_count.to_string());
+                                        match font_file.font_type {
+                                            FontType::SinglePage => {
+                                                ui.label(font_file.character_count.to_string());
+                                            }
+                                            FontType::FourPage => {
+                                                ui.label(format!("{} (4 pages)", font_file.character_count / 4));
+                                            }
+                                        };
                                     } else {
                                         ui.label("-");
                                     }

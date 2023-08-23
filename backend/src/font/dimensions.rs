@@ -1,11 +1,9 @@
 use std::fmt::Display;
 
-use super::FontFileError;
-
-const CHARACTER_WIDTH_LARGE: u32 = 36;
-const CHARACTER_HEIGHT_LARGE: u32 = 54;
-const CHARACTER_WIDTH_SMALL: u32 = 24;
-const CHARACTER_HEIGHT_SMALL: u32 = 36;
+pub(crate) const CHARACTER_WIDTH_LARGE: u32 = 36;
+pub(crate) const CHARACTER_HEIGHT_LARGE: u32 = 54;
+pub(crate) const CHARACTER_WIDTH_SMALL: u32 = 24;
+pub(crate) const CHARACTER_HEIGHT_SMALL: u32 = 36;
 
 #[derive(Debug, Clone)]
 pub enum CharacterSize {
@@ -14,14 +12,6 @@ pub enum CharacterSize {
 }
 
 impl CharacterSize {
-    pub fn from_width(width: u32) -> Result<Self, FontFileError> {
-        match width {
-            CHARACTER_WIDTH_LARGE => Ok(Self::Large),
-            CHARACTER_WIDTH_SMALL => Ok(Self::Small),
-            _ => Err(FontFileError::InvalidFontFileWidth { width }),
-        }
-    }
-
     pub fn width(&self) -> u32 {
         match self {
             CharacterSize::Large => CHARACTER_WIDTH_LARGE,
@@ -47,5 +37,20 @@ impl Display for CharacterSize {
                 CharacterSize::Small => "Small",
             }
         )
+    }
+}
+
+#[derive(Debug, Clone)]
+pub enum FontType {
+    SinglePage,
+    FourPage,
+}
+
+impl FontType {
+    pub fn pages(&self) -> u32 {
+        match self {
+            FontType::SinglePage => 1,
+            FontType::FourPage => 4,
+        }
     }
 }

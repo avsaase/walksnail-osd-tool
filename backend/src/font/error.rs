@@ -21,4 +21,7 @@ pub enum FontFileError {
 
     #[error("Invalid fond file width {width}")]
     InvalidFontFileWidth { width: u32 },
+
+    #[error("Invalid fond file height {height}")]
+    InvalidFontFileHeight { height: u32 },
 }
