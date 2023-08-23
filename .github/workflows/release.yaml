@@ -3,13 +3,7 @@ name: Release
 permissions:
   contents: write
 
-on:
-  push:
-    branches: 
-      - master
-    tags:
-      - v[0-9]+.*
-  pull_request:
+on: [push, pull_request]
 
 jobs:
   build:
