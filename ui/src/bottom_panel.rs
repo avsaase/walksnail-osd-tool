@@ -1,9 +1,8 @@
 use backend::ffmpeg::{start_video_render, ToFfmpegMessage};
 use egui::{vec2, Align, Button, Color32, Layout, ProgressBar, RichText, Ui};
 
-use crate::{render_status::Status, util::get_output_video_path};
-
 use super::{util::format_minutes_seconds, WalksnailOsdTool};
+use crate::{render_status::Status, util::get_output_video_path};
 
 impl WalksnailOsdTool {
     pub fn render_bottom_panel(&mut self, ctx: &egui::Context) {

@@ -1,7 +1,7 @@
-mod character_size;
+mod dimensions;
 mod error;
 mod font_file;
 
-pub use character_size::CharacterSize;
+pub use dimensions::{CharacterSize, FontType};
 pub use error::FontFileError;
 pub use font_file::FontFile;

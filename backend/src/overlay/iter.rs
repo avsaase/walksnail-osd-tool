@@ -8,14 +8,13 @@ use ffmpeg_sidecar::{
 };
 use image::{Rgba, RgbaImage};
 
+use super::{overlay_osd, overlay_srt_data};
 use crate::{
     ffmpeg::{handle_decoder_events, FromFfmpegMessage, ToFfmpegMessage},
     font,
     osd::{self, OsdOptions},
     srt::{self, SrtOptions},
 };
-
-use super::{overlay_osd, overlay_srt_data};
 
 pub struct FrameOverlayIter<'a> {
     decoder_iter: FfmpegIterator,

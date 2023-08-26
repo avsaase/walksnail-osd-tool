@@ -11,9 +11,8 @@ use semver::Version;
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::{filter, prelude::__tracing_subscriber_SubscriberExt, util::SubscriberInitExt, Layer};
 
-use crate::util::build_info::Build;
-
 use super::WalksnailOsdTool;
+use crate::util::build_info::Build;
 
 impl WalksnailOsdTool {
     pub fn all_files_loaded(&self) -> bool {

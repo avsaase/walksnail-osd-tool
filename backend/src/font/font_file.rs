@@ -3,9 +3,10 @@ use std::path::PathBuf;
 use derivative::Derivative;
 use image::{io::Reader, DynamicImage, GenericImageView, ImageBuffer, Rgba, RgbaImage};
 
-use crate::util::Dimension;
-
-use super::{character_size::CharacterSize, error::FontFileError};
+use super::{
+    dimensions::{detect_dimensions, CharacterSize, FontType},
+    error::FontFileError,
+};
 
 #[derive(Derivative, Clone)]
 #[derivative(Debug)]
@@ -13,6 +14,7 @@ pub struct FontFile {
     pub file_path: PathBuf,
     pub character_count: u32,
     pub character_size: CharacterSize,
+    pub font_type: FontType,
     #[derivative(Debug = "ignore")]
     pub characters: Vec<RgbaImage>,
 }
@@ -22,44 +24,40 @@ impl FontFile {
     pub fn open(path: PathBuf) -> Result<Self, FontFileError> {
         let font_image = Reader::open(&path)?.decode()?;
         let (width, height) = font_image.dimensions();
-        let character_size = CharacterSize::from_width(width)?;
-        verify_dimensions(width, height, &character_size)?;
-        let character_count = height / character_size.height();
+        let (character_size, font_type, character_count) = detect_dimensions(width, height)?;
 
-        let characters = split_characters(&font_image, &character_size, character_count);
+        let characters = split_characters(&font_image, &character_size, &font_type, character_count);
 
         Ok(Self {
             file_path: path,
             character_count,
             character_size,
+            font_type,
             characters,
         })
     }
 }
 
-fn verify_dimensions(width: u32, height: u32, character_size: &CharacterSize) -> Result<(), FontFileError> {
-    if height % character_size.height() != 0 {
-        return Err(FontFileError::InvalidFontFileDimensions {
-            dimensions: Dimension { width, height },
-        });
-    }
-
-    Ok(())
-}
-
 fn split_characters(
     font_image: &DynamicImage,
     character_size: &CharacterSize,
+    font_type: &FontType,
     character_count: u32,
 ) -> Vec<ImageBuffer<Rgba<u8>, Vec<u8>>> {
-    let image_height = font_image.height();
+    let pages = font_type.pages();
     let char_width = character_size.width();
     let char_height = character_size.height();
 
-    let mut char_vec = Vec::with_capacity(character_count as usize);
-    for y in (0..image_height).step_by(char_height as usize) {
-        let char = font_image.view(0, y, char_width, char_height).to_image();
-        char_vec.push(char);
+    let mut char_vec = Vec::with_capacity((character_count * pages) as usize);
+
+    for page_idx in 0..pages {
+        let x = page_idx * char_width;
+        for char_idx in 0..character_count {
+            let y = char_idx * char_height;
+            let char = font_image.view(x, y, char_width, char_height).to_image();
+            char_vec.push(char);
+        }
     }
+
     char_vec
 }

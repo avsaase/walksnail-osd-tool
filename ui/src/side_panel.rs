@@ -1,9 +1,9 @@
+use backend::font::FontType;
 use egui::{CollapsingHeader, RichText, Ui};
 use egui_extras::{Column, TableBuilder};
 
-use crate::util::{format_minutes_seconds, separator_with_space};
-
 use super::WalksnailOsdTool;
+use crate::util::{format_minutes_seconds, separator_with_space};
 
 impl WalksnailOsdTool {
     pub fn render_sidepanel(&mut self, ctx: &egui::Context) {
@@ -305,7 +305,15 @@ impl WalksnailOsdTool {
                                 });
                                 row.col(|ui| {
                                     if let Some(font_file) = font_file {
-                                        ui.label(font_file.character_count.to_string());
+                                        ui.label(format!(
+                                            "{}{}",
+                                            font_file.character_count,
+                                            if font_file.font_type == FontType::FourColor {
+                                                " (4 colors)"
+                                            } else {
+                                                ""
+                                            }
+                                        ));
                                     } else {
                                         ui.label("-");
                                     }
@@ -317,7 +325,7 @@ impl WalksnailOsdTool {
     }
 }
 
-fn circle_icon(ui: &mut egui::Ui, _openness: f32, response: &egui::Response, loaded: bool) {
+fn circle_icon(ui: &egui::Ui, _openness: f32, response: &egui::Response, loaded: bool) {
     let stroke = ui.style().interact(response).fg_stroke;
     let radius = 3.0;
     if loaded {
