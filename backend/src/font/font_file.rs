@@ -4,7 +4,7 @@ use derivative::Derivative;
 use image::{io::Reader, DynamicImage, GenericImageView, ImageBuffer, Rgba, RgbaImage};
 
 use super::{
-    dimensions::{verify_dimensions, CharacterSize, FontType},
+    dimensions::{detect_dimensions, CharacterSize, FontType},
     error::FontFileError,
 };
 
@@ -24,7 +24,7 @@ impl FontFile {
     pub fn open(path: PathBuf) -> Result<Self, FontFileError> {
         let font_image = Reader::open(&path)?.decode()?;
         let (width, height) = font_image.dimensions();
-        let (character_size, font_type, character_count) = verify_dimensions(width, height)?;
+        let (character_size, font_type, character_count) = detect_dimensions(width, height)?;
 
         let characters = split_characters(&font_image, &character_size, &font_type, character_count);
 

@@ -7,7 +7,7 @@ pub(crate) const CHARACTER_HEIGHT_LARGE: u32 = 54;
 pub(crate) const CHARACTER_WIDTH_SMALL: u32 = 24;
 pub(crate) const CHARACTER_HEIGHT_SMALL: u32 = 36;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum CharacterSize {
     Large,
     Small,
@@ -57,7 +57,7 @@ impl FontType {
     }
 }
 
-pub fn verify_dimensions(width: u32, height: u32) -> Result<(CharacterSize, FontType, u32), FontFileError> {
+pub fn detect_dimensions(width: u32, height: u32) -> Result<(CharacterSize, FontType, u32), FontFileError> {
     let (size, r#type) = if width == CHARACTER_WIDTH_SMALL {
         (CharacterSize::Small, FontType::SinglePage)
     } else if width == CHARACTER_WIDTH_LARGE {
@@ -77,4 +77,33 @@ pub fn verify_dimensions(width: u32, height: u32) -> Result<(CharacterSize, Font
     let characters_count = height / size.height();
 
     Ok((size, r#type, characters_count))
+}
+
+#[cfg(test)]
+mod tests {
+    use claims::{assert_err, assert_ok_eq};
+
+    use super::*;
+
+    #[test]
+    fn detect_valid_font_sizes() {
+        let test_cases = [
+            (36, 13824, CharacterSize::Large, FontType::SinglePage, 256),
+            (24, 18432, CharacterSize::Small, FontType::SinglePage, 512),
+            (36, 27648, CharacterSize::Large, FontType::SinglePage, 512),
+            (96, 9216, CharacterSize::Small, FontType::FourPage, 256),
+            (144, 13824, CharacterSize::Large, FontType::FourPage, 256),
+        ];
+        for test in test_cases {
+            assert_ok_eq!(detect_dimensions(test.0, test.1), (test.2, test.3, test.4));
+        }
+    }
+
+    #[test]
+    fn reject_invalid_font_sizes() {
+        let test_cases = [(36, 13824 + 1), (24 + 1, 18432), (36 - 12, 27648 - 10)];
+        for test in test_cases {
+            assert_err!(detect_dimensions(test.0, test.1));
+        }
+    }
 }
