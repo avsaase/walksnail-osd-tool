@@ -44,28 +44,28 @@ impl Display for CharacterSize {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum FontType {
-    SinglePage,
-    FourPage,
+    Standard,
+    FourColor,
 }
 
 impl FontType {
     pub fn pages(&self) -> u32 {
         match self {
-            FontType::SinglePage => 1,
-            FontType::FourPage => 4,
+            FontType::Standard => 1,
+            FontType::FourColor => 4,
         }
     }
 }
 
 pub fn detect_dimensions(width: u32, height: u32) -> Result<(CharacterSize, FontType, u32), FontFileError> {
     let (size, r#type) = if width == CHARACTER_WIDTH_SMALL {
-        (CharacterSize::Small, FontType::SinglePage)
+        (CharacterSize::Small, FontType::Standard)
     } else if width == CHARACTER_WIDTH_LARGE {
-        (CharacterSize::Large, FontType::SinglePage)
+        (CharacterSize::Large, FontType::Standard)
     } else if width == CHARACTER_WIDTH_SMALL * 4 {
-        (CharacterSize::Small, FontType::FourPage)
+        (CharacterSize::Small, FontType::FourColor)
     } else if width == CHARACTER_WIDTH_LARGE * 4 {
-        (CharacterSize::Large, FontType::FourPage)
+        (CharacterSize::Large, FontType::FourColor)
     } else {
         return Err(FontFileError::InvalidFontFileWidth { width });
     };
@@ -88,11 +88,11 @@ mod tests {
     #[test]
     fn detect_valid_font_sizes() {
         let test_cases = [
-            (36, 13824, CharacterSize::Large, FontType::SinglePage, 256),
-            (24, 18432, CharacterSize::Small, FontType::SinglePage, 512),
-            (36, 27648, CharacterSize::Large, FontType::SinglePage, 512),
-            (96, 9216, CharacterSize::Small, FontType::FourPage, 256),
-            (144, 13824, CharacterSize::Large, FontType::FourPage, 256),
+            (36, 13824, CharacterSize::Large, FontType::Standard, 256),
+            (24, 18432, CharacterSize::Small, FontType::Standard, 512),
+            (36, 27648, CharacterSize::Large, FontType::Standard, 512),
+            (96, 9216, CharacterSize::Small, FontType::FourColor, 256),
+            (144, 13824, CharacterSize::Large, FontType::FourColor, 256),
         ];
         for test in test_cases {
             assert_ok_eq!(detect_dimensions(test.0, test.1), (test.2, test.3, test.4));

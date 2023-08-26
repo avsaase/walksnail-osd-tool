@@ -308,8 +308,8 @@ impl WalksnailOsdTool {
                                         ui.label(format!(
                                             "{}{}",
                                             font_file.character_count,
-                                            if font_file.font_type == FontType::FourPage {
-                                                " (4 pages)"
+                                            if font_file.font_type == FontType::FourColor {
+                                                " (4 colors)"
                                             } else {
                                                 ""
                                             }
