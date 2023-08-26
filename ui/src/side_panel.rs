@@ -305,14 +305,15 @@ impl WalksnailOsdTool {
                                 });
                                 row.col(|ui| {
                                     if let Some(font_file) = font_file {
-                                        match font_file.font_type {
-                                            FontType::SinglePage => {
-                                                ui.label(font_file.character_count.to_string());
+                                        ui.label(format!(
+                                            "{}{}",
+                                            font_file.character_count,
+                                            if font_file.font_type == FontType::FourPage {
+                                                " (4 pages)"
+                                            } else {
+                                                ""
                                             }
-                                            FontType::FourPage => {
-                                                ui.label(format!("{} (4 pages)", font_file.character_count / 4));
-                                            }
-                                        };
+                                        ));
                                     } else {
                                         ui.label("-");
                                     }
