@@ -26,7 +26,7 @@ impl FontFile {
         match path.extension().map(|e| e.to_str().unwrap()) {
             None => panic!(),
             Some("mcm") => {
-                let characters = read_mcm(&path)?;
+                let characters = read_mcm(&path, CharacterSize::Large)?;
                 Ok(Self {
                     file_path: path,
                     character_count: characters.len() as u32,
