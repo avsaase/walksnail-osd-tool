@@ -23,7 +23,7 @@ impl WalksnailOsdTool {
             .clicked()
         {
             if let Some(file_handles) = rfd::FileDialog::new()
-                .add_filter("Avatar files", &["mp4", "osd", "png", "srt"])
+                .add_filter("Avatar files", &["mp4", "osd", "png", "mcm", "srt"])
                 .pick_files()
             {
                 tracing::info!("Opened files {:?}", file_handles);

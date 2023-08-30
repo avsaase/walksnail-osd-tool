@@ -62,10 +62,12 @@ impl WalksnailOsdTool {
     }
 
     pub fn import_font_file(&mut self, file_handles: &[PathBuf]) {
-        if let Some(font_file_path) = filter_file_with_extention(file_handles, "png") {
-            self.font_file = FontFile::open(font_file_path.clone()).ok();
-            self.config_changed = Some(Instant::now());
-        }
+        ["png","mcm"].iter().for_each(|ext|{
+            if let Some(font_file_path) = filter_file_with_extention(file_handles, ext) {
+                self.font_file = FontFile::open(font_file_path.clone()).ok();
+                self.config_changed = Some(Instant::now());
+            }
+        })
     }
 }
 

@@ -2,6 +2,7 @@ use std::path::PathBuf;
 
 use derivative::Derivative;
 use image::{io::Reader, DynamicImage, GenericImageView, ImageBuffer, Rgba, RgbaImage};
+use crate::font::mcm_reader::read_mcm;
 
 use super::{
     dimensions::{detect_dimensions, CharacterSize, FontType},
@@ -22,19 +23,34 @@ pub struct FontFile {
 impl FontFile {
     #[tracing::instrument(ret, err)]
     pub fn open(path: PathBuf) -> Result<Self, FontFileError> {
-        let font_image = Reader::open(&path)?.decode()?;
-        let (width, height) = font_image.dimensions();
-        let (character_size, font_type, character_count) = detect_dimensions(width, height)?;
+        match path.extension().map(|e| e.to_str().unwrap()) {
+            None => panic!(),
+            Some("mcm") => {
+                let characters = read_mcm(&path)?;
+                Ok(Self {
+                    file_path: path,
+                    character_count: characters.len() as u32,
+                    character_size: CharacterSize::Large,
+                    font_type: FontType::Standard,
+                    characters,
+                })
+            }
+            Some(_) => {
+                let font_image = Reader::open(&path)?.decode()?;
+                let (width, height) = font_image.dimensions();
+                let (character_size, font_type, character_count) = detect_dimensions(width, height)?;
 
-        let characters = split_characters(&font_image, &character_size, &font_type, character_count);
+                let characters = split_characters(&font_image, &character_size, &font_type, character_count);
 
-        Ok(Self {
-            file_path: path,
-            character_count,
-            character_size,
-            font_type,
-            characters,
-        })
+                Ok(Self {
+                    file_path: path,
+                    character_count,
+                    character_size,
+                    font_type,
+                    characters,
+                })
+            }
+        }
     }
 }
 
