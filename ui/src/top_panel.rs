@@ -1,4 +1,9 @@
-use egui::{vec2, Align2, Button, Frame, Label, RichText, Sense, Ui, Visuals, Window};
+use std::thread::sleep;
+use std::time::Duration;
+use egui::{Align2, Button, Frame, Label, RichText, Sense, Ui, vec2, Visuals, Window};
+use backend::ffmpeg::start_video_render;
+use crate::render_status::Status;
+use crate::util::get_output_video_path;
 
 use super::WalksnailOsdTool;
 
@@ -9,12 +14,115 @@ impl WalksnailOsdTool {
             ui.horizontal(|ui| {
                 self.import_files(ui, ctx);
                 self.reset_files(ui);
+                self.multi_files(ui, ctx);
+                self.process_multi();
                 ui.add_space(ui.available_width() - 55.0);
                 self.toggle_light_dark_theme(ui, ctx);
                 self.about_window(ui, ctx);
             });
             ui.add_space(3.0);
         });
+    }
+
+    fn process_multi(&mut self) {
+        if self.multi_file_window == false {
+            return;
+        }
+        if self.render_status.is_in_progress() {
+            return;
+        }
+        if self.videos.is_empty() {
+            return;
+        }
+        let video = self.videos.pop().unwrap();
+        &self.import_video_file(&[video.into()]);
+        &self.render_status.start_render();
+        if let (Some(video_path), Some(osd_file), Some(font_file), Some(video_info), Some(srt_file)) = (
+            &self.video_file,
+            &self.osd_file,
+            &self.font_file,
+            &self.video_info,
+            &self.srt_file,
+        ) {
+            self.osd_options.osd_playback_speed_factor = if self.osd_options.adjust_playback_speed {
+                let video_duration = video_info.duration;
+                let osd_duration = osd_file.duration;
+                video_duration.as_secs_f32() / osd_duration.as_secs_f32()
+            } else {
+                1.0
+            };
+            match start_video_render(
+                &self.dependencies.ffmpeg_path,
+                video_path,
+                &get_output_video_path(video_path),
+                osd_file.frames.clone(),
+                srt_file.frames.clone(),
+                font_file.clone(),
+                self.srt_font.as_ref().unwrap().clone(),
+                &self.osd_options,
+                &self.srt_options,
+                video_info,
+                &self.render_settings,
+            ) {
+                Ok((to_ffmpeg_sender, from_ffmpeg_receiver)) => {
+                    self.to_ffmpeg_sender = Some(to_ffmpeg_sender);
+                    self.from_ffmpeg_receiver = Some(from_ffmpeg_receiver);
+                }
+                Err(_) => {
+                    self.render_status.status = Status::Error {
+                        progress_pct: 0.0,
+                        error: "Failed to start video render".to_string(),
+                    }
+                }
+            };
+        }
+    }
+    fn multi_files(&mut self, ui: &mut Ui, ctx: &egui::Context) {
+        if ui
+            .add_enabled(self.all_files_loaded() && self.render_status.is_not_in_progress(), Button::new("Multiple Files"))
+            .clicked()
+        {
+            self.multi_file_window = !self.multi_file_window;
+        }
+
+        if self.multi_file_window {
+            let frame = Frame::window(&ctx.style());
+            Window::new("Multiple Files")
+                .anchor(Align2::CENTER_CENTER, vec2(0.0, 0.0))
+                .frame(frame)
+                .open(&mut self.multi_file_window)
+                .auto_sized()
+                .collapsible(false)
+                .show(ctx, |ui| {
+                    let videos = std::fs::read_dir(self.video_file.as_ref().unwrap().parent().unwrap())
+                        .unwrap()
+                        .filter_map(|res| res.ok())
+                        .map(|dir_entry| dir_entry.path())
+                        .filter(|path| path.extension().map(|a| a == "mp4").unwrap_or(false))
+                        .filter(|path| !path.file_name().map(|file_name| file_name.to_str().unwrap().ends_with("with_osd.mp4")).unwrap_or(false))
+                        .collect::<Vec<_>>();
+                    egui::Grid::new("multi").spacing(vec2(10.0, 5.0)).show(ui, |ui| {
+                        ui.label("File folder:");
+                        ui.label(self.video_file.as_ref().unwrap().parent().unwrap().to_string_lossy());
+                        ui.end_row();
+                        ui.label("Files count:");
+                        ui.label(videos.len().to_string());
+                        ui.end_row();
+                        ui.label("Font file:");
+                        ui.label(self.font_file.as_ref().unwrap()
+                                     .file_path
+                                     .file_name()
+                                     .map(|f| f.to_string_lossy())
+                                     .unwrap_or("-".into()), );
+                        ui.end_row();
+                        let button = ui.add_enabled(self.render_status.is_not_in_progress(), Button::new("Start Bulk process"));
+                        if button.clicked() {
+                            tracing::info!("Start multiple render button clicked");
+                            self.videos = videos;
+                        }
+                    });
+                });
+        }
     }
 
     fn import_files(&mut self, ui: &mut Ui, ctx: &egui::Context) {

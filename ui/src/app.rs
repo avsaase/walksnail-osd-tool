@@ -48,6 +48,8 @@ pub struct WalksnailOsdTool {
     pub app_update: AppUpdate,
     pub app_version: String,
     pub target: String,
+    pub multi_file_window: bool,
+    pub videos: Vec<PathBuf>
 }
 
 impl WalksnailOsdTool {
