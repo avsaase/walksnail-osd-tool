@@ -1,7 +1,7 @@
-use std::thread::sleep;
-use std::time::Duration;
 use egui::{Align2, Button, Frame, Label, RichText, Sense, Ui, vec2, Visuals, Window};
+
 use backend::ffmpeg::start_video_render;
+
 use crate::render_status::Status;
 use crate::util::get_output_video_path;
 

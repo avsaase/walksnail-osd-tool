@@ -3,6 +3,14 @@ use std::{
     time::{Duration, Instant},
 };
 
+use crossbeam_channel::{Receiver, Sender};
+use derivative::Derivative;
+use egui::{
+    Align2, Color32, Frame, Grid, pos2, text::LayoutJob, TextFormat, TextStyle, TextureHandle, vec2, Visuals, Window,
+};
+use github_release_check::{GitHubReleaseItem, LookupError};
+use poll_promise::Promise;
+
 use backend::{
     config::AppConfig,
     ffmpeg::{Encoder, FromFfmpegMessage, RenderSettings, ToFfmpegMessage, VideoInfo},
@@ -10,13 +18,6 @@ use backend::{
     osd::{OsdFile, OsdOptions},
     srt::{SrtFile, SrtOptions},
 };
-use crossbeam_channel::{Receiver, Sender};
-use derivative::Derivative;
-use egui::{
-    pos2, text::LayoutJob, vec2, Align2, Color32, Frame, Grid, TextFormat, TextStyle, TextureHandle, Visuals, Window,
-};
-use github_release_check::{GitHubReleaseItem, LookupError};
-use poll_promise::Promise;
 
 use crate::{
     osd_preview::create_osd_preview,
@@ -49,7 +50,7 @@ pub struct WalksnailOsdTool {
     pub app_version: String,
     pub target: String,
     pub multi_file_window: bool,
-    pub videos: Vec<PathBuf>
+    pub videos: Vec<PathBuf>,
 }
 
 impl WalksnailOsdTool {
