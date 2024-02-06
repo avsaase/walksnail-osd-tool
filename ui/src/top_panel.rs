@@ -1,11 +1,8 @@
-use egui::{Align2, Button, Frame, Label, RichText, Sense, Ui, vec2, Visuals, Window};
-
 use backend::ffmpeg::start_video_render;
-
-use crate::render_status::Status;
-use crate::util::get_output_video_path;
+use egui::{vec2, Align2, Button, Frame, Label, RichText, Sense, Ui, Visuals, Window};
 
 use super::WalksnailOsdTool;
+use crate::{render_status::Status, util::get_output_video_path};
 
 impl WalksnailOsdTool {
     pub fn render_top_panel(&mut self, ctx: &egui::Context) {
@@ -79,7 +76,10 @@ impl WalksnailOsdTool {
     }
     fn multi_files(&mut self, ui: &mut Ui, ctx: &egui::Context) {
         if ui
-            .add_enabled(self.all_files_loaded() && self.render_status.is_not_in_progress(), Button::new("Multiple Files"))
+            .add_enabled(
+                self.all_files_loaded() && self.render_status.is_not_in_progress(),
+                Button::new("Multiple Files"),
+            )
             .clicked()
         {
             self.multi_file_window = !self.multi_file_window;
@@ -99,7 +99,12 @@ impl WalksnailOsdTool {
                         .filter_map(|res| res.ok())
                         .map(|dir_entry| dir_entry.path())
                         .filter(|path| path.extension().map(|a| a == "mp4").unwrap_or(false))
-                        .filter(|path| !path.file_name().map(|file_name| file_name.to_str().unwrap().ends_with("with_osd.mp4")).unwrap_or(false))
+                        .filter(|path| {
+                            !path
+                                .file_name()
+                                .map(|file_name| file_name.to_str().unwrap().ends_with("with_osd.mp4"))
+                                .unwrap_or(false)
+                        })
                         .collect::<Vec<_>>();
                     egui::Grid::new("multi").spacing(vec2(10.0, 5.0)).show(ui, |ui| {
                         ui.label("File folder:");
@@ -109,13 +114,20 @@ impl WalksnailOsdTool {
                         ui.label(videos.len().to_string());
                         ui.end_row();
                         ui.label("Font file:");
-                        ui.label(self.font_file.as_ref().unwrap()
-                                     .file_path
-                                     .file_name()
-                                     .map(|f| f.to_string_lossy())
-                                     .unwrap_or("-".into()), );
+                        ui.label(
+                            self.font_file
+                                .as_ref()
+                                .unwrap()
+                                .file_path
+                                .file_name()
+                                .map(|f| f.to_string_lossy())
+                                .unwrap_or("-".into()),
+                        );
                         ui.end_row();
-                        let button = ui.add_enabled(self.render_status.is_not_in_progress(), Button::new("Start Bulk process"));
+                        let button = ui.add_enabled(
+                            self.render_status.is_not_in_progress(),
+                            Button::new("Start Bulk process"),
+                        );
                         if button.clicked() {
                             tracing::info!("Start multiple render button clicked");
                             self.videos = videos;
