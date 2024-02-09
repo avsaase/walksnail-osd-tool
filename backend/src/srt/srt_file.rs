@@ -6,7 +6,7 @@ use parse_display::ParseError;
 use super::{
     error::SrtFileError,
     frame::{SrtDebugFrameData, SrtFrame},
-    SrtFrameData
+    SrtFrameData,
 };
 
 #[derive(Derivative)]
