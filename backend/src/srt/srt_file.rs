@@ -5,7 +5,7 @@ use parse_display::ParseError;
 
 use super::{
     error::SrtFileError,
-    frame::{SrtDebugFrameData, SrtFrame}
+    frame::{SrtDebugFrameData, SrtFrame},
     SrtFrameData
 };
 
