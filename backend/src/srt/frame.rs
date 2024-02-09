@@ -5,7 +5,7 @@ pub struct SrtFrame {
     pub start_time_secs: f32,
     pub end_time_secs: f32,
     pub data: Option<SrtFrameData>,
-    pub debugData: Option<SrtDebugFrameData>,
+    pub debug_data: Option<SrtDebugFrameData>,
 }
 
 #[derive(Debug, FromStr, Clone, PartialEq)]

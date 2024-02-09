@@ -14,7 +14,7 @@ pub fn overlay_srt_data(
         return;
     }
 
-    let mut data;
+    let data;
     match srt_data {
         Some(d) => {
             data = d;
