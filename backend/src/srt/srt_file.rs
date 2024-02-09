@@ -37,6 +37,7 @@ impl SrtFile {
 
                 let data: Result<SrtFrameData, ParseError> = i.text.parse();
                 let mut d: Option<SrtFrameData> = None;
+
                 if !data.is_err() {
                     let ad = data?;
                     has_distance |= ad.distance > 0;
