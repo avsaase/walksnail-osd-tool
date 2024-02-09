@@ -1,5 +1,7 @@
 use std::{path::PathBuf, time::Duration};
 
+use parse_display::ParseError;
+
 use derivative::Derivative;
 
 use super::{error::SrtFileError, frame::SrtFrame, SrtFrameData, frame::SrtDebugFrameData};
@@ -23,18 +25,29 @@ impl SrtFile {
         let srt_frames = srtparse::from_file(&path)?
             .iter()
             .map(|i| -> Result<SrtFrame, SrtFileError> {
-                //let debugData = i.text.parse()?;
-                //has_debug = true;
-                let data: SrtFrameData = SrtFrameData {
-                    signal: 0, channel: 0, flight_time: 0, sky_bat: 0.0, ground_bat: 0.0, latency: 0, bitrate_mbps: 0.0, distance: 0
-                };
-                //let data: SrtFrameData = i.text.parse()?;
-                has_distance |= data.distance > 0;
+                let debugData : Result<SrtDebugFrameData, ParseError> = i.text.parse();
+                let mut dd : Option<SrtDebugFrameData> = None;
+                if !debugData.is_err() 
+                {
+                    dd = Some(debugData?);
+                    has_debug = true;
+                }
+                //let data: SrtFrameData = SrtFrameData {
+                //    signal: 0, channel: 0, flight_time: 0, sky_bat: 0.0, ground_bat: 0.0, latency: 0, bitrate_mbps: 0.0, distance: 0
+                //};
+                let data: Result<SrtFrameData, ParseError> = i.text.parse();
+                let mut d: Option<SrtFrameData> = None;
+                if !data.is_err() 
+                {
+                    let ad = data?;
+                    has_distance |= ad.distance > 0;
+                    d = Some(ad);
+                }
                 Ok(SrtFrame {
                     start_time_secs: i.start_time.into_duration().as_secs_f32(),
                     end_time_secs: i.end_time.into_duration().as_secs_f32(),
-                    data,
-                    //debugData,
+                    data: d,
+                    debugData: dd,
                 })
             })
             .collect::<Result<Vec<_>, _>>()?;
