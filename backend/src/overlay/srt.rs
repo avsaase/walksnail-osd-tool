@@ -18,7 +18,7 @@ pub fn overlay_srt_data(
     match srt_data {
         Some(d) => {
             data = d;
-        },
+        }
         None => return,
     }
 
