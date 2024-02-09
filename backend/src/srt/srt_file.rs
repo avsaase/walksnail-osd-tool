@@ -1,10 +1,14 @@
 use std::{path::PathBuf, time::Duration};
 
+use derivative::Derivative;
 use parse_display::ParseError;
 
-use derivative::Derivative;
-
-use super::{error::SrtFileError, frame::SrtFrame, SrtFrameData, frame::SrtDebugFrameData};
+use super::{
+    error::SrtFileError,
+    frame::SrtFrame,
+    SrtFrameData,
+    frame::SrtDebugFrameData
+};
 
 #[derive(Derivative)]
 #[derivative(Debug)]
@@ -25,20 +29,16 @@ impl SrtFile {
         let srt_frames = srtparse::from_file(&path)?
             .iter()
             .map(|i| -> Result<SrtFrame, SrtFileError> {
-                let debugData : Result<SrtDebugFrameData, ParseError> = i.text.parse();
-                let mut dd : Option<SrtDebugFrameData> = None;
-                if !debugData.is_err() 
-                {
-                    dd = Some(debugData?);
+                let debug_data: Result<SrtDebugFrameData, ParseError> = i.text.parse();
+                let mut dd: Option<SrtDebugFrameData> = None;
+                if !debug_data.is_err() {
+                    dd = Some(debug_data?);
                     has_debug = true;
                 }
-                //let data: SrtFrameData = SrtFrameData {
-                //    signal: 0, channel: 0, flight_time: 0, sky_bat: 0.0, ground_bat: 0.0, latency: 0, bitrate_mbps: 0.0, distance: 0
-                //};
+
                 let data: Result<SrtFrameData, ParseError> = i.text.parse();
                 let mut d: Option<SrtFrameData> = None;
-                if !data.is_err() 
-                {
+                if !data.is_err() {
                     let ad = data?;
                     has_distance |= ad.distance > 0;
                     d = Some(ad);

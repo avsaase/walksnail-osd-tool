@@ -19,9 +19,9 @@ pub fn overlay_srt_data(
         Some(d) => {
             data = d;
         },
-        None => return
+        None => return,
     }
-    
+
     let time_str = if srt_options.show_time {
         let minutes = data.flight_time / 60;
         let seconds = data.flight_time % 60;

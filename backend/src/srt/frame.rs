@@ -143,7 +143,5 @@ mod tests {
                 gain_exp: 0.0
             }
         )
- 
-
     }
 }
