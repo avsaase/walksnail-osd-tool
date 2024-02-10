@@ -16,6 +16,7 @@ pub enum CharacterSize {
     Large,
     Small,
     Ultra,
+    XLarge,
 }
 
 impl CharacterSize {
@@ -46,7 +47,7 @@ impl Display for CharacterSize {
             match self {
                 CharacterSize::Large => "1080p",
                 CharacterSize::Small => "720p",
-                CharacterSize::Ultra => "2.7K",
+                CharacterSize::XLarge => "2.7K",
                 CharacterSize::Ultra => "4K",
             }
         )
