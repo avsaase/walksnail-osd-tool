@@ -2,6 +2,10 @@ use std::fmt::Display;
 
 use super::FontFileError;
 
+pub(crate) const CHARACTER_WIDTH_4K: u32 = 72;
+pub(crate) const CHARACTER_HEIGHT_4K: u32 = 108;
+pub(crate) const CHARACTER_WIDTH_2K: u32 = 48;
+pub(crate) const CHARACTER_HEIGHT_2K: u32 = 72;
 pub(crate) const CHARACTER_WIDTH_LARGE: u32 = 36;
 pub(crate) const CHARACTER_HEIGHT_LARGE: u32 = 54;
 pub(crate) const CHARACTER_WIDTH_SMALL: u32 = 24;
@@ -11,6 +15,7 @@ pub(crate) const CHARACTER_HEIGHT_SMALL: u32 = 36;
 pub enum CharacterSize {
     Large,
     Small,
+    Ultra,
 }
 
 impl CharacterSize {
@@ -18,6 +23,8 @@ impl CharacterSize {
         match self {
             CharacterSize::Large => CHARACTER_WIDTH_LARGE,
             CharacterSize::Small => CHARACTER_WIDTH_SMALL,
+            CharacterSize::XLarge => CHARACTER_WIDTH_2K,
+            CharacterSize::Ultra => CHARACTER_WIDTH_4K,
         }
     }
 
@@ -25,6 +32,8 @@ impl CharacterSize {
         match self {
             CharacterSize::Large => CHARACTER_HEIGHT_LARGE,
             CharacterSize::Small => CHARACTER_HEIGHT_SMALL,
+            CharacterSize::XLarge => CHARACTER_HEIGHT_2K,
+            CharacterSize::Ultra => CHARACTER_HEIGHT_4K,
         }
     }
 }
@@ -35,8 +44,10 @@ impl Display for CharacterSize {
             f,
             "{}",
             match self {
-                CharacterSize::Large => "Large",
-                CharacterSize::Small => "Small",
+                CharacterSize::Large => "1080p",
+                CharacterSize::Small => "720p",
+                CharacterSize::Ultra => "2.7K",
+                CharacterSize::Ultra => "4K",
             }
         )
     }
@@ -62,10 +73,18 @@ pub fn detect_dimensions(width: u32, height: u32) -> Result<(CharacterSize, Font
         (CharacterSize::Small, FontType::Standard)
     } else if width == CHARACTER_WIDTH_LARGE {
         (CharacterSize::Large, FontType::Standard)
+    } else if width == CHARACTER_WIDTH_2K {
+        (CharacterSize::XLarge, FontType::Standard)
+    } else if width == CHARACTER_WIDTH_4K {
+        (CharacterSize::Ultra, FontType::Standard)
     } else if width == CHARACTER_WIDTH_SMALL * 4 {
         (CharacterSize::Small, FontType::FourColor)
     } else if width == CHARACTER_WIDTH_LARGE * 4 {
         (CharacterSize::Large, FontType::FourColor)
+    } else if width == CHARACTER_WIDTH_2K * 4 {
+        (CharacterSize::XLarge, FontType::FourColor)
+    } else if width == CHARACTER_WIDTH_4K * 4 {
+        (CharacterSize::Ultra, FontType::FourColor)
     } else {
         return Err(FontFileError::InvalidFontFileWidth { width });
     };
@@ -88,11 +107,17 @@ mod tests {
     #[test]
     fn detect_valid_font_sizes() {
         let test_cases = [
+            (72, 27648, CharacterSize::Ultra, FontType::Standard, 256),
+            (48, 18432, CharacterSize::XLarge, FontType::Standard, 256),
             (36, 13824, CharacterSize::Large, FontType::Standard, 256),
             (24, 18432, CharacterSize::Small, FontType::Standard, 512),
             (36, 27648, CharacterSize::Large, FontType::Standard, 512),
+            (48, 36864, CharacterSize::XLarge, FontType::Standard, 512),
+            (72, 55296, CharacterSize::Ultra, FontType::Standard, 512),
             (96, 9216, CharacterSize::Small, FontType::FourColor, 256),
             (144, 13824, CharacterSize::Large, FontType::FourColor, 256),
+            (192, 18432, CharacterSize::XLarge, FontType::FourColor, 256),
+            (288, 27648, CharacterSize::Ultra, FontType::FourColor, 256),
         ];
         for test in test_cases {
             assert_ok_eq!(detect_dimensions(test.0, test.1), (test.2, test.3, test.4));
