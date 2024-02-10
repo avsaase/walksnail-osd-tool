@@ -374,7 +374,7 @@ impl WalksnailOsdTool {
                         ui.end_row();
 
                         ui.label("Encoding bitrate").on_hover_text(tooltip_text("Target bitrate of the rendered video."));
-                        changed |= ui.add(Slider::new(&mut self.render_settings.bitrate_mbps, 0..=100).text("Mbps")).changed();
+                        changed |= ui.add(Slider::new(&mut self.render_settings.bitrate_mbps, 0..=160).text("Mbps")).changed();
                         ui.end_row();
 
                         ui.label("Upscale to 1440p").on_hover_text(tooltip_text("Upscale the output video to 1440p to get better quality after uplaoding to YouTube."));
