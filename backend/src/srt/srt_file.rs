@@ -30,14 +30,14 @@ impl SrtFile {
             .map(|i| -> Result<SrtFrame, SrtFileError> {
                 let debug_data: Result<SrtDebugFrameData, ParseError> = i.text.parse();
                 let mut dd: Option<SrtDebugFrameData> = None;
-                if !debug_data.is_err() {
+                if debug_data.is_ok() {
                     dd = Some(debug_data?);
                     has_debug = true;
                 }
 
                 let data: Result<SrtFrameData, ParseError> = i.text.parse();
                 let mut d: Option<SrtFrameData> = None;
-                if !data.is_err() {
+                if data.is_ok() {
                     let ad = data?;
                     has_distance |= ad.distance > 0;
                     d = Some(ad);
