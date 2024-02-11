@@ -2,7 +2,7 @@ name: Continuous integration
 
 on: 
   push:
-    branches: mmosca-debug-srt
+    branches: master
   pull_request:
 
 jobs:
@@ -80,14 +80,14 @@ jobs:
       - name: Cache dependencies
         uses: Swatinem/rust-cache@v2
 
-      #- name: Run cargo fmt
-      #  uses: actions-rs/cargo@v1
-      #  with:
-      #    command: fmt
-      #    args: --all -- --check
+      - name: Run cargo fmt
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
 
-      #- name: Run cargo clippy
-      #  uses: actions-rs/cargo@v1
-      #  with:
-      #    command: clippy
-      #    args: -- -D warnings
+      - name: Run cargo clippy
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: -- -D warnings
