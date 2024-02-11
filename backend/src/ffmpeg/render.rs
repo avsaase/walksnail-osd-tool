@@ -78,7 +78,7 @@ pub fn start_video_render(
         .spawn(move || {
             tracing::info_span!("Decoder handler thread").in_scope(|| {
                 frame_overlay_iter.for_each(|f| {
-                    encoder_stdin.write(&f.data).ok();
+                    encoder_stdin.write_all(&f.data).ok();
                 });
             });
         })
