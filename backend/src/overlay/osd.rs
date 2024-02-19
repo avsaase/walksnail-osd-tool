@@ -8,7 +8,7 @@ use crate::{
 pub fn get_character_size(lines: u32) -> CharacterSize
 {
     match lines {
-        //540 => CharacterSize::Race,
+        540 => CharacterSize::Race,
         720 => CharacterSize::Small,
         1080 => CharacterSize::Large,
         1440 => CharacterSize::XLarge,
