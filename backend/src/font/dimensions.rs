@@ -57,6 +57,8 @@ impl Display for CharacterSize {
 #[derive(Debug, Clone, PartialEq)]
 pub enum FontType {
     Standard,
+    TwoPages,
+    ThreePages,
     FourColor,
 }
 
@@ -64,6 +66,8 @@ impl FontType {
     pub fn pages(&self) -> u32 {
         match self {
             FontType::Standard => 1,
+            FontType::TwoPages => 2,
+            FontType::ThreePages => 3,
             FontType::FourColor => 4,
         }
     }
@@ -78,6 +82,22 @@ pub fn detect_dimensions(width: u32, height: u32) -> Result<(CharacterSize, Font
         (CharacterSize::XLarge, FontType::Standard)
     } else if width == CHARACTER_WIDTH_4K {
         (CharacterSize::Ultra, FontType::Standard)
+    } else if width == CHARACTER_WIDTH_SMALL * 2 {
+        (CharacterSize::Small, FontType::TwoPages)
+    } else if width == CHARACTER_WIDTH_LARGE * 2 {
+        (CharacterSize::Large, FontType::TwoPages)
+    } else if width == CHARACTER_WIDTH_2K * 2 {
+        (CharacterSize::XLarge, FontType::TwoPages)
+    } else if width == CHARACTER_WIDTH_4K * 2 {
+        (CharacterSize::Ultra, FontType::TwoPages)
+    } else if width == CHARACTER_WIDTH_SMALL * 3 {
+        (CharacterSize::Small, FontType::ThreePages)
+    } else if width == CHARACTER_WIDTH_LARGE * 3 {
+        (CharacterSize::Large, FontType::ThreePages)
+    } else if width == CHARACTER_WIDTH_2K * 3 {
+        (CharacterSize::XLarge, FontType::ThreePages)
+    } else if width == CHARACTER_WIDTH_4K * 3 {
+        (CharacterSize::Ultra, FontType::ThreePages)
     } else if width == CHARACTER_WIDTH_SMALL * 4 {
         (CharacterSize::Small, FontType::FourColor)
     } else if width == CHARACTER_WIDTH_LARGE * 4 {
@@ -115,6 +135,14 @@ mod tests {
             (36, 27648, CharacterSize::Large, FontType::Standard, 512),
             (48, 36864, CharacterSize::XLarge, FontType::Standard, 512),
             (72, 55296, CharacterSize::Ultra, FontType::Standard, 512),
+            (48, 9216, CharacterSize::Small, FontType::TwoPages, 256),
+            (72, 13824, CharacterSize::Large, FontType::TwoPages, 256),
+            (96, 18432, CharacterSize::XLarge, FontType::TwoPages, 256),
+            (144, 27648, CharacterSize::Ultra, FontType::TwoPages, 256),
+            (72, 9216, CharacterSize::Small, FontType::ThrePages, 256),
+            (108, 13824, CharacterSize::Large, FontType::ThrePages, 256),
+            (144, 18432, CharacterSize::XLarge, FontType::ThrePages, 256),
+            (216, 27648, CharacterSize::Ultra, FontType::ThrePages, 256),
             (96, 9216, CharacterSize::Small, FontType::FourColor, 256),
             (144, 13824, CharacterSize::Large, FontType::FourColor, 256),
             (192, 18432, CharacterSize::XLarge, FontType::FourColor, 256),
