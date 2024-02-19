@@ -17,10 +17,11 @@ pub enum CharacterSize {
     Small,
     Ultra,
     XLarge,
+    //Race,
 }
 
 impl CharacterSize {
-    pub fn width(&self) -> u32 {
+    pub const fn width(&self) -> u32 {
         match self {
             CharacterSize::Large => CHARACTER_WIDTH_LARGE,
             CharacterSize::Small => CHARACTER_WIDTH_SMALL,
@@ -29,7 +30,7 @@ impl CharacterSize {
         }
     }
 
-    pub fn height(&self) -> u32 {
+    pub const fn height(&self) -> u32 {
         match self {
             CharacterSize::Large => CHARACTER_HEIGHT_LARGE,
             CharacterSize::Small => CHARACTER_HEIGHT_SMALL,
@@ -139,10 +140,10 @@ mod tests {
             (72, 13824, CharacterSize::Large, FontType::TwoPages, 256),
             (96, 18432, CharacterSize::XLarge, FontType::TwoPages, 256),
             (144, 27648, CharacterSize::Ultra, FontType::TwoPages, 256),
-            (72, 9216, CharacterSize::Small, FontType::ThrePages, 256),
-            (108, 13824, CharacterSize::Large, FontType::ThrePages, 256),
-            (144, 18432, CharacterSize::XLarge, FontType::ThrePages, 256),
-            (216, 27648, CharacterSize::Ultra, FontType::ThrePages, 256),
+            (72, 9216, CharacterSize::Small, FontType::ThreePages, 256),
+            (108, 13824, CharacterSize::Large, FontType::ThreePages, 256),
+            (144, 18432, CharacterSize::XLarge, FontType::ThreePages, 256),
+            (216, 27648, CharacterSize::Ultra, FontType::ThreePages, 256),
             (96, 9216, CharacterSize::Small, FontType::FourColor, 256),
             (144, 13824, CharacterSize::Large, FontType::FourColor, 256),
             (192, 18432, CharacterSize::XLarge, FontType::FourColor, 256),
