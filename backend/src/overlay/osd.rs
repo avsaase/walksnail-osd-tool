@@ -5,15 +5,14 @@ use crate::{
     osd::{self, OsdOptions},
 };
 
-pub fn get_character_size(lines: u32) -> CharacterSize
-{
+pub fn get_character_size(lines: u32) -> CharacterSize {
     match lines {
         540 => CharacterSize::Race,
         720 => CharacterSize::Small,
         1080 => CharacterSize::Large,
         1440 => CharacterSize::XLarge,
         2160 => CharacterSize::Ultra,
-        _ => CharacterSize:: Large
+        _ => CharacterSize::Large,
     }
 }
 
