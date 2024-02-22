@@ -38,13 +38,17 @@ impl FontFile {
     }
 
     pub fn get_character(&self, index: usize, size: &CharacterSize) -> Option<ImageBuffer<Rgba<u8>, Vec<u8>>> {
-        if size.width() != self.character_size.width() || size.height() != self.character_size.height() {
-            let original_image = self.characters.get(index).unwrap();
-            let new_image = image::imageops::resize(original_image, size.width(), size.height(), FilterType::Lanczos3);
-            return Some(new_image);
+        if let Some(original_image) = self.characters.get(index) {
+            if size.width() != self.character_size.width() || size.height() != self.character_size.height() {
+                let new_image =
+                    image::imageops::resize(original_image, size.width(), size.height(), FilterType::Lanczos3);
+                return Some(new_image);
+            }
+
+            return Some(original_image.clone());
         }
 
-        return self.characters.get(index).cloned();
+        return None;
     }
 }
 
