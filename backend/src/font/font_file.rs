@@ -48,7 +48,7 @@ impl FontFile {
             return Some(original_image.clone());
         }
 
-        return None;
+        None
     }
 }
 
