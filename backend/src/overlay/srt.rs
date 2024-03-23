@@ -6,63 +6,55 @@ use crate::srt::{SrtFrameData, SrtOptions};
 #[inline]
 pub fn overlay_srt_data(
     image: &mut RgbaImage,
-    srt_data: &Option<SrtFrameData>,
+    srt_data: &SrtFrameData,
     font: &rusttype::Font,
     srt_options: &SrtOptions,
 ) {
-    if srt_data.is_none() {
-        return;
-    }
-
-    let Some(data) = srt_data else {
-        return;
-    };
-
     let time_str = if srt_options.show_time {
-        let minutes = data.flight_time / 60;
-        let seconds = data.flight_time % 60;
+        let minutes = srt_data.flight_time / 60;
+        let seconds = srt_data.flight_time % 60;
         format!("Time:{}:{:0>2}  ", minutes, seconds % 60)
     } else {
         "".into()
     };
 
     let sbat_str = if srt_options.show_sbat {
-        format!("SBat:{: >4.1}V  ", data.sky_bat)
+        format!("SBat:{: >4.1}V  ", srt_data.sky_bat)
     } else {
         "".into()
     };
 
     let gbat_str = if srt_options.show_gbat {
-        format!("GBat:{: >4.1}V  ", data.ground_bat)
+        format!("GBat:{: >4.1}V  ", srt_data.ground_bat)
     } else {
         "".into()
     };
 
     let signal_str = if srt_options.show_signal {
-        format!("Signal:{}  ", data.signal)
+        format!("Signal:{}  ", srt_data.signal)
     } else {
         "".into()
     };
 
     let latency_str = if srt_options.show_latency {
-        format!("Latency:{: >3}ms  ", data.latency)
+        format!("Latency:{: >3}ms  ", srt_data.latency)
     } else {
         "".into()
     };
 
     let bitrate_str = if srt_options.show_bitrate {
-        format!("Bitrate:{: >4.1}Mbps  ", data.bitrate_mbps)
+        format!("Bitrate:{: >4.1}Mbps  ", srt_data.bitrate_mbps)
     } else {
         "".into()
     };
 
     let distance_str = if srt_options.show_distance {
-        let distance = data.distance;
+        let distance = srt_data.distance;
         if distance > 999 {
             let km = distance as f32 / 1000.0;
             format!("Distance:{:.2}km", km)
         } else {
-            format!("Distance:{: >3}m", data.distance)
+            format!("Distance:{: >3}m", srt_data.distance)
         }
     } else {
         "".into()

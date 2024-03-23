@@ -11,7 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Load last used OSD font file on startup (@dz0ny).
 - Option to render video with a chroma key background instead of the input video so the OSD can be overlayed in a video editor.
 - Support for Betaflight 4.5 four color fonts.
-- Support for 4K and 2.7K DVR ([#39](https://github.com/avsaase/walksnail-osd-tool/issues/39), @mmosca).
+- Support for 4K and 2.7K DVR ([#43](https://github.com/avsaase/walksnail-osd-tool/pull/43), @mmosca).
 
 ### Fixed
 

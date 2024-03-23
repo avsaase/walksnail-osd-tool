@@ -2,6 +2,7 @@ use std::{path::PathBuf, time::Duration};
 
 use derivative::Derivative;
 use parse_display::ParseError;
+use serde::de;
 
 use super::{
     error::SrtFileError,
@@ -28,25 +29,21 @@ impl SrtFile {
         let srt_frames = srtparse::from_file(&path)?
             .iter()
             .map(|i| -> Result<SrtFrame, SrtFileError> {
-                let debug_data: Result<SrtDebugFrameData, ParseError> = i.text.parse();
-                let mut dd: Option<SrtDebugFrameData> = None;
-                if debug_data.is_ok() {
-                    dd = Some(debug_data?);
+                let debug_data = i.text.parse::<SrtDebugFrameData>().ok();
+                let data = i.text.parse::<SrtFrameData>().ok();
+
+                if debug_data.is_some() {
                     has_debug = true;
                 }
-
-                let data: Result<SrtFrameData, ParseError> = i.text.parse();
-                let mut d: Option<SrtFrameData> = None;
-                if data.is_ok() {
-                    let ad = data?;
-                    has_distance |= ad.distance > 0;
-                    d = Some(ad);
+                if let Some(data) = &data {
+                    has_distance |= data.distance > 0;
                 }
+
                 Ok(SrtFrame {
                     start_time_secs: i.start_time.into_duration().as_secs_f32(),
                     end_time_secs: i.end_time.into_duration().as_secs_f32(),
-                    data: d,
-                    debug_data: dd,
+                    data,
+                    debug_data,
                 })
             })
             .collect::<Result<Vec<_>, _>>()?;

@@ -112,12 +112,9 @@ impl Iterator for FrameOverlayIter<'_> {
                     &self.osd_options,
                 );
 
-                overlay_srt_data(
-                    &mut frame_image,
-                    &self.current_srt_frame.data,
-                    &self.srt_font,
-                    &self.srt_options,
-                );
+                if let Some(srt_data) = &self.current_srt_frame.data {
+                    overlay_srt_data(&mut frame_image, srt_data, &self.srt_font, &self.srt_options);
+                }
 
                 video_frame.data = frame_image.as_raw().to_vec();
                 Some(video_frame)
