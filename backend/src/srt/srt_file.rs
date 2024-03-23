@@ -1,8 +1,6 @@
 use std::{path::PathBuf, time::Duration};
 
 use derivative::Derivative;
-use parse_display::ParseError;
-use serde::de;
 
 use super::{
     error::SrtFileError,
