@@ -117,7 +117,7 @@ impl WalksnailOsdTool {
                             .on_hover_text_at_pointer("Double-click to copy to clipboard")
                             .double_clicked()
                         {
-                            ui.output_mut(|o| o.copied_text = version.clone());
+                            ui.output_mut(|o| o.copied_text.clone_from(version));
                         }
                         ui.end_row();
 

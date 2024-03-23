@@ -26,7 +26,7 @@ impl TryFrom<FfProbe> for VideoInfo {
     type Error = VideoInfoError;
 
     fn try_from(value: FfProbe) -> Result<Self, Self::Error> {
-        let stream = value.streams.get(0).ok_or(VideoInfoError::NoStream)?;
+        let stream = value.streams.first().ok_or(VideoInfoError::NoStream)?;
 
         let width = stream.width.ok_or(VideoInfoError::NoFrameWidth)? as u32;
         let height = stream.height.ok_or(VideoInfoError::NoFrameHeight)? as u32;

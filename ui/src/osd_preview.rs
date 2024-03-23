@@ -20,7 +20,9 @@ pub fn create_osd_preview(
     let mut image = RgbaImage::new(width, height);
 
     overlay_osd(&mut image, osd_frame, font, osd_options);
-    overlay_srt_data(&mut image, &srt_frame.data, srt_font, srt_options);
+    if let Some(srt_data) = &srt_frame.data {
+        overlay_srt_data(&mut image, srt_data, srt_font, srt_options);
+    }
 
     image
 }

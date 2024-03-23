@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use derivative::Derivative;
-use image::{io::Reader, DynamicImage, GenericImageView, ImageBuffer, Rgba, RgbaImage};
+use image::{imageops::FilterType, io::Reader, DynamicImage, GenericImageView, ImageBuffer, Rgba, RgbaImage};
 
 use super::{
     dimensions::{detect_dimensions, CharacterSize, FontType},
@@ -16,7 +16,7 @@ pub struct FontFile {
     pub character_size: CharacterSize,
     pub font_type: FontType,
     #[derivative(Debug = "ignore")]
-    pub characters: Vec<RgbaImage>,
+    characters: Vec<RgbaImage>,
 }
 
 impl FontFile {
@@ -34,6 +34,16 @@ impl FontFile {
             character_size,
             font_type,
             characters,
+        })
+    }
+
+    pub fn get_character(&self, index: usize, size: &CharacterSize) -> Option<ImageBuffer<Rgba<u8>, Vec<u8>>> {
+        self.characters.get(index).map(|original_image| {
+            if size.width() != self.character_size.width() || size.height() != self.character_size.height() {
+                image::imageops::resize(original_image, size.width(), size.height(), FilterType::Lanczos3)
+            } else {
+                original_image.clone()
+            }
         })
     }
 }
