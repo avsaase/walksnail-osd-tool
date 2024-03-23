@@ -44,7 +44,7 @@ If you think this is annoying you can donate some money [here](https://www.buyme
 </details>
 
 ### Linux
-The project builds on Ubuntu in CI but I haven't tried runnning it myself. I don't know enough about packaging for Linux to make release binaries so for now you need to build from source.
+The project builds on Ubuntu in CI but I don't know enough about packaging for Linux to make release binaries. For now you need to build from source.
 
 ### Building from source
 1. Install the [Rust toolchain](https://www.rust-lang.org/tools/install).
