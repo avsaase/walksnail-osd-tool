@@ -5,130 +5,15 @@ permissions:
 
 on: 
   push:
-    branches: master
-  pull_request:
+    tags:
+      - "v*"
 
 jobs:
   build:
-    name: Build
-    strategy:
-      fail-fast: false
-      matrix:
-        targets:
-          [
-            {
-              name: windows64,
-              fancy_name: windows,
-              runner: windows-latest,
-              target: x86_64-pc-windows-msvc,
-              ffmpeg_filename: ffmpeg-6.0-essentials_build.7z,
-              ffprobe_filename: "",
-            },
-            {
-              name: macos-intel,
-              fancy_name: macos-intel,
-              runner: macos-latest,
-              target: x86_64-apple-darwin,
-              ffmpeg_filename: ffmpeg6intel.zip,
-              ffprobe_filename: ffprobe6intel.zip,
-            },
-            {
-              name: macos-arm,
-              fancy_name: macos-apple-silicon,
-              runner: macos-latest,
-              target: aarch64-apple-darwin,
-              ffmpeg_filename: ffmpeg6arm.zip,
-              ffprobe_filename: ffprobe6arm.zip,
-            },
-          ]
-    runs-on: ${{ matrix.targets.runner }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Install toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: nightly
-          profile: minimal
-          override: true
-          target: ${{ matrix.targets.target }}
-
-      - name: Cache dependencies
-        id: extcache
-        uses: Swatinem/rust-cache@v2
-        with:
-          cache-directories: ${{ github.workspace }}/ext/
-          prefix-key: "v1"
-
-      - name: Install cargo-binstall
-        uses: taiki-e/install-action@v2
-        with:
-          tool: cargo-binstall
-
-      - name: Install cargo-wix
-        if: ${{ matrix.targets.name == 'windows64' }}
-        run: cargo binstall cargo-wix --no-confirm --force
-
-      - name: Install cargo-bundle
-        if: ${{ matrix.targets.name == 'macos-intel' || matrix.targets.name == 'macos-arm'}}
-        run: cargo binstall cargo-bundle --no-confirm --force
-
-      - name: Build (Windows)
-        if: ${{ matrix.targets.name == 'windows64'}}
-        run: cargo build --release --features windows-installer
-
-      - name: Build (MacOS)
-        if: ${{ matrix.targets.name == 'macos-intel' || matrix.targets.name == 'macos-arm'}}
-        run: cargo build --release --target ${{ matrix.targets.target }} --features macos-app-bundle
-
-      - name: Extract ffmpeg
-        run: |
-          cd ${{ github.workspace }}/ext/ffmpeg/${{ matrix.targets.name }}
-          7z x ${{ matrix.targets.ffmpeg_filename }} -aoa
-
-      - name: Extract ffprobe
-        if: ${{ matrix.targets.name == 'macos-intel' || matrix.targets.name == 'macos-arm' }}
-        run: |
-          cd ${{ github.workspace }}/ext/ffmpeg/${{ matrix.targets.name }}
-          7z x ${{ matrix.targets.ffprobe_filename }} -aoa
-
-      - name: Create Windows installer
-        if: ${{ matrix.targets.name == 'windows64'}}
-        continue-on-error: true
-        run: |
-          cargo wix --package walksnail-osd-tool --include _deploy\windows\wix\main.wxs --nocapture --no-build
-          cd ${{ github.workspace }}/target/wix/
-          7z a temp.zip *.msi
-          mv temp.zip ${{ github.workspace }}/_deploy/walksnail-osd-tool-${{ matrix.targets.fancy_name }}.zip
-        shell: cmd
-
-      - name: Create Mac App bundle
-        if: ${{ matrix.targets.name == 'macos-intel' || matrix.targets.name == 'macos-arm'}}
-        run: |
-          cd ./ui
-          cargo bundle --release --target ${{ matrix.targets.target }} --features macos-app-bundle
-          cp ${{ github.workspace }}/ext/ffmpeg/${{ matrix.targets.name }}/ffmpeg ${{ github.workspace }}/target/${{ matrix.targets.target }}/release/bundle/osx/Walksnail\ OSD\ Tool.app/Contents/MacOS/ffmpeg
-          cp ${{ github.workspace }}/ext/ffmpeg/${{ matrix.targets.name }}/ffprobe ${{ github.workspace }}/target/${{ matrix.targets.target }}/release/bundle/osx/Walksnail\ OSD\ Tool.app/Contents/MacOS/ffprobe
-          cd ${{ github.workspace }}/target/${{ matrix.targets.target }}/release/bundle/osx/
-
-          codesign --force -s - Walksnail\ OSD\ Tool.app/Contents/MacOS/ffmpeg
-          codesign --force -s - Walksnail\ OSD\ Tool.app/Contents/MacOS/ffprobe
-          codesign --force -s - Walksnail\ OSD\ Tool.app/Contents/MacOS/walksnail-osd-tool
-          codesign --force -s - Walksnail\ OSD\ Tool.app
-
-          7z a temp.zip Walksnail\ OSD\ Tool.app
-          mv temp.zip ${{ github.workspace }}/_deploy/walksnail-osd-tool-${{ matrix.targets.fancy_name }}.zip
-
-      - name: Save binaries
-        uses: actions/upload-artifact@v3
-        with:
-          name: walksnail-osd-tool-all-platforms
-          path: ${{ github.workspace }}/_deploy/*.*
+    uses: ./.github/workflows/build.yaml
 
   release:
     name: Create GitHub release
-    if: startsWith(github.ref, 'refs/tags/')
     needs: build
     runs-on: ubuntu-latest
     steps:

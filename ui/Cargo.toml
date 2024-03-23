@@ -1,6 +1,6 @@
 [package]
 name = "walksnail-osd-tool"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 description = "Cross-platform tool for rendering the flight controller OSD and SRT data from the Walksnail Avatar HD FPV system on top of the goggle or VRX recording."
 authors = ["Alexander van Saase"]
