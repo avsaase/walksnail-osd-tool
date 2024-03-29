@@ -10,10 +10,22 @@ impl WalksnailOsdTool {
             ui.add_space(5.0);
             ui.horizontal(|ui| {
                 self.start_stop_render_button(ui);
+                self.out_path_label(ui);
                 self.render_progress(ui);
             });
             ui.add_space(2.0);
         });
+    }
+
+    fn out_path_label(&mut self, ui: &mut Ui) {
+        if self.render_status.is_not_in_progress() {
+            if let Some(out_path) = &self.out_path {
+                let path = out_path.as_path().to_string_lossy();
+                ui.label(path);
+            } else {
+                ui.label("-");
+            }
+        }
     }
 
     fn start_stop_render_button(&mut self, ui: &mut Ui) {
@@ -29,7 +41,15 @@ impl WalksnailOsdTool {
             {
                 tracing::info!("Start render button clicked");
                 self.render_status.start_render();
-                if let (Some(video_path), Some(osd_file), Some(font_file), Some(video_info), Some(srt_file)) = (
+                if let (
+                    Some(out_path),
+                    Some(video_path),
+                    Some(osd_file),
+                    Some(font_file),
+                    Some(video_info),
+                    Some(srt_file),
+                ) = (
+                    &self.out_path,
                     &self.video_file,
                     &self.osd_file,
                     &self.font_file,
@@ -46,7 +66,7 @@ impl WalksnailOsdTool {
                     match start_video_render(
                         &self.dependencies.ffmpeg_path,
                         video_path,
-                        &get_output_video_path(video_path),
+                        &get_output_video_path(out_path, video_path),
                         osd_file.frames.clone(),
                         srt_file.frames.clone(),
                         font_file.clone(),
@@ -110,7 +130,12 @@ impl WalksnailOsdTool {
             }
             Status::Completed => {
                 ui.vertical(|ui| {
-                    ui.add(ProgressBar::new(1.0).text("Done"));
+                    if let (Some(out_path), Some(input_video_path)) = (&self.out_path, &self.video_file) {
+                        let out = &get_output_video_path(out_path, input_video_path);
+                        let path = out.as_path().to_string_lossy();
+                        let name: String = out.file_name().unwrap().to_string_lossy().into();
+                        ui.hyperlink_to(name, path);
+                    }
                 });
             }
             Status::Cancelled { progress_pct } => {
