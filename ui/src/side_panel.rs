@@ -186,20 +186,25 @@ impl WalksnailOsdTool {
                                 row.col(|ui| {
                                     ui.horizontal(|ui| {
                                         if let Some(duration) = osd_file.map(|i| i.duration) {
-
                                             if video_file_loaded {
-                                                let time_difference = self.video_info.as_ref().unwrap().duration - duration;
+                                                let time_difference =
+                                                    self.video_info.as_ref().unwrap().duration - duration;
                                                 let abs_diff_secoinds = time_difference.as_secs_f32().abs();
 
                                                 if abs_diff_secoinds > 0.2 {
-                                                    ui
-                                                    .label(RichText::new("⚠").color(Color32::from_rgb(255, 200, 0)).strong())
-                                                    .on_hover_text( format!("OSD and Video files duration mismatch: {0}", abs_diff_secoinds));
+                                                    ui.label(
+                                                        RichText::new("⚠")
+                                                            .color(Color32::from_rgb(255, 200, 0))
+                                                            .strong(),
+                                                    )
+                                                    .on_hover_text(format!(
+                                                        "OSD and Video files duration mismatch: {0}",
+                                                        abs_diff_secoinds
+                                                    ));
                                                 }
                                             }
 
                                             ui.label(format_minutes_seconds(&duration));
-
                                         } else {
                                             ui.label("-");
                                         }

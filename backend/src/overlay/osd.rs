@@ -19,7 +19,10 @@ pub fn get_character_size(lines: u32) -> CharacterSize {
 #[inline]
 pub fn overlay_osd(image: &mut RgbaImage, osd_frame: &osd::Frame, font: &font::FontFile, osd_options: &OsdOptions) {
     // TODO: check if this can be run in parallel
-    let osd_character_size = osd_options.character_size.clone().unwrap_or(get_character_size(image.height()));
+    let osd_character_size = osd_options
+        .character_size
+        .clone()
+        .unwrap_or(get_character_size(image.height()));
     for character in &osd_frame.glyphs {
         if character.index == 0 || osd_options.get_mask(&character.grid_position) {
             continue;
