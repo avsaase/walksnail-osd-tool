@@ -1,6 +1,6 @@
 use std::time::Instant;
 
-use backend::util::Coordinates;
+use backend::{font::CharacterSize, util::Coordinates};
 use egui::{
     vec2, Button, CentralPanel, Checkbox, CollapsingHeader, Color32, CursorIcon, Grid, Image, Rect, RichText,
     ScrollArea, Sense, Slider, Stroke, Ui,
@@ -131,6 +131,47 @@ impl WalksnailOsdTool {
                                 .add(Checkbox::without_text(&mut self.osd_options.adjust_playback_speed))
                                 .changed()
                         });
+                        ui.end_row();
+
+                        // Enable playback offset only if playback speed adjustment is disabled, since it tries to fix basically the same problem
+                        if !self.osd_options.adjust_playback_speed && self.video_info.is_some() {
+                            ui.label("Adjust playback offset")
+                                .on_hover_text(tooltip_text("Start render OSD from N-th second. Usefull for splitted videos with lost OSD frames."));
+                            ui.horizontal(|ui| {
+                                ui
+                                .add(Slider::new(
+                                    &mut self.osd_options.osd_playback_offset,
+                                    0.0..=self.video_info.as_ref().map(|v| v.duration.as_secs_f32()).unwrap_or(0.0))
+                                    .text("Seconds"))
+                                    .on_hover_text("If your video file and osd file has the same duration, you probaby do not need this");
+
+                                if ui.add(Button::new(RichText::new("Auto")).small()).clicked() {
+                                    let difference = self.video_info.as_ref().unwrap().duration.as_secs_f32() - self.osd_file.as_ref().unwrap().duration.as_secs_f32();
+                                    self.osd_options.osd_playback_offset = difference.abs();
+                                }
+                            });
+                            ui.end_row();
+                        }
+
+                        if self.video_info.is_some() {
+                            if self.osd_options.character_size.is_none() {
+                                self.osd_options.character_size = Some(backend::overlay::get_character_size(self.video_info.as_ref().unwrap().height));
+                            }
+
+                            egui::ComboBox::from_label("Character size")
+                                .selected_text(self.osd_options.character_size.clone().map_or(String::from("No video"), |s| format!("{:?}", s)))
+                                .width(100.0)
+                                .show_ui(ui, |ui| {
+                                    if self.osd_options.character_size.is_some() {
+                                        changed |= ui.selectable_value(self.osd_options.character_size.as_mut().unwrap(), CharacterSize::Race, "Race").changed();
+                                        changed |= ui.selectable_value(self.osd_options.character_size.as_mut().unwrap(), CharacterSize::Small, "Small").changed();
+                                        changed |= ui.selectable_value(self.osd_options.character_size.as_mut().unwrap(), CharacterSize::Large, "Large").changed();
+                                        changed |= ui.selectable_value(self.osd_options.character_size.as_mut().unwrap(), CharacterSize::XLarge, "Extra Large (2k)").changed();
+                                        changed |= ui.selectable_value(self.osd_options.character_size.as_mut().unwrap(), CharacterSize::Ultra, "Ultra Large (4k)").changed();
+                                    }
+                                });
+                            ui.end_row();
+                        }
                     });
             });
 
