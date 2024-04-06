@@ -188,8 +188,9 @@ impl WalksnailOsdTool {
                                         if let Some(duration) = osd_file.map(|i| i.duration) {
                                             if video_file_loaded {
                                                 let time_difference =
-                                                    self.video_info.as_ref().unwrap().duration - duration;
-                                                let abs_diff_seconds = time_difference.as_secs_f32().abs();
+                                                    self.video_info.as_ref().unwrap().duration.as_secs_f32()
+                                                        - duration.as_secs_f32();
+                                                let abs_diff_seconds = time_difference.abs();
 
                                                 if abs_diff_seconds > 0.2 {
                                                     ui.label(

@@ -146,8 +146,8 @@ impl WalksnailOsdTool {
                                     .on_hover_text("If your video file and osd file has the same duration, you probaby do not need this");
 
                                 if ui.add(Button::new(RichText::new("Auto")).small()).clicked() {
-                                    let difference = self.video_info.as_ref().unwrap().duration - self.osd_file.as_ref().unwrap().duration;
-                                    self.osd_options.osd_playback_offset = difference.as_secs_f32().abs();
+                                    let difference = self.video_info.as_ref().unwrap().duration.as_secs_f32() - self.osd_file.as_ref().unwrap().duration.as_secs_f32();
+                                    self.osd_options.osd_playback_offset = difference.abs();
                                 }
                             });
                             ui.end_row();
