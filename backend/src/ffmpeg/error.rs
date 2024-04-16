@@ -11,6 +11,8 @@ pub enum VideoInfoError {
     #[error("Failed to read bitrate from video")]
     NoBitrate,
     #[error("Failed to read video duration from video")]
+    NoTimeScale,
+    #[error("Failed to read time scale value from video")]
     NoDuration,
     #[error("No stream in video file")]
     NoStream,
