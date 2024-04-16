@@ -9,6 +9,7 @@ pub struct VideoInfo {
     pub width: u32,
     pub height: u32,
     pub frame_rate: f32,
+    pub time_base: u32,
     pub bitrate: u32,
     pub duration: Duration,
     pub total_frames: u32,
@@ -57,12 +58,22 @@ impl TryFrom<FfProbe> for VideoInfo {
                 .ok_or(VideoInfoError::NoDuration)?,
         );
 
+        let time_base = {
+            let tbn_string = &stream.time_base;
+            let mut split = tbn_string.split('/');
+            split
+                .nth(1)
+                .and_then(|num| num.parse::<u32>().ok())
+                .ok_or(VideoInfoError::NoTimeScale)?
+        };
+
         let total_frames = (frame_rate * duration.as_secs_f32()) as u32;
 
         Ok(Self {
             width,
             height,
             frame_rate,
+            time_base,
             bitrate,
             duration,
             total_frames,
