@@ -139,6 +139,7 @@ pub fn spawn_encoder(
         .pix_fmt("yuv420p")
         .codec_video(&video_encoder.name)
         .args(["-b:v", &format!("{}M", bitrate_mbps)])
+        .args(&video_encoder.extra_args)
         .overwrite()
         .output(output_video.to_str().unwrap());
 

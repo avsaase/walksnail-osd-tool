@@ -21,6 +21,7 @@ impl Default for RenderSettings {
                 codec: Codec::H264,
                 hardware: false,
                 detected: false,
+                extra_args: Vec::new(),
             },
             selected_encoder_idx: 0,
             show_undetected_encoders: false,
