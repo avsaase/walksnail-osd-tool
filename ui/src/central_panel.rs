@@ -381,6 +381,10 @@ impl WalksnailOsdTool {
                         changed |= ui.add(Checkbox::without_text(&mut self.render_settings.upscale)).changed();
                         ui.end_row();
 
+                        ui.label("Rescale to 4:3 aspect ratio").on_hover_text(tooltip_text("Rescale the output video to 4:3 aspect ratio, useful when you have 4:3 camera and recording is done by VRX in \"4:3 Fullscreen\" mode."));
+                        changed |= ui.add(Checkbox::without_text(&mut self.render_settings.rescale_to_4x3_aspect)).changed();
+                        ui.end_row();
+
                         ui.label("Chroma key").on_hover_text(tooltip_text("Render the video with a chroma key instead of the input video so the OSD can be overlay in video editing software."));
                         ui.horizontal(|ui| {
                             changed |= ui.add(Checkbox::without_text(&mut self.render_settings.use_chroma_key)).changed();
