@@ -44,6 +44,7 @@ pub fn start_video_render(
         &render_settings.encoder,
         output_video,
         render_settings.upscale,
+        render_settings.rescale_to_4x3_aspect,
     )?;
 
     // Channels to communicate with ffmpeg handler thread
@@ -120,6 +121,7 @@ pub fn spawn_encoder(
     video_encoder: &Encoder,
     output_video: &PathBuf,
     upscale: bool,
+    rescale_to_4x3_aspect: bool,
 ) -> Result<FfmpegChild, io::Error> {
     let mut encoder_command = FfmpegCommand::new_with_path(ffmpeg_path);
 
@@ -133,6 +135,13 @@ pub fn spawn_encoder(
 
     if upscale {
         encoder_command.args(["-vf", "scale=2560x1440:flags=bicubic"]);
+    }
+
+    if rescale_to_4x3_aspect {
+        // It will affect the aspect ratio stored at container level without affecting final video resolution.
+        // Example ffprobe of a final video: "... 1280x720 [SAR 3:4 DAR 4:3] ...".
+        // Such video will be played back the same way as if it really was 4:3.
+        encoder_command.args(["-aspect", "4:3"]);
     }
 
     encoder_command
