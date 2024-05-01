@@ -24,15 +24,21 @@ pub struct Encoder {
     pub codec: Codec,
     pub hardware: bool,
     pub detected: bool,
+    pub extra_args: Vec<String>
 }
 
 impl Encoder {
     fn new(name: &str, codec: Codec, hardware: bool) -> Self {
+        Self::new_with_extra_args(name, codec, hardware, &[])
+    }
+
+    fn new_with_extra_args(name: &str, codec: Codec, hardware: bool, extra_args: &[&str]) -> Self {
         Self {
             name: name.to_string(),
             codec,
             hardware,
             detected: false,
+            extra_args: extra_args.iter().map(|&s| s.to_string()).collect(),
         }
     }
 
@@ -77,7 +83,10 @@ impl Encoder {
             Encoder::new("hevc_v4l2m2m", Codec::H265, true),
 
             #[cfg(target_os = "macos")]
-            Encoder::new("hevc_videotoolbox", Codec::H265, true),
+            Encoder::new_with_extra_args(
+                "hevc_videotoolbox", Codec::H265, true, 
+                &["-tag:v", "hvc1"] // Apple QuickTime player on Mac only supports hvc1
+            ),
         ];
 
         all_encoders
