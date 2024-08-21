@@ -50,6 +50,24 @@ jobs:
       - name: Run cargo test
         run: cargo test --all-targets --all-features
 
+  formatting:
+    name: Formatting
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install toolchain
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: rustfmt
+
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Run cargo fmt
+        run: cargo +nightly fmt --check
+
   lints:
     name: Lints
     runs-on: windows-latest
@@ -60,13 +78,10 @@ jobs:
       - name: Install toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
-          components: rustfmt, clippy
+          components: clippy
 
       - name: Cache dependencies
         uses: Swatinem/rust-cache@v2
-
-      - name: Run cargo fmt
-        run: cargo +nightly fmt --check
 
       - name: Run cargo clippy
         run: cargo clippy --all-targets --all-features -- -D warnings
