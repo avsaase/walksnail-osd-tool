@@ -232,8 +232,14 @@ pub mod build_info {
     use semver::Version;
 
     pub enum Build {
-        Release { version: Version, commit: String },
-        Dev { commit: String },
+        Release {
+            version: Version,
+            #[allow(unused)] // For some reason this field gets flagged as unused
+            commit: String,
+        },
+        Dev {
+            commit: String,
+        },
         Unknown,
     }
 

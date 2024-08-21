@@ -38,24 +38,22 @@ impl WalksnailOsdTool {
         }
 
         // Collect dropped files
-        ctx.input(|i| {
-            if !i.raw.dropped_files.is_empty() {
-                let file_handles = i
-                    .raw
-                    .dropped_files
-                    .iter()
-                    .flat_map(|f| f.path.clone())
-                    .collect::<Vec<_>>();
-                tracing::info!("Dropped files {:?}", file_handles);
-                self.import_video_file(&file_handles);
-                self.import_osd_file(&file_handles);
-                self.import_font_file(&file_handles);
-                self.import_srt_file(&file_handles);
-
-                self.update_osd_preview(ctx);
-                self.render_status.reset();
-            }
+        let file_handles = ctx.input(|i| {
+            i.raw
+                .dropped_files
+                .iter()
+                .flat_map(|f| f.path.clone())
+                .collect::<Vec<_>>()
         });
+        if !file_handles.is_empty() {
+            tracing::info!("Dropped files {:?}", file_handles);
+            self.import_video_file(&file_handles);
+            self.import_osd_file(&file_handles);
+            self.import_font_file(&file_handles);
+            self.import_srt_file(&file_handles);
+            self.update_osd_preview(ctx);
+            self.render_status.reset();
+        }
     }
 
     fn reset_files(&mut self, ui: &mut Ui) {

@@ -47,7 +47,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install toolchain
-        uses: dtolnay/rust-toolchain@nightly
+        uses: dtolnay/rust-toolchain@stable
 
       - name: Cache dependencies
         id: extcache
