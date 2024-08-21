@@ -3,7 +3,7 @@ use std::time::Instant;
 use backend::util::Coordinates;
 use egui::{
     vec2, Button, CentralPanel, Checkbox, CollapsingHeader, Color32, CursorIcon, Grid, Image, Rect, RichText,
-    ScrollArea, Sense, Slider, Stroke, Ui,
+    ScrollArea, Sense, Slider, Stroke, Ui, Vec2,
 };
 
 use crate::{
@@ -230,7 +230,7 @@ impl WalksnailOsdTool {
                     let preview_width = ui.available_width();
                     let aspect_ratio = video_info.width as f32 / video_info.height as f32;
                     let preview_height = preview_width / aspect_ratio;
-                    let image = Image::new(handle, vec2(preview_width, preview_height));
+                    let image = Image::new(handle).fit_to_exact_size(Vec2::new(preview_width, preview_height));
                     let rect = ui.add(image.bg_fill(Color32::LIGHT_GRAY)).rect;
 
                     if self.osd_preview.mask_edit_mode_enabled {
@@ -315,13 +315,13 @@ impl WalksnailOsdTool {
 
         for i in 0..=53 {
             let x = top_left.x + i as f32 * cell_width + horizontal_offset;
-            let y_min = image_rect.y_range().start() + vertical_offset;
-            let y_max = image_rect.y_range().end() + vertical_offset;
+            let y_min = image_rect.y_range().min + vertical_offset;
+            let y_max = image_rect.y_range().max + vertical_offset;
             painter.vline(x, y_min..=y_max, line_stroke);
         }
         for i in 0..=20 {
-            let x_min = image_rect.x_range().start() + horizontal_offset;
-            let x_max = image_rect.x_range().end() + horizontal_offset;
+            let x_min = image_rect.x_range().min + horizontal_offset;
+            let x_max = image_rect.x_range().max + horizontal_offset;
             let y = top_left.y + i as f32 * cell_height + vertical_offset;
             painter.hline(x_min..=x_max, y, line_stroke);
         }

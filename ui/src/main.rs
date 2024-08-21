@@ -7,7 +7,7 @@ use backend::{
     config::AppConfig,
     ffmpeg::{ffmpeg_available, ffprobe_available, Encoder},
 };
-use eframe::IconData;
+use egui::{IconData, ViewportBuilder};
 use poll_promise::Promise;
 
 use crate::util::check_updates;
@@ -60,10 +60,11 @@ fn main() -> Result<(), eframe::Error> {
     };
 
     let options = eframe::NativeOptions {
-        drag_and_drop_support: true,
-        initial_window_size: Some([1000.0, 700.0].into()),
-        min_window_size: Some([600.0, 300.0].into()),
-        icon_data: Some(icon_data),
+        viewport: ViewportBuilder::default()
+            .with_drag_and_drop(true)
+            .with_icon(icon_data)
+            .with_min_inner_size([600.0, 300.0])
+            .with_inner_size([1000.0, 700.0]),
         ..Default::default()
     };
     tracing::info!("Starting GUI");
@@ -71,7 +72,7 @@ fn main() -> Result<(), eframe::Error> {
         "Walksnail OSD Tool",
         options,
         Box::new(move |cc| {
-            Box::new(WalksnailOsdTool::new(
+            Ok(Box::new(WalksnailOsdTool::new(
                 &cc.egui_ctx,
                 dependencies_satisfied,
                 ffmpeg_path,
@@ -81,7 +82,7 @@ fn main() -> Result<(), eframe::Error> {
                 build_info::get_version().to_string(),
                 build_info::get_target().to_string(),
                 promise,
-            ))
+            )))
         }),
     )
 }

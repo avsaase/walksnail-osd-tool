@@ -331,6 +331,6 @@ fn circle_icon(ui: &egui::Ui, _openness: f32, response: &egui::Response, loaded:
     if loaded {
         ui.painter().circle_filled(response.rect.center(), radius, stroke.color);
     } else {
-        ui.painter().circle_stroke(response.rect.center(), radius - 0.5, stroke)
+        ui.painter().circle_stroke(response.rect.center(), radius - 0.5, stroke);
     }
 }
