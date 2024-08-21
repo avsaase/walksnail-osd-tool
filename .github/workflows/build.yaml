@@ -44,15 +44,10 @@ jobs:
     runs-on: ${{ matrix.targets.runner }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Install toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: nightly
-          profile: minimal
-          override: true
-          target: ${{ matrix.targets.target }}
+        uses: dtolnay/rust-toolchain@nightly
 
       - name: Cache dependencies
         id: extcache
