@@ -24,7 +24,7 @@ pub struct Encoder {
     pub codec: Codec,
     pub hardware: bool,
     pub detected: bool,
-    pub extra_args: Vec<String>
+    pub extra_args: Vec<String>,
 }
 
 impl Encoder {
