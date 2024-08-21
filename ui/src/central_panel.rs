@@ -120,7 +120,7 @@ impl WalksnailOsdTool {
                                 self.update_osd_preview(ctx);
                             }
                             let masked_positions = self.osd_options.masked_grid_positions.len();
-                            ui.label(&format!("{} positions masked", masked_positions));
+                            ui.label(format!("{masked_positions} positions masked"));
                         });
                         ui.end_row();
 
