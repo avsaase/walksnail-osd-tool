@@ -103,7 +103,6 @@ jobs:
       - name: Create Mac App bundle
         if: ${{ matrix.targets.name == 'macos-intel' || matrix.targets.name == 'macos-arm'}}
         run: |
-          cd ./ui
           cargo bundle --release --target ${{ matrix.targets.target }} --features macos-app-bundle
           cp ${{ github.workspace }}/ext/ffmpeg/${{ matrix.targets.name }}/ffmpeg ${{ github.workspace }}/target/${{ matrix.targets.target }}/release/bundle/osx/Walksnail\ OSD\ Tool.app/Contents/MacOS/ffmpeg
           cp ${{ github.workspace }}/ext/ffmpeg/${{ matrix.targets.name }}/ffprobe ${{ github.workspace }}/target/${{ matrix.targets.target }}/release/bundle/osx/Walksnail\ OSD\ Tool.app/Contents/MacOS/ffprobe
