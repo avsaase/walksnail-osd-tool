@@ -48,6 +48,8 @@ jobs:
 
       - name: Install toolchain
         uses: dtolnay/rust-toolchain@stable
+        with:
+          target: ${{ matrix.targets.target }}
 
       - name: Cache dependencies
         id: extcache
