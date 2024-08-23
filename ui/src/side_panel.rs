@@ -1,5 +1,5 @@
 use backend::font::FontType;
-use egui::{CollapsingHeader, RichText, Ui};
+use egui::{CollapsingHeader, Color32, RichText, Ui};
 use egui_extras::{Column, TableBuilder};
 
 use super::WalksnailOsdTool;
@@ -118,6 +118,7 @@ impl WalksnailOsdTool {
     fn osd_info(&self, ui: &mut Ui) {
         let osd_file = self.osd_file.as_ref();
         let file_loaded = osd_file.is_some();
+        let video_file_loaded = self.video_info.is_some();
 
         CollapsingHeader::new(RichText::new("OSD file").heading())
             .icon(move |ui, opennes, response| circle_icon(ui, opennes, response, file_loaded))
@@ -183,11 +184,32 @@ impl WalksnailOsdTool {
                                     ui.label("Duration:");
                                 });
                                 row.col(|ui| {
-                                    if let Some(duration) = osd_file.map(|i| i.duration) {
-                                        ui.label(format_minutes_seconds(&duration));
-                                    } else {
-                                        ui.label("-");
-                                    }
+                                    ui.horizontal(|ui| {
+                                        if let Some(duration) = osd_file.map(|i| i.duration) {
+                                            if video_file_loaded {
+                                                let time_difference =
+                                                    self.video_info.as_ref().unwrap().duration.as_secs_f32()
+                                                        - duration.as_secs_f32();
+                                                let abs_diff_seconds = time_difference.abs();
+
+                                                if abs_diff_seconds > 0.2 {
+                                                    ui.label(
+                                                        RichText::new("⚠")
+                                                            .color(Color32::from_rgb(255, 200, 0))
+                                                            .strong(),
+                                                    )
+                                                    .on_hover_text(format!(
+                                                        "OSD and Video files duration mismatch: {0}",
+                                                        abs_diff_seconds
+                                                    ));
+                                                }
+                                            }
+
+                                            ui.label(format_minutes_seconds(&duration));
+                                        } else {
+                                            ui.label("-");
+                                        }
+                                    });
                                 });
                             });
                         });

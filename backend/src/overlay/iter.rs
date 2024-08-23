@@ -49,7 +49,11 @@ impl<'a> FrameOverlayIter<'a> {
     ) -> Self {
         let mut osd_frames_iter = osd_frames.into_iter();
         let mut srt_frames_iter = srt_frames.into_iter();
-        let first_osd_frame = osd_frames_iter.next().unwrap();
+        let first_osd_frame = if osd_options.osd_playback_offset >= 0.0 {
+            osd::Frame::default()
+        } else {
+            osd_frames_iter.next().unwrap()
+        };
         let first_srt_frame = srt_frames_iter.next().unwrap();
         let chroma_key =
             chroma_key.map(|c| Rgba([(c[0] * 255.0) as u8, (c[1] * 255.0) as u8, (c[2] * 255.0) as u8, 255]));
@@ -86,7 +90,8 @@ impl Iterator for FrameOverlayIter<'_> {
                 // If so advance the iterator over the OSD frames so we use the correct OSD frame
                 // for this video frame
                 if let Some(next_osd_frame) = self.osd_frames_iter.peek() {
-                    let next_osd_frame_secs = next_osd_frame.time_millis as f32 / 1000.0;
+                    let next_osd_frame_secs =
+                        self.osd_options.osd_playback_offset + (next_osd_frame.time_millis as f32 / 1000.0);
                     if video_frame.timestamp > next_osd_frame_secs * self.osd_options.osd_playback_speed_factor {
                         self.current_osd_frame = self.osd_frames_iter.next().unwrap();
                     }

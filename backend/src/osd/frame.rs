@@ -10,7 +10,7 @@ const BYTES_PER_GLYPH: usize = 2;
 const GRID_WIDTH: usize = 53;
 const _GRID_HEIGHT: usize = 20;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Frame {
     pub time_millis: u32,
     pub glyphs: Vec<Glyph>,
