@@ -8,6 +8,7 @@ impl WalksnailOsdTool {
             ui.add_space(5.0);
             ui.horizontal(|ui| {
                 self.import_files(ui, ctx);
+                self.output_path_button(ui);
                 self.reset_files(ui);
                 ui.add_space(ui.available_width() - 55.0);
                 self.toggle_light_dark_theme(ui, ctx);
@@ -53,6 +54,19 @@ impl WalksnailOsdTool {
             self.import_srt_file(&file_handles);
             self.update_osd_preview(ctx);
             self.render_status.reset();
+        }
+    }
+
+    fn output_path_button(&mut self, ui: &mut Ui) {
+        if ui
+            .add_enabled(self.render_status.is_not_in_progress(), Button::new("Output path"))
+            .clicked()
+        {
+            tracing::info!("Output file button clicked");
+            if let Some(file_handles) = rfd::FileDialog::new().add_filter("MP4 files", &["mp4"]).pick_folder() {
+                tracing::info!("Output {:?}", file_handles);
+                self.out_path = Some(file_handles);
+            }
         }
     }
 

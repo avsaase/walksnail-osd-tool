@@ -12,6 +12,7 @@ pub struct AppConfig {
     pub render_options: RenderSettings,
     pub app_update: AppUpdate,
     pub font_path: String,
+    pub out_path: String,
 }
 
 const CONFIG_NAME: &str = "saved_settings";
