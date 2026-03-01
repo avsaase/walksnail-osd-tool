@@ -286,7 +286,7 @@ pub fn check_updates() -> Result<Option<GitHubReleaseItem>, LookupError> {
             .iter()
             .find(|release| {
                 Version::parse(release.tag_name.trim_start_matches('v'))
-                    .map_or(false, |version| should_update_to_version(&current_version, &version))
+                    .is_ok_and(|version| should_update_to_version(&current_version, &version))
             })
             .cloned();
         Ok(update_target)

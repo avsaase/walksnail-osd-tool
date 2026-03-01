@@ -4,13 +4,13 @@ use crate::util::Dimension;
 
 #[derive(Error, Debug)]
 pub enum FontFileError {
-    #[error("Failed to open font file")]
+    #[error("Failed to open font file: {source}")]
     FailedToOpen {
         #[from]
         source: std::io::Error,
     },
 
-    #[error("Failed to decode font file")]
+    #[error("Failed to decode font file: {source}")]
     FailedToDecode {
         #[from]
         source: image::ImageError,

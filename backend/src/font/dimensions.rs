@@ -80,51 +80,51 @@ impl FontType {
 }
 
 pub fn detect_dimensions(width: u32, height: u32) -> Result<(CharacterSize, FontType, u32), FontFileError> {
-    let (size, r#type) = if width == CHARACTER_WIDTH_SMALL && (height / CHARACTER_HEIGHT_SMALL) % 256 == 0 {
+    let (size, r#type) = if width == CHARACTER_WIDTH_SMALL && (height / CHARACTER_HEIGHT_SMALL).is_multiple_of(256) {
         (CharacterSize::Small, FontType::Standard)
-    } else if width == CHARACTER_WIDTH_LARGE && (height / CHARACTER_HEIGHT_LARGE) % 256 == 0 {
+    } else if width == CHARACTER_WIDTH_LARGE && (height / CHARACTER_HEIGHT_LARGE).is_multiple_of(256) {
         (CharacterSize::Large, FontType::Standard)
-    } else if width == CHARACTER_WIDTH_2K && (height / CHARACTER_HEIGHT_2K) % 256 == 0 {
+    } else if width == CHARACTER_WIDTH_2K && (height / CHARACTER_HEIGHT_2K).is_multiple_of(256) {
         (CharacterSize::XLarge, FontType::Standard)
-    } else if width == CHARACTER_WIDTH_4K && (height / CHARACTER_HEIGHT_4K) % 256 == 0 {
+    } else if width == CHARACTER_WIDTH_4K && (height / CHARACTER_HEIGHT_4K).is_multiple_of(256) {
         (CharacterSize::Ultra, FontType::Standard)
-    } else if width == CHARACTER_WIDTH_RACE && (height / CHARACTER_HEIGHT_RACE) % 256 == 0 {
+    } else if width == CHARACTER_WIDTH_RACE && (height / CHARACTER_HEIGHT_RACE).is_multiple_of(256) {
         (CharacterSize::Race, FontType::Standard)
-    } else if width == CHARACTER_WIDTH_SMALL * 2 && (height / CHARACTER_HEIGHT_SMALL) % 256 == 0 {
+    } else if width == CHARACTER_WIDTH_SMALL * 2 && (height / CHARACTER_HEIGHT_SMALL).is_multiple_of(256) {
         (CharacterSize::Small, FontType::TwoPages)
-    } else if width == CHARACTER_WIDTH_LARGE * 2 && (height / CHARACTER_HEIGHT_LARGE) % 256 == 0 {
+    } else if width == CHARACTER_WIDTH_LARGE * 2 && (height / CHARACTER_HEIGHT_LARGE).is_multiple_of(256) {
         (CharacterSize::Large, FontType::TwoPages)
-    } else if width == CHARACTER_WIDTH_2K * 2 && (height / CHARACTER_HEIGHT_2K) % 256 == 0 {
+    } else if width == CHARACTER_WIDTH_2K * 2 && (height / CHARACTER_HEIGHT_2K).is_multiple_of(256) {
         (CharacterSize::XLarge, FontType::TwoPages)
-    } else if width == CHARACTER_WIDTH_4K * 2 && (height / CHARACTER_HEIGHT_4K) % 256 == 0 {
+    } else if width == CHARACTER_WIDTH_4K * 2 && (height / CHARACTER_HEIGHT_4K).is_multiple_of(256) {
         (CharacterSize::Ultra, FontType::TwoPages)
-    } else if width == CHARACTER_WIDTH_RACE * 2 && (height / CHARACTER_HEIGHT_RACE) % 256 == 0 {
+    } else if width == CHARACTER_WIDTH_RACE * 2 && (height / CHARACTER_HEIGHT_RACE).is_multiple_of(256) {
         (CharacterSize::Race, FontType::TwoPages)
-    } else if width == CHARACTER_WIDTH_SMALL * 3 && (height / CHARACTER_HEIGHT_SMALL) % 256 == 0 {
+    } else if width == CHARACTER_WIDTH_SMALL * 3 && (height / CHARACTER_HEIGHT_SMALL).is_multiple_of(256) {
         (CharacterSize::Small, FontType::ThreePages)
-    } else if width == CHARACTER_WIDTH_LARGE * 3 && (height / CHARACTER_HEIGHT_LARGE) % 256 == 0 {
+    } else if width == CHARACTER_WIDTH_LARGE * 3 && (height / CHARACTER_HEIGHT_LARGE).is_multiple_of(256) {
         (CharacterSize::Large, FontType::ThreePages)
-    } else if width == CHARACTER_WIDTH_2K * 3 && (height / CHARACTER_HEIGHT_2K) % 256 == 0 {
+    } else if width == CHARACTER_WIDTH_2K * 3 && (height / CHARACTER_HEIGHT_2K).is_multiple_of(256) {
         (CharacterSize::XLarge, FontType::ThreePages)
-    } else if width == CHARACTER_WIDTH_4K * 3 && (height / CHARACTER_HEIGHT_4K) % 256 == 0 {
+    } else if width == CHARACTER_WIDTH_4K * 3 && (height / CHARACTER_HEIGHT_4K).is_multiple_of(256) {
         (CharacterSize::Ultra, FontType::ThreePages)
-    } else if width == CHARACTER_WIDTH_RACE * 3 && (height / CHARACTER_HEIGHT_RACE) % 256 == 0 {
+    } else if width == CHARACTER_WIDTH_RACE * 3 && (height / CHARACTER_HEIGHT_RACE).is_multiple_of(256) {
         (CharacterSize::Race, FontType::ThreePages)
-    } else if width == CHARACTER_WIDTH_SMALL * 4 && (height / CHARACTER_HEIGHT_SMALL) % 256 == 0 {
+    } else if width == CHARACTER_WIDTH_SMALL * 4 && (height / CHARACTER_HEIGHT_SMALL).is_multiple_of(256) {
         (CharacterSize::Small, FontType::FourColor)
-    } else if width == CHARACTER_WIDTH_LARGE * 4 && (height / CHARACTER_HEIGHT_LARGE) % 256 == 0 {
+    } else if width == CHARACTER_WIDTH_LARGE * 4 && (height / CHARACTER_HEIGHT_LARGE).is_multiple_of(256) {
         (CharacterSize::Large, FontType::FourColor)
-    } else if width == CHARACTER_WIDTH_2K * 4 && (height / CHARACTER_HEIGHT_2K) % 256 == 0 {
+    } else if width == CHARACTER_WIDTH_2K * 4 && (height / CHARACTER_HEIGHT_2K).is_multiple_of(256) {
         (CharacterSize::XLarge, FontType::FourColor)
-    } else if width == CHARACTER_WIDTH_4K * 4 && (height / CHARACTER_HEIGHT_4K) % 256 == 0 {
+    } else if width == CHARACTER_WIDTH_4K * 4 && (height / CHARACTER_HEIGHT_4K).is_multiple_of(256) {
         (CharacterSize::Ultra, FontType::FourColor)
-    } else if width == CHARACTER_WIDTH_RACE * 4 && (height / CHARACTER_HEIGHT_RACE) % 256 == 0 {
+    } else if width == CHARACTER_WIDTH_RACE * 4 && (height / CHARACTER_HEIGHT_RACE).is_multiple_of(256) {
         (CharacterSize::Race, FontType::FourColor)
     } else {
         return Err(FontFileError::InvalidFontFileWidth { width });
     };
 
-    if height % size.height() != 0 {
+    if !height.is_multiple_of(size.height()) {
         return Err(FontFileError::InvalidFontFileHeight { height });
     }
 

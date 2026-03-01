@@ -14,18 +14,9 @@ pub enum VideoInfoError {
     NoDuration,
     #[error("No stream in video file")]
     NoStream,
-    #[error("Failed to probe video file")]
+    #[error("Failed to probe video file: {source}")]
     FfprobeFailed {
         #[from]
         source: ffprobe::FfProbeError,
-    },
-}
-
-#[derive(Debug, Error)]
-pub enum FfmpegError {
-    #[error("Failed to spawn FFMPEG process")]
-    FailedToSpawnFfmpeg {
-        #[from]
-        source: std::io::Error,
     },
 }

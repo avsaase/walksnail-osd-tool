@@ -7,13 +7,13 @@ pub enum OsdFileError {
 
     // #[error("Incomplete frame with index {index}")]
     // IncompleteFrame { index: u32 },
-    #[error("Malformed OSD file")]
+    #[error("Malformed OSD file: {source}")]
     MalformedOsdFile {
         #[from]
         source: std::str::Utf8Error,
     },
 
-    #[error("Unable to open OSD file")]
+    #[error("Unable to open OSD file: {source}")]
     UnableToOpenFile {
         #[from]
         source: std::io::Error,
