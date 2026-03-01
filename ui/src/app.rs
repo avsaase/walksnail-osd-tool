@@ -185,6 +185,11 @@ impl eframe::App for WalksnailOsdTool {
 
         self.save_config_if_changed();
     }
+
+    fn on_exit(&mut self, _gl: Option<&eframe::glow::Context>) {
+        let config: AppConfig = self.into();
+        config.save();
+    }
 }
 
 impl WalksnailOsdTool {
