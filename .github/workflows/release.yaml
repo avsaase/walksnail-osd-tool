@@ -30,9 +30,10 @@ jobs:
 
       - name: Download artifacts
         id: download
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: walksnail-osd-tool-all-platforms
+          pattern: walksnail-osd-tool-*
+          merge-multiple: true
           path: ${{ github.workspace }}/_deploy/artifacts
 
       - name: Release
