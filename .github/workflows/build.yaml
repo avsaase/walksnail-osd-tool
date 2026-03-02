@@ -117,7 +117,7 @@ jobs:
           mv temp.zip ${{ github.workspace }}/_deploy/walksnail-osd-tool-${{ matrix.targets.fancy_name }}.zip
 
       - name: Save binaries
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: walksnail-osd-tool-all-platforms
+          name: walksnail-osd-tool-${{ matrix.targets.name }}
           path: ${{ github.workspace }}/_deploy/*.*
