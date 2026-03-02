@@ -260,7 +260,7 @@ impl WalksnailOsdTool {
     fn save_config_if_changed(&mut self) {
         if self
             .config_changed
-            .map_or(false, |t| t.elapsed() > Duration::from_millis(2000))
+            .is_some_and(|t| t.elapsed() > Duration::from_millis(2000))
         {
             let config: AppConfig = self.into();
             config.save();
