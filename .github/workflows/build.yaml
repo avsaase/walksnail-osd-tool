@@ -77,7 +77,7 @@ jobs:
 
       - name: Build (MacOS)
         if: ${{ matrix.targets.name == 'macos-intel' || matrix.targets.name == 'macos-arm'}}
-        run: cargo build --release --target ${{ matrix.targets.target }} --features macos-app-bundle
+        run: cargo build --release --target ${{ matrix.targets.target }} -p walksnail-osd-tool --features macos-app-bundle
 
       - name: Extract ffmpeg
         run: |
@@ -103,7 +103,7 @@ jobs:
       - name: Create Mac App bundle
         if: ${{ matrix.targets.name == 'macos-intel' || matrix.targets.name == 'macos-arm'}}
         run: |
-          cargo bundle --release --target ${{ matrix.targets.target }} --features macos-app-bundle
+          cargo bundle --release --target ${{ matrix.targets.target }} --features macos-app-bundle -p walksnail-osd-tool
           cp ${{ github.workspace }}/ext/ffmpeg/${{ matrix.targets.name }}/ffmpeg ${{ github.workspace }}/target/${{ matrix.targets.target }}/release/bundle/osx/Walksnail\ OSD\ Tool.app/Contents/MacOS/ffmpeg
           cp ${{ github.workspace }}/ext/ffmpeg/${{ matrix.targets.name }}/ffprobe ${{ github.workspace }}/target/${{ matrix.targets.target }}/release/bundle/osx/Walksnail\ OSD\ Tool.app/Contents/MacOS/ffprobe
           cd ${{ github.workspace }}/target/${{ matrix.targets.target }}/release/bundle/osx/
