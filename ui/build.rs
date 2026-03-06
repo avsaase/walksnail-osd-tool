@@ -1,31 +1,25 @@
 use std::process::Command;
-
 use vergen::{vergen, Config};
 
 fn main() {
     println!("cargo:rerun-if-changed=./src");
 
-    // Save details from build environment so they can be included in the binary
-    vergen(Config::default()).unwrap();
+    // Configure vergen to skip Git-derived info (avoids safe.directory issues inside Docker)
+    let mut config = Config::default();
+    *config.git_mut().enabled_mut() = false;
 
-    if let Some(git_tag) = Command::new("git")
-        .args(["describe", "--exact-match", "--tags", "HEAD"])
-        .output()
-        .ok()
-        .and_then(|output| String::from_utf8(output.stdout).ok())
-    {
-        if !git_tag.is_empty() {
-            println!("cargo:rustc-env=GIT_VERSION={}", git_tag);
-        }
-    }
+    vergen(config).expect("vergen failed");
 
-    if let Some(short_commit) = Command::new("git")
+    // Capture git tag and short commit (non-fatal)
+    if let Ok(output) = Command::new("git")
         .args(["rev-parse", "--short", "HEAD"])
         .output()
-        .ok()
-        .and_then(|output| String::from_utf8(output.stdout).ok())
     {
-        println!("cargo:rustc-env=GIT_COMMIT_HASH={}", short_commit);
+        if let Ok(short_commit) = String::from_utf8(output.stdout) {
+            if !short_commit.trim().is_empty() {
+                println!("cargo:rustc-env=GIT_COMMIT_HASH={}", short_commit.trim());
+            }
+        }
     }
 
     // Load icon data

@@ -11,6 +11,7 @@ license = "GPL-3.0"
 
 [[bin]]
 name = "walksnail-osd-tool"
+path = "src/main.rs"
 
 [dependencies.backend]
 path = "../backend"

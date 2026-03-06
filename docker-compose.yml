@@ -1,0 +1,15 @@
+services:
+  build:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    volumes:
+      - .:/app
+      - cargo-cache:/usr/local/cargo/registry
+      - ./target:/app/target
+    entrypoint: [""]
+    command: cargo build --release --bin walksnail-osd-tool
+
+volumes:
+  cargo-cache: 

@@ -265,11 +265,11 @@ pub mod build_info {
     }
 
     pub fn get_compiler() -> &'static str {
-        env!("VERGEN_RUSTC_SEMVER")
+        option_env!("VERGEN_RUSTC_SEMVER").unwrap_or("Unknown")
     }
 
     pub fn get_target() -> &'static str {
-        env!("VERGEN_CARGO_TARGET_TRIPLE")
+        option_env!("VERGEN_CARGO_TARGET_TRIPLE").unwrap_or("Unknown")
     }
 }
 
