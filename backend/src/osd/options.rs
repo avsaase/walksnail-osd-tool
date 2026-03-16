@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use derivative::Derivative;
 use serde::{Deserialize, Serialize};
 
-use crate::util::Coordinates;
+use crate::{font::CharacterSize, util::Coordinates};
 
 #[derive(Clone, Serialize, Deserialize, Derivative)]
 #[derivative(Default, Debug)]
@@ -15,6 +15,11 @@ pub struct OsdOptions {
     #[serde(skip)]
     pub osd_playback_speed_factor: f32,
     pub masked_grid_positions: HashSet<Coordinates<u32>>,
+    #[derivative(Default(value = "0.0"))]
+    #[serde(skip)]
+    pub osd_playback_offset: f32,
+    #[serde(skip)]
+    pub character_size: Option<CharacterSize>,
 }
 
 impl OsdOptions {

@@ -50,6 +50,8 @@ impl WalksnailOsdTool {
         if let Some(osd_file_path) = filter_file_with_extention(file_handles, "osd") {
             self.osd_file = OsdFile::open(osd_file_path.clone()).ok();
             self.osd_preview.preview_frame = 1;
+            self.osd_options.osd_playback_offset = 0.0;
+            self.osd_options.character_size = None;
         }
     }
 
