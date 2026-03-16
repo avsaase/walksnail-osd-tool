@@ -31,6 +31,7 @@ pub struct WalksnailOsdTool {
     pub video_info: Option<VideoInfo>,
     pub osd_file: Option<OsdFile>,
     pub font_file: Option<FontFile>,
+    pub out_path: Option<PathBuf>,
     pub srt_file: Option<SrtFile>,
     pub ui_dimensions: UiDimensions,
     pub to_ffmpeg_sender: Option<Sender<ToFfmpegMessage>>,
@@ -78,6 +79,9 @@ impl WalksnailOsdTool {
         let font_path = PathBuf::from(saved_settings.font_path);
         let font_file = font::FontFile::open(font_path).ok();
 
+        // Load last used output path
+        let out_path = Some(PathBuf::from(saved_settings.out_path));
+
         let app_update = AppUpdate {
             promise: update_check_promise,
             ..Default::default()
@@ -94,6 +98,7 @@ impl WalksnailOsdTool {
             osd_options,
             srt_options,
             font_file,
+            out_path,
             app_update,
             app_version,
             target,

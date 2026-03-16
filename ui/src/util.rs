@@ -43,6 +43,11 @@ impl WalksnailOsdTool {
             // Try to load the matching OSD and SRT files
             self.import_osd_file(&[matching_file_with_extension(video_file, "osd")]);
             self.import_srt_file(&[matching_file_with_extension(video_file, "srt")]);
+
+            // If the output path is not set, set it to the same directory as the video file
+            if self.out_path.is_none() {
+                self.out_path = Some(video_file.parent().unwrap().to_path_buf());
+            }
         }
     }
 
@@ -101,10 +106,10 @@ pub fn format_minutes_seconds(duration: &Duration) -> String {
     format!("{}:{:0>2}", minutes, seconds)
 }
 
-pub fn get_output_video_path(input_video_path: &Path) -> PathBuf {
+pub fn get_output_video_path(out_video_path: &Path, input_video_path: &Path) -> PathBuf {
     let input_video_file_name = input_video_path.file_stem().unwrap().to_string_lossy();
     let output_video_file_name = format!("{}_with_osd.mp4", input_video_file_name);
-    let mut output_video_path = input_video_path.parent().unwrap().to_path_buf();
+    let mut output_video_path = out_video_path.to_path_buf();
     output_video_path.push(output_video_file_name);
     output_video_path
 }
@@ -171,6 +176,7 @@ impl Into<AppConfig> for &mut WalksnailOsdTool {
                 .unwrap_or_default()
                 .to_string_lossy()
                 .to_string(),
+            out_path: self.out_path.as_ref().unwrap().to_string_lossy().to_string(),
         }
     }
 }
