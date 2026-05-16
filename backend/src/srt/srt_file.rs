@@ -4,7 +4,7 @@ use derivative::Derivative;
 
 use super::{
     error::SrtFileError,
-    frame::{SrtDebugFrameData, SrtFrame},
+    frame::{SrtDebugFrameData, SrtFrame, SrtFrameDataAscent},
     SrtFrameData,
 };
 
@@ -28,7 +28,22 @@ impl SrtFile {
             .iter()
             .map(|i| -> Result<SrtFrame, SrtFileError> {
                 let debug_data = i.text.parse::<SrtDebugFrameData>().ok();
-                let data = i.text.parse::<SrtFrameData>().ok();
+                // Try the Walksnail format first. If that fails and the line
+                // looks like a Caddx Ascent frame (`Hz:` field instead of
+                // `CH:`), try the Ascent variant and convert it to the common
+                // representation. The cheap `contains("Hz:")` pre-check keeps
+                // the hot path Walksnail-only.
+                // See https://github.com/avsaase/walksnail-osd-tool/issues/65
+                let data = i.text.parse::<SrtFrameData>().ok().or_else(|| {
+                    if i.text.contains("Hz:") {
+                        i.text
+                            .parse::<SrtFrameDataAscent>()
+                            .ok()
+                            .map(SrtFrameDataAscent::into_common)
+                    } else {
+                        None
+                    }
+                });
 
                 if debug_data.is_some() {
                     has_debug = true;
