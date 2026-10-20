@@ -216,8 +216,7 @@ impl WalksnailOsdTool {
     }
 
     pub fn update_osd_preview(&mut self, ctx: &egui::Context) {
-        if let (Some(video_info), Some(osd_file), Some(font_file), Some(srt_file)) =
-            (&self.video_info, &self.osd_file, &self.font_file, &self.srt_file)
+        if let (Some(video_info), Some(osd_file), Some(font_file)) = (&self.video_info, &self.osd_file, &self.font_file)
         {
             let image = egui::ColorImage::from_rgba_unmultiplied(
                 [video_info.width as usize, video_info.height as usize],
@@ -228,7 +227,7 @@ impl WalksnailOsdTool {
                         .frames
                         .get(self.osd_preview.preview_frame as usize - 1)
                         .unwrap(),
-                    srt_file.frames.last().unwrap(),
+                    self.srt_file.as_ref().and_then(|s| s.frames.last()),
                     font_file,
                     self.srt_font.as_ref().unwrap(),
                     &self.osd_options,

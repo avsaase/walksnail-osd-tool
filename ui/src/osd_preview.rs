@@ -11,7 +11,7 @@ pub fn create_osd_preview(
     width: u32,
     height: u32,
     osd_frame: &osd::Frame,
-    srt_frame: &srt::SrtFrame,
+    srt_frame: Option<&srt::SrtFrame>,
     font: &font::FontFile,
     srt_font: &rusttype::Font,
     osd_options: &OsdOptions,
@@ -20,7 +20,7 @@ pub fn create_osd_preview(
     let mut image = RgbaImage::new(width, height);
 
     overlay_osd(&mut image, osd_frame, font, osd_options);
-    if let Some(srt_data) = &srt_frame.data {
+    if let Some(srt_data) = srt_frame.and_then(|f| f.data.as_ref()) {
         overlay_srt_data(&mut image, srt_data, srt_font, srt_options);
     }
 
