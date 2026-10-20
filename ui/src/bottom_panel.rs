@@ -24,18 +24,14 @@ impl WalksnailOsdTool {
                     self.all_files_loaded(),
                     Button::new("Start render").min_size(button_size),
                 )
-                .on_disabled_hover_text("First load video, OSD, SRT and font files")
+                .on_disabled_hover_text("First load video, OSD and font files (SRT file is optional)")
                 .clicked()
             {
                 tracing::info!("Start render button clicked");
                 self.render_status.start_render();
-                if let (Some(video_path), Some(osd_file), Some(font_file), Some(video_info), Some(srt_file)) = (
-                    &self.video_file,
-                    &self.osd_file,
-                    &self.font_file,
-                    &self.video_info,
-                    &self.srt_file,
-                ) {
+                if let (Some(video_path), Some(osd_file), Some(font_file), Some(video_info)) =
+                    (&self.video_file, &self.osd_file, &self.font_file, &self.video_info)
+                {
                     self.osd_options.osd_playback_speed_factor = if self.osd_options.adjust_playback_speed {
                         let video_duration = video_info.duration;
                         let osd_duration = osd_file.duration;
@@ -48,7 +44,7 @@ impl WalksnailOsdTool {
                         video_path,
                         &get_output_video_path(video_path),
                         osd_file.frames.clone(),
-                        srt_file.frames.clone(),
+                        self.srt_file.as_ref().map(|s| s.frames.clone()).unwrap_or_default(),
                         font_file.clone(),
                         self.srt_font.as_ref().unwrap().clone(),
                         &self.osd_options,

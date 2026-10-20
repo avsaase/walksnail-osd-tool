@@ -16,7 +16,8 @@ use crate::util::build_info::Build;
 
 impl WalksnailOsdTool {
     pub fn all_files_loaded(&self) -> bool {
-        self.video_loaded() && self.osd_loaded() && self.srt_loaded() && self.font_loaded()
+        // The SRT file is optional
+        self.video_loaded() && self.osd_loaded() && self.font_loaded()
     }
 
     pub fn video_loaded(&self) -> bool {
@@ -25,10 +26,6 @@ impl WalksnailOsdTool {
 
     pub fn osd_loaded(&self) -> bool {
         self.osd_file.is_some()
-    }
-
-    pub fn srt_loaded(&self) -> bool {
-        self.srt_file.is_some()
     }
 
     pub fn font_loaded(&self) -> bool {

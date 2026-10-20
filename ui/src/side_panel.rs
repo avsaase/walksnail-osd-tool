@@ -199,7 +199,7 @@ impl WalksnailOsdTool {
         let srt_file = self.srt_file.as_ref();
         let file_loaded = srt_file.is_some();
 
-        CollapsingHeader::new(RichText::new("SRT file").heading())
+        CollapsingHeader::new(RichText::new("SRT file (optional)").heading())
             .icon(move |ui, opennes, response| circle_icon(ui, opennes, response, file_loaded))
             .default_open(true)
             .show(ui, |ui| {
